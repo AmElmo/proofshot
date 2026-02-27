@@ -1,6 +1,6 @@
 # ProofShot — Visual Verification for AI Coding Agents
 
-## Product Spec v1.0
+## Product Spec v2.0
 
 **One-liner:** Give any AI coding agent eyes. It builds a feature → ProofShot records video proof it works.
 
@@ -10,23 +10,27 @@
 
 ## 1. What This Is
 
-ProofShot is an open-source CLI tool + skill file that lets any AI coding agent visually verify the features it builds by:
+ProofShot is an open-source CLI tool + skill file that creates an **agent-driven verification workflow**. When an AI coding agent finishes building a UI feature, ProofShot:
 
-1. Auto-detecting and starting the dev server
-2. Opening a headless browser, navigating to the app
-3. Clicking through the UI to verify the feature works
-4. Recording a video of the entire session
-5. Taking annotated screenshots at key moments
-6. Generating a markdown summary with all artifacts
+1. Auto-detects and starts the dev server
+2. Opens a headless browser and starts recording
+3. Captures console errors + server errors throughout the session
+4. **Hands control to the AI agent** — the agent navigates, clicks, fills forms, and verifies using `agent-browser`
+5. When the agent is done, bundles everything into a proof artifact: video, screenshots, errors, and a markdown summary
+
+**The key insight:** ProofShot doesn't contain verification intelligence. The AI agent IS the intelligence. ProofShot provides the **workflow and infrastructure** — start server, open browser, record, capture errors, bundle proof.
+
+**Who is the output for:** The **human**. The primary value is a video proof + error report that shows the human "here's what your AI agent tested, here's the evidence, here are any errors found." Secondarily, errors can be fed back to the agent for self-correction.
 
 It works with: Claude Code, Codex, Cursor, Gemini CLI, GitHub Copilot, Windsurf, Goose, OpenCode — any agent that can run bash commands.
 
 **What makes this different from just using agent-browser directly:**
 - Zero-config dev server detection and startup
-- Recording is automatic (not manual start/stop)
-- Produces a structured artifact bundle (video + screenshots + summary) ready for PR
-- Ships with a skill file that teaches any agent HOW to do visual verification — the user doesn't prompt-engineer anything
-- One command: `proofshot verify` does everything
+- Recording is automatic (starts on `proofshot start`, stops on `proofshot stop`)
+- Captures both console errors AND server errors (dev server stderr) throughout the session
+- Produces a structured proof artifact bundle (video + screenshots + errors + summary) ready for PR
+- Ships with a skill file that teaches any agent the full verification workflow — the user doesn't prompt-engineer anything
+- Two commands: `proofshot start` → agent tests → `proofshot stop` bundles the proof
 
 ---
 
@@ -49,12 +53,14 @@ ProofShot wraps **Vercel's `agent-browser`** (not raw Playwright MCP). Reasons:
 
 ```
 proofshot (our tool)
-├── TypeScript CLI (thin orchestration layer)
+├── TypeScript CLI (workflow orchestration)
 ├── agent-browser (Vercel's tool — handles all browser work)
 │   ├── Rust CLI (fast command parsing)
 │   └── Node.js daemon (Playwright under the hood)
 ├── Dev server detection module
-└── Artifact bundler (video + screenshots + markdown summary)
+├── Server error capture (dev server stderr logging)
+├── Session state management (tracks active sessions)
+└── Artifact bundler (video + screenshots + errors + markdown summary)
 ```
 
 ### What We Build vs What We Reuse
@@ -66,10 +72,12 @@ proofshot (our tool)
 | Screenshots | **Reuse** — agent-browser `screenshot --annotate` |
 | Visual diffs | **Reuse** — agent-browser `diff screenshot` |
 | Dev server detection | **Build** — detect framework + start command |
-| Artifact bundling | **Build** — collect video/screenshots/summary into folder |
-| Summary generation | **Build** — markdown report of what was verified |
-| Skill file | **Build** — teaches AI agents how to use ProofShot |
-| CLI wrapper | **Build** — `proofshot verify` orchestration command |
+| Server error capture | **Build** — pipe dev server stderr to log file |
+| Session state | **Build** — track active session (output dir, timestamp, error log path) |
+| Artifact bundling | **Build** — collect video/screenshots/errors/summary into folder |
+| Summary generation | **Build** — markdown proof report with errors and description |
+| Skill file | **Build** — teaches AI agents the full start → test → stop workflow |
+| CLI orchestration | **Build** — `proofshot start` / `proofshot stop` commands |
 
 ---
 
@@ -102,7 +110,6 @@ This does:
        "startupTimeout": 30000
      },
      "output": "./proofshot-artifacts",
-     "defaultPages": ["/"],
      "viewport": { "width": 1280, "height": 720 },
      "headless": true
    }
@@ -119,86 +126,123 @@ The developer codes normally with their AI agent. When a UI feature is done, the
 
 > "Now verify this visually with proofshot"
 
-Or better — the skill file teaches the agent to do it automatically after UI changes. The agent then runs:
+The skill file teaches the agent the workflow. The agent runs:
 
 ```bash
-proofshot verify --pages "/dashboard,/settings" --record
+proofshot start --description "Login form: fill credentials, submit, verify redirect to dashboard"
 ```
 
-Or for the simplest case:
+Then the agent uses `agent-browser` to navigate, click, fill forms, and verify. When done:
 
 ```bash
-proofshot verify
+proofshot stop
 ```
 
 ### What Happens Behind the Scenes
 
 ```
+Phase 1: proofshot start
 1. proofshot detects dev server is not running
 2. proofshot starts dev server (npm run dev)
-3. proofshot waits for server to be ready (detects "ready on" or port open)
-4. proofshot calls: agent-browser open http://localhost:3000
-5. proofshot calls: agent-browser record start ./proofshot-artifacts/session.webm
-6. For each page in --pages:
-   a. agent-browser open http://localhost:3000{page}
-   b. agent-browser wait --load networkidle
-   c. agent-browser screenshot ./proofshot-artifacts/page-{name}.png
-   d. agent-browser snapshot -i  (returns to stdout for the agent to read)
-7. proofshot calls: agent-browser record stop
-8. proofshot generates summary markdown
-9. proofshot outputs paths to all artifacts
+3. proofshot captures dev server stderr → ./proofshot-artifacts/server-errors.log
+4. proofshot waits for server to be ready (detects "ready on" or port open)
+5. proofshot calls: agent-browser open http://localhost:3000
+6. proofshot calls: agent-browser set viewport 1280 720
+7. proofshot calls: agent-browser record start ./proofshot-artifacts/session.webm
+8. proofshot saves session state to ./proofshot-artifacts/.session.json
+9. proofshot outputs: "Session started. Use agent-browser to test. Run proofshot stop when done."
+
+Phase 2: Agent drives the browser (proofshot is not running)
+- agent-browser snapshot -i          → See what's on the page
+- agent-browser click @e3            → Click a button
+- agent-browser fill @e2 "text"      → Fill a form
+- agent-browser screenshot ./proofshot-artifacts/step-1.png  → Capture key moments
+- agent-browser open http://localhost:3000/other-page        → Navigate
+
+Phase 3: proofshot stop
+1. proofshot calls: agent-browser errors → captures final console errors
+2. proofshot calls: agent-browser console → captures console output
+3. proofshot calls: agent-browser record stop → saves video
+4. proofshot calls: agent-browser close → closes browser
+5. proofshot reads server-errors.log for server-side errors
+6. proofshot collects all screenshots in the output dir
+7. proofshot generates SUMMARY.md with: description, video, screenshots, console errors, server errors
+8. proofshot outputs: proof artifact summary to stdout
 ```
 
-### What the Agent Sees (Output)
+### What the Agent Sees (proofshot start output)
+
+```
+✅ ProofShot session started
+
+Dev server: Vite on :5173
+Browser: Chromium (headless)
+Recording: ./proofshot-artifacts/session-2026-02-25.webm
+Errors log: ./proofshot-artifacts/server-errors.log
+
+Use agent-browser to navigate and test:
+  agent-browser snapshot -i                              # See interactive elements
+  agent-browser click @e3                                # Click an element
+  agent-browser fill @e2 "test@example.com"              # Fill a form
+  agent-browser screenshot ./proofshot-artifacts/step.png # Capture a moment
+
+When done, run: proofshot stop
+```
+
+### What the Agent Sees (proofshot stop output)
 
 ```
 ✅ ProofShot verification complete
 
-📹 Video:       ./proofshot-artifacts/session-2026-02-25.webm (32s)
-📸 Screenshots: 3 captured
-  - /               → ./proofshot-artifacts/page-home.png
-  - /dashboard      → ./proofshot-artifacts/page-dashboard.png
-  - /settings       → ./proofshot-artifacts/page-settings.png
-📝 Summary:     ./proofshot-artifacts/SUMMARY.md
+📹 Video:         ./proofshot-artifacts/session-2026-02-25.webm (45s)
+📸 Screenshots:   3 captured
+📝 Summary:       ./proofshot-artifacts/SUMMARY.md
 
-Dev server: Next.js on :3000
-Pages verified: 3
-Errors detected: 0
-Console warnings: 2
+Console errors:   0
+Server errors:    0
+Duration:         45 seconds
+
+Proof artifacts saved to ./proofshot-artifacts/
 ```
 
-### The Summary File (SUMMARY.md)
+### The Summary File (SUMMARY.md) — The Proof for the Human
 
 ```markdown
-# ProofShot Visual Verification Report
+# ProofShot Verification Report
 
 **Date:** 2026-02-25 14:32:00
 **Project:** my-saas-app
-**Framework:** Next.js
-**Dev Server:** localhost:3000
+**Framework:** Vite
+**Dev Server:** localhost:5173
 
-## Pages Verified
+## What Was Verified
 
-### / (Home)
-- Status: ✅ Loaded successfully
-- Screenshot: ![Home](./page-home.png)
-- Interactive elements: 12 buttons, 3 links, 2 forms
-- Console errors: 0
-
-### /dashboard
-- Status: ✅ Loaded successfully
-- Screenshot: ![Dashboard](./page-dashboard.png)
-- Interactive elements: 8 buttons, 15 links, 1 form
-- Console errors: 0
-- Console warnings: 2 (deprecation warnings)
+Login form: fill credentials, submit, verify redirect to dashboard
 
 ## Video Recording
-Full session recording: [session-2026-02-25.webm](./session-2026-02-25.webm)
+
+Full session recording: [session-2026-02-25.webm](./session-2026-02-25.webm) (45s)
+
+## Screenshots
+
+| Step | Screenshot |
+|------|-----------|
+| ![step-1](./step-1.png) | Login page loaded |
+| ![step-2](./step-2.png) | Form filled |
+| ![step-3](./step-3.png) | Dashboard after redirect |
+
+## Console Errors
+
+No console errors detected.
+
+## Server Errors
+
+No server errors detected.
 
 ## Environment
 - Browser: Chromium (headless)
 - Viewport: 1280x720
-- Duration: 32 seconds
+- Duration: 45 seconds
 ```
 
 ---
@@ -211,28 +255,34 @@ Detects framework, creates config, installs skill file.
 
 ```bash
 proofshot init
-# Interactive: detects framework, asks which agent you use
 # Flags:
 #   --agent claude|codex|cursor|gemini|copilot|generic
 #   --force  (overwrite existing config)
 ```
 
-### `proofshot verify`
+### `proofshot start`
 
-Main command. Starts server, opens browser, records, screenshots, generates summary.
+Start a verification session: dev server, browser, recording, error capture.
 
 ```bash
-proofshot verify
+proofshot start
 # Flags:
-#   --pages "/,/about,/dashboard"  (comma-separated paths to verify)
-#   --record                       (enable video recording, default: true)
-#   --no-record                    (skip video, screenshots only)
-#   --interact                     (after screenshots, let the calling agent interact via agent-browser)
-#   --port 3000                    (override detected port)
-#   --no-server                    (don't start dev server, assume it's running)
-#   --headed                       (show browser window for debugging)
-#   --output ./my-artifacts        (custom output directory)
-#   --diff ./baseline              (compare against baseline screenshots)
+#   --description "what is being verified"  (included in the proof report)
+#   --port 3000                             (override detected port)
+#   --no-server                             (don't start dev server, assume it's running)
+#   --headed                                (show browser window for debugging)
+#   --output ./my-artifacts                 (custom output directory)
+#   --url http://localhost:3000/login       (open this URL instead of root)
+```
+
+### `proofshot stop`
+
+Stop the session: stop recording, collect errors, bundle proof artifacts, generate summary.
+
+```bash
+proofshot stop
+# Flags:
+#   --no-close  (don't close the browser — useful if the agent wants to keep using it)
 ```
 
 ### `proofshot diff`
@@ -273,111 +323,67 @@ ProofShot reads `package.json` to detect the framework and infer the dev command
 
 ```typescript
 const FRAMEWORK_DETECTORS = [
-  // Next.js
-  {
-    detect: (pkg) => pkg.dependencies?.['next'] || pkg.devDependencies?.['next'],
-    command: 'npm run dev',
-    port: 3000,
-    waitForText: 'ready on',
-    name: 'Next.js'
-  },
-  // Vite (covers Vue, React+Vite, Svelte, etc.)
-  {
-    detect: (pkg) => pkg.devDependencies?.['vite'],
-    command: 'npm run dev',
-    port: 5173,
-    waitForText: 'Local:',
-    name: 'Vite'
-  },
-  // Remix
-  {
-    detect: (pkg) => pkg.dependencies?.['@remix-run/node'],
-    command: 'npm run dev',
-    port: 3000,
-    waitForText: 'started',
-    name: 'Remix'
-  },
-  // Astro
-  {
-    detect: (pkg) => pkg.dependencies?.['astro'] || pkg.devDependencies?.['astro'],
-    command: 'npm run dev',
-    port: 4321,
-    waitForText: 'watching for file changes',
-    name: 'Astro'
-  },
-  // Create React App
-  {
-    detect: (pkg) => pkg.dependencies?.['react-scripts'],
-    command: 'npm start',
-    port: 3000,
-    waitForText: 'Compiled',
-    name: 'Create React App'
-  },
-  // Nuxt
-  {
-    detect: (pkg) => pkg.dependencies?.['nuxt'] || pkg.devDependencies?.['nuxt'],
-    command: 'npm run dev',
-    port: 3000,
-    waitForText: 'Listening on',
-    name: 'Nuxt'
-  },
-  // SvelteKit
-  {
-    detect: (pkg) => pkg.devDependencies?.['@sveltejs/kit'],
-    command: 'npm run dev',
-    port: 5173,
-    waitForText: 'Local:',
-    name: 'SvelteKit'
-  },
-  // Angular
-  {
-    detect: (pkg) => pkg.dependencies?.['@angular/core'],
-    command: 'npm start',
-    port: 4200,
-    waitForText: 'Compiled successfully',
-    name: 'Angular'
-  },
-  // Fallback: look for "dev" script in package.json
-  {
-    detect: (pkg) => pkg.scripts?.dev,
-    command: 'npm run dev',
-    port: 3000,
-    waitForText: null,  // fall back to port detection
-    name: 'Unknown (has dev script)'
-  }
+  { name: 'Next.js',    detect: (pkg) => pkg.dependencies?.['next'] || pkg.devDependencies?.['next'],   command: 'npm run dev', port: 3000, waitForText: 'ready on' },
+  { name: 'Vite',       detect: (pkg) => pkg.devDependencies?.['vite'],                                  command: 'npm run dev', port: 5173, waitForText: 'Local:' },
+  { name: 'Remix',      detect: (pkg) => pkg.dependencies?.['@remix-run/node'],                          command: 'npm run dev', port: 3000, waitForText: 'started' },
+  { name: 'Astro',      detect: (pkg) => pkg.dependencies?.['astro'] || pkg.devDependencies?.['astro'],  command: 'npm run dev', port: 4321, waitForText: 'watching for file changes' },
+  { name: 'CRA',        detect: (pkg) => pkg.dependencies?.['react-scripts'],                            command: 'npm start',   port: 3000, waitForText: 'Compiled' },
+  { name: 'Nuxt',       detect: (pkg) => pkg.dependencies?.['nuxt'] || pkg.devDependencies?.['nuxt'],    command: 'npm run dev', port: 3000, waitForText: 'Listening on' },
+  { name: 'SvelteKit',  detect: (pkg) => pkg.devDependencies?.['@sveltejs/kit'],                         command: 'npm run dev', port: 5173, waitForText: 'Local:' },
+  { name: 'Angular',    detect: (pkg) => pkg.dependencies?.['@angular/core'],                            command: 'npm start',   port: 4200, waitForText: 'Compiled successfully' },
+  { name: 'Fallback',   detect: (pkg) => pkg.scripts?.dev,                                               command: 'npm run dev', port: 3000, waitForText: null },
 ];
 ```
 
-### Server Startup Logic
+### Server Startup + Error Capture
 
 ```typescript
-async function startDevServer(config): Promise<void> {
-  // 1. Check if server is already running on the port
-  if (await isPortOpen(config.port)) {
-    console.log(`Dev server already running on :${config.port}`);
-    return;
-  }
+async function ensureDevServer(config, errorLogPath: string) {
+  if (await isPortOpen(config.port)) return { alreadyRunning: true };
 
-  // 2. Start the dev server as a background process
-  const proc = spawn(config.command, { shell: true, stdio: 'pipe', detached: true });
+  const errorLog = fs.createWriteStream(errorLogPath, { flags: 'a' });
+  const proc = spawn('sh', ['-c', config.command], {
+    cwd: process.cwd(),
+    stdio: ['ignore', 'pipe', 'pipe'],
+    detached: true,
+  });
 
-  // 3. Wait for ready signal
-  await Promise.race([
-    waitForText(proc.stdout, config.waitForText),  // watch stdout for ready message
-    waitForPort(config.port),                        // or just wait for port to open
-    timeout(config.startupTimeout)                   // timeout after 30s
-  ]);
+  // Capture server stderr to error log file
+  proc.stderr.pipe(errorLog);
+  proc.stdout.pipe(errorLog); // Also capture stdout for full context
 
-  // 4. Additional wait for stability
-  await sleep(1000);
+  proc.unref();
+  await waitForReady(proc, config);
+  return { alreadyRunning: false };
 }
 ```
 
 ---
 
-## 6. Skill File (Critical for Adoption)
+## 6. Session State
 
-The skill file is what makes this "zero effort" for the user. It teaches the AI agent when and how to use ProofShot.
+ProofShot uses a `.session.json` file in the output directory to track the active session:
+
+```json
+{
+  "startedAt": "2026-02-25T14:32:00.000Z",
+  "description": "Login form: fill credentials, submit, verify redirect",
+  "outputDir": "./proofshot-artifacts",
+  "videoPath": "./proofshot-artifacts/session-2026-02-25.webm",
+  "serverErrorLog": "./proofshot-artifacts/server-errors.log",
+  "port": 5173,
+  "framework": "Vite",
+  "pid": 12345
+}
+```
+
+`proofshot stop` reads this file to know where to find artifacts and what metadata to include in the summary.
+
+---
+
+## 7. Skill File (Critical for Adoption)
+
+The skill file is what makes this "zero effort" for the user. It teaches the AI agent the **full verification workflow**: start session → navigate and test → stop session.
 
 ### Claude Code Skill: `.claude/skills/proofshot/SKILL.md`
 
@@ -385,13 +391,13 @@ The skill file is what makes this "zero effort" for the user. It teaches the AI 
 ---
 name: proofshot
 description: Visual verification of UI features. Use after building or modifying any
-  UI component, page, or visual feature. Automatically starts the dev server, opens
-  a headless browser, navigates to relevant pages, records video, takes screenshots,
-  and generates a verification report.
+  UI component, page, or visual feature. Starts a verification session with video
+  recording and error capture, then you drive the browser to test, then stop to
+  bundle proof artifacts for the human.
 allowed-tools: Bash(proofshot:*), Bash(agent-browser:*)
 ---
 
-# ProofShot — Visual Verification
+# ProofShot — Visual Verification Workflow
 
 ## When to use
 
@@ -401,55 +407,47 @@ Use ProofShot after:
 - Fixing a visual bug
 - Any change that affects what the user sees
 
-## Quick verification (most common)
+## The workflow (always follow these 3 steps)
 
-After completing UI work, run:
-
-```bash
-proofshot verify --pages "/relevant-page"
-```
-
-This starts the dev server, opens the page, records video, takes screenshots,
-and produces a summary in ./proofshot-artifacts/.
-
-## Interactive verification (for complex features)
-
-For features that need click-through testing:
+### Step 1: Start the session
 
 ```bash
-# Start verification with interaction mode
-proofshot verify --pages "/dashboard" --interact
+proofshot start --description "what you are about to verify"
 ```
 
-Then use agent-browser commands to interact:
+This starts the dev server, opens a headless browser, and begins recording.
+The description appears in the proof report for the human.
+
+### Step 2: Drive the browser and test
+
+Use agent-browser commands to navigate, interact, and verify:
 
 ```bash
-agent-browser snapshot -i                    # See interactive elements
-agent-browser click @e3                      # Click a button
-agent-browser fill @e2 "test@example.com"    # Fill a form
-agent-browser screenshot ./proofshot-artifacts/after-click.png
+agent-browser snapshot -i                                    # See interactive elements
+agent-browser open http://localhost:PORT/page                # Navigate to a page
+agent-browser click @e3                                      # Click a button
+agent-browser fill @e2 "test@example.com"                    # Fill a form field
+agent-browser screenshot ./proofshot-artifacts/step-NAME.png # Capture key moments
 ```
 
-When done interacting:
+Take screenshots at important moments — these become the visual proof.
+Verify what you expect to see by reading the snapshot output.
+
+### Step 3: Stop and bundle the proof
 
 ```bash
-agent-browser record stop
+proofshot stop
 ```
 
-## Visual regression check
-
-Compare current state to previous screenshots:
-
-```bash
-proofshot diff --baseline ./proofshot-artifacts-previous
-```
+This stops recording, collects console + server errors, and generates
+a SUMMARY.md with video, screenshots, and error report.
 
 ## Tips
 
-- Always verify the specific pages you changed, not the entire app
-- For forms, use --interact mode to fill and submit
-- Check the console errors in the summary output
-- Include the summary file path in your commit message or PR
+- Always include a meaningful --description so the human knows what was tested
+- Take screenshots before AND after key actions (e.g., before form submit, after redirect)
+- If you find errors during verification, fix them and re-run the workflow
+- The proof artifacts in ./proofshot-artifacts/ can be referenced in commit messages or PRs
 ```
 
 ### Cursor Rule: `.cursor/rules/proofshot.mdc`
@@ -460,12 +458,17 @@ description: Visual verification of UI changes using ProofShot
 globs: ["**/*.tsx", "**/*.jsx", "**/*.vue", "**/*.svelte", "**/*.html"]
 ---
 
-After modifying UI files, visually verify changes:
+After modifying UI files, visually verify changes with this workflow:
 
-1. Run `proofshot verify --pages "/affected-page"` to start dev server, record video, and take screenshots
-2. For interactive features, use `proofshot verify --interact` then `agent-browser` commands
-3. Check ./proofshot-artifacts/SUMMARY.md for results
-4. Use `proofshot diff --baseline ./previous` to compare against previous state
+1. Start session: `proofshot start --description "what you are verifying"`
+2. Drive browser: Use `agent-browser` commands to navigate, click, fill forms, and take screenshots
+3. Stop session: `proofshot stop` to bundle video + screenshots + error report
+
+Key agent-browser commands:
+- `agent-browser snapshot -i` — see interactive elements
+- `agent-browser click @e3` — click an element
+- `agent-browser fill @e2 "text"` — fill a form field
+- `agent-browser screenshot ./proofshot-artifacts/step.png` — capture a moment
 ```
 
 ### Generic (AGENTS.md / PROOFSHOT.md)
@@ -473,27 +476,24 @@ After modifying UI files, visually verify changes:
 ```markdown
 # ProofShot Visual Verification
 
-After building or modifying UI features, verify visually:
+After building or modifying UI features, verify with this workflow:
 
-```bash
-# Basic verification
-proofshot verify --pages "/page-you-changed"
+1. Start: `proofshot start --description "what you are verifying"`
+2. Test: Use `agent-browser` to navigate, click, fill forms, take screenshots
+3. Stop: `proofshot stop` — bundles video, screenshots, and error report
 
-# Interactive verification (click through features)
-proofshot verify --pages "/page" --interact
-# Then use agent-browser commands: snapshot -i, click @e1, fill @e2 "text", etc.
-# Finish with: agent-browser record stop
+Key agent-browser commands:
+- `agent-browser snapshot -i` — see interactive elements
+- `agent-browser click @e3` — click an element
+- `agent-browser fill @e2 "text"` — fill a form field
+- `agent-browser screenshot ./proofshot-artifacts/step.png` — capture a moment
 
-# Visual regression
-proofshot diff --baseline ./previous-artifacts
-```
-
-Artifacts are saved to ./proofshot-artifacts/ including video, screenshots, and summary.
+Artifacts saved to ./proofshot-artifacts/ including video, screenshots, errors, and summary.
 ```
 
 ---
 
-## 7. Project Structure
+## 8. Project Structure
 
 ```
 proofshot/
@@ -505,26 +505,29 @@ proofshot/
 │   └── proofshot.ts             # CLI entry point
 ├── src/
 │   ├── index.ts                 # Main exports
-│   ├── cli.ts                   # CLI argument parsing (use commander.js)
+│   ├── cli.ts                   # CLI argument parsing (commander.js)
 │   ├── commands/
 │   │   ├── init.ts              # proofshot init
-│   │   ├── verify.ts            # proofshot verify (main command)
+│   │   ├── start.ts             # proofshot start (begin session)
+│   │   ├── stop.ts              # proofshot stop (end session, bundle proof)
 │   │   ├── diff.ts              # proofshot diff
 │   │   ├── clean.ts             # proofshot clean
 │   │   └── pr.ts                # proofshot pr
 │   ├── server/
 │   │   ├── detect.ts            # Framework detection
-│   │   ├── start.ts             # Dev server startup
+│   │   ├── start.ts             # Dev server startup + error capture
 │   │   └── wait.ts              # Port/text waiting utilities
 │   ├── browser/
 │   │   ├── session.ts           # agent-browser session management
 │   │   ├── navigate.ts          # Page navigation + waiting
 │   │   ├── capture.ts           # Screenshot + recording orchestration
-│   │   └── interact.ts          # Interactive mode bridge
+│   │   └── interact.ts          # Interactive commands (click, fill, etc.)
 │   ├── artifacts/
 │   │   ├── bundle.ts            # Collect all artifacts
-│   │   ├── summary.ts           # Generate SUMMARY.md
+│   │   ├── summary.ts           # Generate SUMMARY.md proof report
 │   │   └── pr-format.ts         # Format for PR description
+│   ├── session/
+│   │   └── state.ts             # Session state management (.session.json)
 │   └── utils/
 │       ├── exec.ts              # Shell command execution
 │       ├── port.ts              # Port detection utilities
@@ -535,50 +538,9 @@ proofshot/
 │   ├── codex/AGENTS.md
 │   └── generic/PROOFSHOT.md
 └── test/
-    ├── detect.test.ts
-    ├── verify.test.ts
     └── fixtures/
-        ├── nextjs-app/
-        └── vite-app/
+        └── sample-app/          # Vite test app with 3 pages
 ```
-
----
-
-## 8. Implementation Plan (Build Order)
-
-### Phase 1 — Core (MVP, ship this first)
-
-**Goal:** `proofshot verify` works end-to-end for a Next.js app with Claude Code.
-
-1. **Project setup** — TypeScript, tsconfig, commander.js, build pipeline
-2. **Config module** — Read/write `proofshot.config.json`
-3. **Framework detection** — Detect Next.js and Vite (cover 80% of users)
-4. **Dev server management** — Start, wait for ready, detect already running
-5. **Browser session** — Wrap agent-browser commands via child_process.execSync
-6. **Verify command** — Orchestrate: start server → open browser → navigate pages → screenshot → record → generate summary
-7. **Summary generator** — Create SUMMARY.md with screenshots and metadata
-8. **CLI entry point** — Wire up commander.js with verify command
-9. **Claude Code skill file** — Write and test with Claude Code
-10. **README** — Installation, quick start, examples
-
-### Phase 2 — Polish
-
-11. **Init command** — Interactive setup with framework detection
-12. **More framework detectors** — Remix, Astro, Angular, Nuxt, SvelteKit
-13. **Diff command** — Visual regression using agent-browser diff
-14. **PR command** — Format artifacts for GitHub PR body
-15. **Skill files for other agents** — Cursor, Codex, Gemini, Copilot
-16. **Clean command** — Remove artifacts
-17. **Error handling** — Graceful failures, helpful messages
-18. **CI mode** — For running in GitHub Actions (no interactive prompts)
-
-### Phase 3 — Growth
-
-19. **Interactive mode** — Let agent click through after initial screenshots
-20. **Custom verification scripts** — User defines flows in a config file
-21. **PR integration** — Auto-attach artifacts to GitHub PR via CLI
-22. **Baseline management** — Save/compare baselines across branches
-23. **npm publish** — Publish to npm, set up CI for releases
 
 ---
 
@@ -586,212 +548,62 @@ proofshot/
 
 ### How We Wrap agent-browser
 
-We do NOT import agent-browser as a library. We call it via CLI (child_process). This is intentional:
+We call agent-browser via CLI (child_process), not as a library import:
 
 ```typescript
 import { execSync } from 'child_process';
 
 function ab(command: string): string {
-  try {
-    return execSync(`agent-browser ${command}`, {
-      encoding: 'utf-8',
-      timeout: 30000,
-      stdio: ['pipe', 'pipe', 'pipe']
-    }).trim();
-  } catch (error) {
-    // Handle errors, extract stderr
-    throw new ProofShotError(`Browser command failed: ${command}`, error);
-  }
-}
-
-// Usage:
-ab('open http://localhost:3000');
-ab('wait --load networkidle');
-ab('record start ./artifacts/session.webm');
-ab('screenshot ./artifacts/page-home.png');
-ab('snapshot -i');  // returns accessibility tree
-ab('record stop');
-ab('close');
-```
-
-Why CLI wrapping:
-- agent-browser's Rust CLI + daemon architecture is designed to be called via CLI
-- No need to maintain compatibility with its internal APIs
-- Same approach the agent itself uses — keeps things simple
-- agent-browser daemon stays warm between calls (fast)
-
-### Video Recording Flow
-
-```typescript
-async function verifyWithRecording(config, pages: string[]) {
-  const outputDir = config.output || './proofshot-artifacts';
-  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-
-  // Start browser + recording
-  ab(`open http://localhost:${config.port}${pages[0]}`);
-  ab(`set viewport ${config.viewport.width} ${config.viewport.height}`);
-  ab(`record start ${outputDir}/session-${timestamp}.webm`);
-
-  const pageResults = [];
-
-  for (const page of pages) {
-    // Navigate
-    ab(`open http://localhost:${config.port}${page}`);
-    ab('wait --load networkidle');
-
-    // Screenshot
-    const screenshotPath = `${outputDir}/page-${slugify(page)}.png`;
-    ab(`screenshot ${screenshotPath} --full`);
-
-    // Get page info
-    const title = ab('get title');
-    const url = ab('get url');
-    const snapshot = ab('snapshot -i');
-    const errors = ab('errors');
-    const consoleOutput = ab('console');
-
-    pageResults.push({
-      page, title, url, screenshotPath,
-      snapshot, errors, consoleOutput
-    });
-  }
-
-  // Stop recording
-  ab('record stop');
-
-  // Close browser
-  ab('close');
-
-  return { pageResults, videoPath: `${outputDir}/session-${timestamp}.webm` };
+  return execSync(`agent-browser ${command}`, {
+    encoding: 'utf-8',
+    timeout: 30000,
+    stdio: ['pipe', 'pipe', 'pipe']
+  }).trim();
 }
 ```
 
-### Dev Server Lifecycle
+### Session Lifecycle
 
-Important: ProofShot starts the dev server but does NOT kill it when done. The agent may want to keep using it. We just track whether WE started it so we can tell the user.
-
-```typescript
-let weStartedServer = false;
-
-async function ensureDevServer(config) {
-  if (await isPortOpen(config.devServer.port)) {
-    return; // Already running, we didn't start it
-  }
-
-  const proc = spawn('sh', ['-c', config.devServer.command], {
-    cwd: process.cwd(),
-    stdio: ['ignore', 'pipe', 'pipe'],
-    detached: true  // Don't die when proofshot exits
-  });
-
-  proc.unref();  // Let it keep running
-  weStartedServer = true;
-
-  // Wait for ready
-  await waitForReady(proc, config.devServer);
-}
 ```
+proofshot start:
+  1. Load config
+  2. Ensure output dir exists
+  3. Start dev server (if needed), piping stderr to server-errors.log
+  4. Open browser via agent-browser
+  5. Start recording via agent-browser
+  6. Write .session.json with metadata
+  7. Print instructions for the agent
+
+[Agent uses agent-browser directly — proofshot is not running]
+
+proofshot stop:
+  1. Read .session.json
+  2. Collect console errors via agent-browser errors
+  3. Collect console output via agent-browser console
+  4. Stop recording via agent-browser record stop
+  5. Close browser via agent-browser close
+  6. Read server-errors.log
+  7. List all screenshots in output dir
+  8. Generate SUMMARY.md
+  9. Delete .session.json
+  10. Print summary to stdout
+```
+
+### Server Error Capture
+
+The dev server's stderr is continuously piped to a log file from the moment `proofshot start` launches it until `proofshot stop` reads it. This catches:
+- Runtime errors (unhandled exceptions)
+- Compilation errors
+- Warning messages
+- Stack traces
+
+The log file is included in the SUMMARY.md and can be fed back to the agent.
 
 ---
 
-## 10. Dependencies
+## 10. Open Questions (To Decide During Build)
 
-```json
-{
-  "name": "proofshot",
-  "version": "0.1.0",
-  "description": "Visual verification for AI coding agents",
-  "bin": {
-    "proofshot": "./dist/bin/proofshot.js"
-  },
-  "dependencies": {
-    "agent-browser": "latest",
-    "commander": "^12.0.0",
-    "chalk": "^5.0.0",
-    "detect-port": "^2.0.0"
-  },
-  "devDependencies": {
-    "typescript": "^5.0.0",
-    "vitest": "^2.0.0",
-    "tsup": "^8.0.0"
-  },
-  "engines": {
-    "node": ">=18"
-  },
-  "license": "MIT",
-  "keywords": [
-    "ai", "coding", "agent", "visual", "testing", "verification",
-    "browser", "automation", "screenshot", "video", "recording",
-    "claude-code", "cursor", "codex", "copilot"
-  ]
-}
-```
-
----
-
-## 11. README (Draft)
-
-```markdown
-# 🎬 ProofShot
-
-**Give any AI coding agent eyes.**
-
-Your agent builds a feature → ProofShot records video proof it works.
-
-Works with: Claude Code · Codex · Cursor · Gemini CLI · GitHub Copilot · Windsurf · any agent that runs bash.
-
-## Why?
-
-Cursor's $200/mo cloud agents can test their own UI and record video demos.
-ProofShot gives you the same capability for free, with any agent.
-
-## Install
-
-\`\`\`bash
-npm install -g proofshot
-\`\`\`
-
-## Setup (10 seconds)
-
-\`\`\`bash
-cd your-project
-proofshot init
-\`\`\`
-
-## Use
-
-Tell your AI agent:
-> "Verify the changes visually with proofshot"
-
-Or run directly:
-\`\`\`bash
-proofshot verify --pages "/dashboard"
-\`\`\`
-
-You get: a video recording, annotated screenshots, and a summary — all in `./proofshot-artifacts/`.
-
-## How It Works
-
-1. Detects your framework (Next.js, Vite, etc.) and starts the dev server
-2. Opens a headless browser (doesn't touch your screen)
-3. Navigates to each page, waits for load
-4. Records video of the entire session
-5. Takes screenshots of each page
-6. Generates a markdown summary
-
-Built on [agent-browser](https://github.com/vercel-labs/agent-browser) by Vercel — fast, context-efficient, works with every AI coding agent.
-
-## License
-
-MIT
-\`\`\`
-
----
-
-## 12. Open Questions (To Decide During Build)
-
-1. **Name:** "ProofShot" is a working name. Alternatives: VerifyAI, AgentEyes, ProofShot, DemoBot, ShowMe. Need to check npm availability.
-2. **agent-browser as dependency vs peer dependency:** If we make it a regular dep, npm install handles everything. If peer dep, user might already have it. Start with regular dep for simplicity.
-3. **Video format:** agent-browser records .webm. Should we also offer .mp4 conversion? (webm plays natively in browsers and GitHub, so probably fine as-is.)
-4. **Interactive mode complexity:** In v1, keep it simple — just navigate and screenshot. Interactive clicking can be Phase 2.
-5. **Monorepo support:** For now, assume single project root. Monorepo detection is Phase 3.
+1. **Name:** "ProofShot" is a working name. Need to check npm availability.
+2. **Video format:** agent-browser records .webm. Plays natively in browsers and GitHub, so fine as-is.
+3. **Monorepo support:** For now, assume single project root.
+4. **Server error log rotation:** For long sessions, the log could get large. Probably fine for v1.
