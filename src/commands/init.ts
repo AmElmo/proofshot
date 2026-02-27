@@ -138,14 +138,14 @@ The description appears in the proof report for the human.
 
 ### Step 2: Drive the browser and test
 
-Use agent-browser commands to navigate, interact, and verify:
+Use proofshot exec to navigate, interact, and verify:
 
 \`\`\`bash
-agent-browser snapshot -i                                    # See interactive elements
-agent-browser open http://localhost:PORT/page                # Navigate to a page
-agent-browser click @e3                                      # Click a button
-agent-browser fill @e2 "test@example.com"                    # Fill a form field
-agent-browser screenshot ./proofshot-artifacts/step-NAME.png # Capture key moments
+proofshot exec snapshot -i                                    # See interactive elements
+proofshot exec open http://localhost:PORT/page                # Navigate to a page
+proofshot exec click @e3                                      # Click a button
+proofshot exec fill @e2 "test@example.com"                    # Fill a form field
+proofshot exec screenshot ./proofshot-artifacts/step-NAME.png # Capture key moments
 \`\`\`
 
 Take screenshots at important moments — these become the visual proof.
@@ -178,14 +178,14 @@ globs: ["**/*.tsx", "**/*.jsx", "**/*.vue", "**/*.svelte", "**/*.html"]
 After modifying UI files, visually verify changes with this workflow:
 
 1. Start session: \`proofshot start --description "what you are verifying"\`
-2. Drive browser: Use \`agent-browser\` commands to navigate, click, fill forms, and take screenshots
+2. Drive browser: Use \`proofshot exec\` commands to navigate, click, fill forms, and take screenshots
 3. Stop session: \`proofshot stop\` to bundle video + screenshots + error report
 
-Key agent-browser commands:
-- \`agent-browser snapshot -i\` — see interactive elements
-- \`agent-browser click @e3\` — click an element
-- \`agent-browser fill @e2 "text"\` — fill a form field
-- \`agent-browser screenshot ./proofshot-artifacts/step.png\` — capture a moment
+Key proofshot exec commands:
+- \`proofshot exec snapshot -i\` — see interactive elements
+- \`proofshot exec click @e3\` — click an element
+- \`proofshot exec fill @e2 "text"\` — fill a form field
+- \`proofshot exec screenshot ./proofshot-artifacts/step.png\` — capture a moment
 `;
   }
 
@@ -195,14 +195,14 @@ Key agent-browser commands:
 After building or modifying UI features, verify with this workflow:
 
 1. Start: \`proofshot start --description "what you are verifying"\`
-2. Test: Use \`agent-browser\` to navigate, click, fill forms, take screenshots
+2. Test: Use \`proofshot exec\` to navigate, click, fill forms, take screenshots
 3. Stop: \`proofshot stop\` — bundles video, screenshots, and error report
 
-Key agent-browser commands:
-- \`agent-browser snapshot -i\` — see interactive elements
-- \`agent-browser click @e3\` — click an element
-- \`agent-browser fill @e2 "text"\` — fill a form field
-- \`agent-browser screenshot ./proofshot-artifacts/step.png\` — capture a moment
+Key proofshot exec commands:
+- \`proofshot exec snapshot -i\` — see interactive elements
+- \`proofshot exec click @e3\` — click an element
+- \`proofshot exec fill @e2 "text"\` — fill a form field
+- \`proofshot exec screenshot ./proofshot-artifacts/step.png\` — capture a moment
 
 Artifacts saved to ./proofshot-artifacts/ including video, screenshots, errors, and summary.
 `;

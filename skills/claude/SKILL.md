@@ -30,14 +30,14 @@ The description appears in the proof report for the human.
 
 ### Step 2: Drive the browser and test
 
-Use agent-browser commands to navigate, interact, and verify:
+Use proofshot exec to navigate, interact, and verify:
 
 ```bash
-agent-browser snapshot -i                                    # See interactive elements
-agent-browser open http://localhost:PORT/page                # Navigate to a page
-agent-browser click @e3                                      # Click a button
-agent-browser fill @e2 "test@example.com"                    # Fill a form field
-agent-browser screenshot ./proofshot-artifacts/step-NAME.png # Capture key moments
+proofshot exec snapshot -i                                    # See interactive elements
+proofshot exec open http://localhost:PORT/page                # Navigate to a page
+proofshot exec click @e3                                      # Click a button
+proofshot exec fill @e2 "test@example.com"                    # Fill a form field
+proofshot exec screenshot ./proofshot-artifacts/step-NAME.png # Capture key moments
 ```
 
 Take screenshots at important moments — these become the visual proof.

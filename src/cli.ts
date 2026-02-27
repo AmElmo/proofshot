@@ -5,6 +5,7 @@ import { stopCommand } from './commands/stop.js';
 import { diffCommand } from './commands/diff.js';
 import { cleanCommand } from './commands/clean.js';
 import { prCommand } from './commands/pr.js';
+import { execCommand } from './commands/exec.js';
 
 export function createCLI(): Command {
   const program = new Command();
@@ -64,6 +65,15 @@ export function createCLI(): Command {
     .description('Format artifacts as a GitHub PR description snippet')
     .action(async () => {
       await prCommand();
+    });
+
+  program
+    .command('exec')
+    .description('Run an agent-browser command with logging (use instead of agent-browser directly)')
+    .argument('<args...>', 'agent-browser command and arguments')
+    .allowUnknownOption()
+    .action(async (args) => {
+      await execCommand(args);
     });
 
   return program;

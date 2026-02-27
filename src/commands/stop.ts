@@ -6,6 +6,7 @@ import { loadConfig } from '../utils/config.js';
 import { closeBrowser, getConsoleErrors, getConsoleOutput } from '../browser/session.js';
 import { stopRecording } from '../browser/capture.js';
 import { loadSession, clearSession } from '../session/state.js';
+import { writeViewer } from '../artifacts/viewer.js';
 
 interface StopOptions {
   noClose?: boolean;
@@ -96,6 +97,16 @@ export async function stopCommand(options: StopOptions): Promise<void> {
   });
   fs.writeFileSync(summaryPath, summary);
 
+  // Step 7.5: Generate interactive viewer (if session log exists)
+  const viewerPath = writeViewer(outputDir, {
+    description: session.description,
+    framework: session.framework,
+    durationSec,
+    videoFilename: path.basename(session.videoPath),
+    consoleErrorCount,
+    serverErrorCount,
+  });
+
   // Step 8: Clear session state
   clearSession(outputDir);
 
@@ -109,6 +120,11 @@ export async function stopCommand(options: StopOptions): Promise<void> {
   }
   console.log(`📸 Screenshots:   ${screenshots.length} captured`);
   console.log(`📝 Summary:       ${chalk.dim(summaryPath)}`);
+  if (viewerPath) {
+    console.log(`🎬 Viewer:        ${chalk.dim(viewerPath)}`);
+  } else {
+    console.log(chalk.dim('Tip: Use "proofshot exec" instead of "agent-browser" to get an interactive timeline viewer.'));
+  }
   console.log('');
   console.log(
     `Console errors:   ${consoleErrorCount === 0 ? chalk.green('0') : chalk.red(String(consoleErrorCount))}`,
