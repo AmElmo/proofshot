@@ -50,6 +50,21 @@ export function generateTimestamp(): string {
 }
 
 /**
+ * Generate a session folder name from timestamp and optional description.
+ * e.g. "2026-02-27_14-22-09_verify-settings-page" or "2026-02-27_14-22-09"
+ */
+export function generateSessionDirName(timestamp: string, description: string | null): string {
+  if (!description) return timestamp;
+  const slug = description
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 40)
+    .replace(/-$/, '');
+  return slug ? `${timestamp}_${slug}` : timestamp;
+}
+
+/**
  * Count interactive elements from a snapshot string.
  */
 export function countInteractiveElements(snapshot: string): {

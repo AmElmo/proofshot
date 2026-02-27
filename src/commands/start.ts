@@ -5,7 +5,7 @@ import { ensureDevServer } from '../server/start.js';
 import { detectFramework } from '../server/detect.js';
 import { openBrowser } from '../browser/session.js';
 import { startRecording } from '../browser/capture.js';
-import { ensureOutputDir, generateTimestamp } from '../artifacts/bundle.js';
+import { ensureOutputDir, generateTimestamp, generateSessionDirName } from '../artifacts/bundle.js';
 import { saveSession, hasActiveSession } from '../session/state.js';
 
 interface StartOptions {
@@ -37,12 +37,17 @@ export async function startCommand(options: StartOptions): Promise<void> {
     return;
   }
 
-  // Ensure output directory
+  // Ensure root output directory
   ensureOutputDir(outputDir);
 
-  // Paths for artifacts
-  const videoPath = path.join(outputDir, `session-${timestamp}.webm`);
-  const serverErrorLog = path.join(outputDir, 'server-errors.log');
+  // Create per-session subfolder
+  const sessionDirName = generateSessionDirName(timestamp, options.description || null);
+  const sessionDir = path.join(outputDir, sessionDirName);
+  ensureOutputDir(sessionDir);
+
+  // Paths for artifacts (all inside session subfolder)
+  const videoPath = path.join(sessionDir, `session.webm`);
+  const serverErrorLog = path.join(sessionDir, 'server-errors.log');
 
   // Step 1: Start dev server with error capture
   let serverResult;
@@ -96,6 +101,7 @@ export async function startCommand(options: StartOptions): Promise<void> {
     startedAt: new Date().toISOString(),
     description: options.description || null,
     outputDir,
+    sessionDir,
     videoPath,
     serverErrorLog,
     port: config.devServer.port,
@@ -117,11 +123,11 @@ export async function startCommand(options: StartOptions): Promise<void> {
   }
 
   console.log('');
-  console.log(chalk.dim('Use agent-browser to navigate and test:'));
-  console.log(chalk.dim('  agent-browser snapshot -i                                # See interactive elements'));
-  console.log(chalk.dim('  agent-browser click @e3                                  # Click an element'));
-  console.log(chalk.dim('  agent-browser fill @e2 "text"                            # Fill a form field'));
-  console.log(chalk.dim(`  agent-browser screenshot ${outputDir}/step-NAME.png      # Capture a moment`));
+  console.log(chalk.dim('Use proofshot exec to navigate and test:'));
+  console.log(chalk.dim('  proofshot exec snapshot -i            # See interactive elements'));
+  console.log(chalk.dim('  proofshot exec click @e3              # Click an element'));
+  console.log(chalk.dim('  proofshot exec fill @e2 "text"        # Fill a form field'));
+  console.log(chalk.dim('  proofshot exec screenshot step.png    # Capture a moment'));
   console.log('');
   console.log(`When done, run: ${chalk.white('proofshot stop')}`);
 }

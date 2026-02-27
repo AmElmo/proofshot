@@ -145,7 +145,7 @@ proofshot exec snapshot -i                                    # See interactive 
 proofshot exec open http://localhost:PORT/page                # Navigate to a page
 proofshot exec click @e3                                      # Click a button
 proofshot exec fill @e2 "test@example.com"                    # Fill a form field
-proofshot exec screenshot ./proofshot-artifacts/step-NAME.png # Capture key moments
+proofshot exec screenshot step-NAME.png                       # Capture key moments
 \`\`\`
 
 Take screenshots at important moments — these become the visual proof.
@@ -185,7 +185,7 @@ Key proofshot exec commands:
 - \`proofshot exec snapshot -i\` — see interactive elements
 - \`proofshot exec click @e3\` — click an element
 - \`proofshot exec fill @e2 "text"\` — fill a form field
-- \`proofshot exec screenshot ./proofshot-artifacts/step.png\` — capture a moment
+- \`proofshot exec screenshot step.png\` — capture a moment
 `;
   }
 
@@ -202,7 +202,7 @@ Key proofshot exec commands:
 - \`proofshot exec snapshot -i\` — see interactive elements
 - \`proofshot exec click @e3\` — click an element
 - \`proofshot exec fill @e2 "text"\` — fill a form field
-- \`proofshot exec screenshot ./proofshot-artifacts/step.png\` — capture a moment
+- \`proofshot exec screenshot step.png\` — capture a moment
 
 Artifacts saved to ./proofshot-artifacts/ including video, screenshots, errors, and summary.
 `;

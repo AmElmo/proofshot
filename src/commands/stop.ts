@@ -7,6 +7,7 @@ import { closeBrowser, getConsoleErrors, getConsoleOutput } from '../browser/ses
 import { stopRecording } from '../browser/capture.js';
 import { loadSession, clearSession } from '../session/state.js';
 import { writeViewer } from '../artifacts/viewer.js';
+import { loadSessionLog } from './exec.js';
 
 interface StopOptions {
   noClose?: boolean;
@@ -58,14 +59,18 @@ export async function stopCommand(options: StopOptions): Promise<void> {
     serverErrors = fs.readFileSync(session.serverErrorLog, 'utf-8');
   }
 
-  // Step 5: Find all screenshots in output dir
-  const screenshots = fs.existsSync(outputDir)
-    ? fs.readdirSync(outputDir).filter((f) => f.endsWith('.png'))
+  // Use session subfolder for all artifacts
+  const sessionDir = session.sessionDir;
+
+  // Step 5: Find all screenshots in session dir
+  const screenshots = fs.existsSync(sessionDir)
+    ? fs.readdirSync(sessionDir).filter((f) => f.endsWith('.png'))
     : [];
 
   // Step 5.5: Trim video dead time
-  if (fs.existsSync(session.videoPath) && screenshots.length > 0) {
-    trimVideo(session.videoPath, screenshots, outputDir, startTime);
+  if (fs.existsSync(session.videoPath)) {
+    const sessionLog = loadSessionLog(sessionDir);
+    trimVideo(session.videoPath, screenshots, sessionDir, startTime, sessionLog);
   }
 
   // Step 6: Count errors
@@ -81,7 +86,7 @@ export async function stopCommand(options: StopOptions): Promise<void> {
   const serverErrorCount = serverErrorLines.length;
 
   // Step 7: Generate SUMMARY.md
-  const summaryPath = path.join(outputDir, 'SUMMARY.md');
+  const summaryPath = path.join(sessionDir, 'SUMMARY.md');
   const summary = generateProofSummary({
     description: session.description,
     framework: session.framework,
@@ -93,12 +98,12 @@ export async function stopCommand(options: StopOptions): Promise<void> {
     serverErrors,
     serverErrorCount,
     durationSec,
-    outputDir,
+    outputDir: sessionDir,
   });
   fs.writeFileSync(summaryPath, summary);
 
   // Step 7.5: Generate interactive viewer (if session log exists)
-  const viewerPath = writeViewer(outputDir, {
+  const viewerPath = writeViewer(sessionDir, {
     description: session.description,
     framework: session.framework,
     durationSec,
@@ -134,7 +139,7 @@ export async function stopCommand(options: StopOptions): Promise<void> {
   );
   console.log(`Duration:         ${durationSec} seconds`);
   console.log('');
-  console.log(`Proof artifacts saved to ${chalk.dim(outputDir)}`);
+  console.log(`Proof artifacts saved to ${chalk.dim(sessionDir)}`);
 
   // If errors were found, print them for immediate feedback
   if (consoleErrorCount > 0) {
@@ -248,36 +253,52 @@ Full session recording: [${relativeVideo}](./${relativeVideo}) (${data.durationS
 
 /**
  * Trim dead time from the beginning and end of the session video.
- * Uses screenshot file creation timestamps to find the active portion,
- * then trims with ffmpeg if available.
+ *
+ * Prefers session log timestamps (from `proofshot exec`) when available — these
+ * give exact relative times for every action. Falls back to screenshot file
+ * birth times when there's no session log.
+ *
+ * Buffers: 5s before first action, 3s after last action.
  */
 function trimVideo(
   videoPath: string,
   screenshots: string[],
   outputDir: string,
   recordingStartMs: number,
+  sessionLog: import('./exec.js').SessionLogEntry[],
 ): void {
-  // Get file birth times for all screenshots
-  const timestamps = screenshots
-    .map((f) => {
-      try {
-        return fs.statSync(path.join(outputDir, f)).birthtimeMs;
-      } catch {
-        return null;
-      }
-    })
-    .filter((t): t is number => t !== null);
+  let firstActionSec: number | null = null;
+  let lastActionSec: number | null = null;
 
-  if (timestamps.length === 0) return;
+  // Prefer session log timestamps (precise, not affected by stale files)
+  if (sessionLog.length > 0) {
+    firstActionSec = sessionLog[0].relativeTimeSec;
+    lastActionSec = sessionLog[sessionLog.length - 1].relativeTimeSec;
+  } else if (screenshots.length > 0) {
+    // Fallback: use screenshot file birth times (only files created AFTER session start)
+    const timestamps = screenshots
+      .map((f) => {
+        try {
+          return fs.statSync(path.join(outputDir, f)).birthtimeMs;
+        } catch {
+          return null;
+        }
+      })
+      .filter((t): t is number => t !== null && t >= recordingStartMs);
 
-  const firstActionMs = Math.min(...timestamps);
-  const lastActionMs = Math.max(...timestamps);
+    if (timestamps.length === 0) return;
 
-  // Buffer: 2s for multiple screenshots, 5s for a single screenshot
-  const buffer = timestamps.length === 1 ? 5 : 2;
+    firstActionSec = (Math.min(...timestamps) - recordingStartMs) / 1000;
+    lastActionSec = (Math.max(...timestamps) - recordingStartMs) / 1000;
+  }
 
-  const trimStartSec = Math.max(0, (firstActionMs - recordingStartMs) / 1000 - buffer);
-  const trimEndSec = (lastActionMs - recordingStartMs) / 1000 + buffer;
+  if (firstActionSec === null || lastActionSec === null) return;
+
+  const BUFFER_BEFORE = 5;
+  const BUFFER_AFTER = 3;
+
+  const trimStartSec = Math.max(0, firstActionSec - BUFFER_BEFORE);
+  const trimEndSec = lastActionSec + BUFFER_AFTER;
 
   // Don't trim very short videos
   if (trimEndSec - trimStartSec < 5) return;

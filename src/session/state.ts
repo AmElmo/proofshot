@@ -7,6 +7,7 @@ export interface SessionState {
   startedAt: string;
   description: string | null;
   outputDir: string;
+  sessionDir: string;
   videoPath: string;
   serverErrorLog: string;
   port: number;
