@@ -14,7 +14,7 @@ echo ""
 
 # Step 2: Start session
 echo "--- Step 2: proofshot start ---"
-$PROOFSHOT start --description "Verify all 3 pages load: home, dashboard, settings"
+$PROOFSHOT start --run "npm run dev" --port 5173 --description "Verify all 3 pages load: home, dashboard, settings"
 echo ""
 
 # Step 3: Agent drives the browser

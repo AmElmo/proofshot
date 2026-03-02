@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import { spawn } from 'child_process';
-import { waitForPort } from '../utils/port.js';
+import { isPortOpen, waitForPort } from '../utils/port.js';
 
 export interface ServerStartResult {
   alreadyRunning: boolean;
@@ -18,6 +18,14 @@ export async function ensureDevServer(
   startupTimeout: number,
   logPath: string,
 ): Promise<ServerStartResult> {
+  // Fail fast if something is already listening on the port
+  if (await isPortOpen(port)) {
+    throw new Error(
+      `Port ${port} is already in use. Either stop the existing server ` +
+        `or omit --run to use the running server.`,
+    );
+  }
+
   const proc = spawn('sh', ['-c', command], {
     cwd: process.cwd(),
     stdio: ['ignore', 'pipe', 'pipe'],
