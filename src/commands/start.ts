@@ -95,7 +95,7 @@ export async function startCommand(options: StartOptions): Promise<void> {
     console.log(chalk.yellow('⚠') + ' Could not start recording, continuing without video');
   }
 
-  // Step 4: Save session state
+  // Step 4: Save session state (including viewport for overlay coordinate scaling)
   const framework = detectFramework();
   saveSession({
     startedAt: new Date().toISOString(),
@@ -107,6 +107,7 @@ export async function startCommand(options: StartOptions): Promise<void> {
     port: config.devServer.port,
     framework: framework?.name || 'Unknown',
     serverAlreadyRunning: serverResult?.alreadyRunning ?? true,
+    viewport: { width: config.viewport.width, height: config.viewport.height },
   });
 
   // Step 5: Print instructions for the agent

@@ -13,6 +13,7 @@ export interface SessionState {
   port: number;
   framework: string;
   serverAlreadyRunning: boolean;
+  viewport?: { width: number; height: number };
 }
 
 /**
