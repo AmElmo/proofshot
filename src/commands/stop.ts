@@ -78,6 +78,12 @@ export async function stopCommand(options: StopOptions): Promise<void> {
   let trimOffsetSec = 0;
   if (fs.existsSync(session.videoPath)) {
     trimOffsetSec = trimVideo(session.videoPath, screenshots, sessionDir, startTime, sessionLog);
+  } else if (session.recordingActive) {
+    console.log(
+      chalk.yellow('⚠') +
+        ' Recording was active but no video file was produced.\n' +
+        chalk.dim('  The screencast may have been interrupted. Screenshots and logs are still saved.'),
+    );
   }
 
   // Step 6: Count errors

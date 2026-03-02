@@ -13,6 +13,7 @@ export interface SessionState {
   port: number;
   serverCommand: string | null;
   serverAlreadyRunning: boolean;
+  recordingActive: boolean;
   viewport?: { width: number; height: number };
 }
 

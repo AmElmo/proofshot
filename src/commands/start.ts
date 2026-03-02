@@ -80,11 +80,41 @@ export async function startCommand(options: StartOptions): Promise<void> {
     process.exit(1);
   }
 
-  try {
-    startRecording(videoPath);
-    console.log(chalk.green('✓') + ' Recording started');
-  } catch {
-    console.log(chalk.yellow('⚠') + ' Could not start recording, continuing without video');
+  // Recording is mandatory — retry up to 3 times for transient failures (browser not ready, etc.)
+  const RECORDING_RETRIES = 3;
+  const RETRY_DELAY_MS = 2000;
+  let recordingStarted = false;
+  let lastError: any;
+
+  for (let attempt = 1; attempt <= RECORDING_RETRIES; attempt++) {
+    try {
+      startRecording(videoPath);
+      recordingStarted = true;
+      console.log(chalk.green('✓') + ' Recording started');
+      break;
+    } catch (error: any) {
+      lastError = error;
+      if (attempt < RECORDING_RETRIES) {
+        console.log(
+          chalk.yellow('⚠') +
+            ` Recording failed (attempt ${attempt}/${RECORDING_RETRIES}), retrying in ${RETRY_DELAY_MS / 1000}s...`,
+        );
+        await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
+      }
+    }
+  }
+
+  if (!recordingStarted) {
+    console.error(
+      chalk.red('✗') +
+        ` Failed to start recording after ${RECORDING_RETRIES} attempts: ${lastError?.message}\n` +
+        chalk.dim('Recording is required — ProofShot cannot proceed without video capture.\n') +
+        chalk.dim('Troubleshooting:\n') +
+        chalk.dim('  1. Make sure agent-browser is installed and running\n') +
+        chalk.dim('  2. Try "proofshot clean" then re-run "proofshot start"\n') +
+        chalk.dim('  3. If the port was already in use, stop the old server first'),
+    );
+    process.exit(1);
   }
 
   saveSession({
@@ -97,6 +127,7 @@ export async function startCommand(options: StartOptions): Promise<void> {
     port: config.devServer.port,
     serverCommand: options.run || null,
     serverAlreadyRunning,
+    recordingActive: true,
     viewport: { width: config.viewport.width, height: config.viewport.height },
   });
 
