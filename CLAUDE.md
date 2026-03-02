@@ -71,6 +71,18 @@ Edit `src/utils/error-patterns.ts` — add a new entry to the `PATTERNS` array:
 | `SUMMARY.md` | `stop` | Markdown report with errors and screenshots |
 | `viewer.html` | `stop` | Standalone HTML viewer with video + timeline |
 
+## Versioning & releases
+
+- **Automatic** — merging to `main` triggers semantic-release via GitHub Actions
+- **Never manually edit `version` in package.json** — semantic-release handles it
+- **Conventional Commits** determine the version bump:
+  - `feat:` → minor (0.1.0 → 0.2.0)
+  - `fix:`, `perf:`, `refactor:` → patch (0.2.0 → 0.2.1)
+  - `feat!:` or `BREAKING CHANGE:` footer → major (0.2.1 → 1.0.0)
+  - `docs:`, `style:`, `chore:`, `test:`, `ci:` → no release
+- **Commit format:** `type(scope): description` — e.g. `feat(cli): add diff command`, `fix(viewer): correct timestamp offset`
+- **Branch naming:** `AmElmo/<descriptive-name>`
+
 ## Gotchas
 
 - `proofshot exec` has special shell quoting logic (`buildShellCommand` in exec.ts) — `eval` commands get single-quoted, args with special chars get auto-quoted
