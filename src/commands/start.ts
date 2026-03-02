@@ -97,6 +97,7 @@ export async function startCommand(options: StartOptions): Promise<void> {
     port: config.devServer.port,
     serverCommand: options.run || null,
     serverAlreadyRunning,
+    viewport: { width: config.viewport.width, height: config.viewport.height },
   });
 
   console.log('');
