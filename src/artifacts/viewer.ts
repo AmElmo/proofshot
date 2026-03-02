@@ -99,8 +99,38 @@ export function generateViewer(data: ViewerData): string {
 
   const hasVideo = !!data.videoFilename;
 
+  // Build marker data for the scrub bar
+  const markersJson = JSON.stringify(
+    data.entries.map((entry, i) => ({
+      time: entry.relativeTimeSec,
+      icon: getActionIcon(entry.action),
+      action: entry.action,
+      index: i,
+    })),
+  );
+
+  const scrubBarHtml = hasVideo
+    ? `<div class="scrub-bar">
+        <div class="scrub-track" id="scrubTrack">
+          <div class="scrub-progress" id="scrubProgress"></div>
+          <div class="scrub-playhead" id="scrubPlayhead"></div>
+          ${data.entries
+            .map((entry, i) => {
+              const pct = data.durationSec > 0 ? (entry.relativeTimeSec / data.durationSec) * 100 : 0;
+              const icon = getActionIcon(entry.action);
+              return `<div class="scrub-marker" data-index="${i}" data-time="${entry.relativeTimeSec}" style="left:${pct}%"><span class="scrub-marker-icon">${icon}</span></div>`;
+            })
+            .join('\n          ')}
+        </div>
+        <div class="scrub-tooltip" id="scrubTooltip"></div>
+      </div>`
+    : '';
+
   const videoPanelHtml = hasVideo
-    ? `<video src="./${escapeHtml(data.videoFilename!)}" controls></video>`
+    ? `<div class="video-wrapper">
+        <video src="./${escapeHtml(data.videoFilename!)}" controls></video>
+        ${scrubBarHtml}
+      </div>`
     : `<div class="no-video"><p>No video recorded</p><p class="no-video-hint">Screenshots are available in the timeline</p></div>`;
 
   return `<!DOCTYPE html>
@@ -198,13 +228,129 @@ export function generateViewer(data: ViewerData): string {
       align-items: flex-start;
       justify-content: center;
       background: #0d1117;
+      overflow: hidden;
+    }
+
+    .video-wrapper {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
     }
 
     .video-panel video {
       width: 100%;
-      max-height: 100%;
-      border-radius: 8px;
+      max-height: calc(100% - 40px);
+      border-radius: 8px 8px 0 0;
       background: #000;
+    }
+
+    /* Scrub bar */
+    .scrub-bar {
+      position: relative;
+      width: 100%;
+      padding: 8px 0 6px;
+      background: #161b22;
+      border-radius: 0 0 8px 8px;
+      border-top: 1px solid #21262d;
+    }
+
+    .scrub-track {
+      position: relative;
+      height: 6px;
+      background: #21262d;
+      border-radius: 3px;
+      margin: 0 16px;
+      cursor: pointer;
+    }
+
+    .scrub-track:hover {
+      height: 8px;
+      margin-top: -1px;
+    }
+
+    .scrub-progress {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      background: #58a6ff;
+      border-radius: 3px;
+      pointer-events: none;
+      transition: width 0.1s linear;
+    }
+
+    .scrub-playhead {
+      position: absolute;
+      top: 50%;
+      width: 14px;
+      height: 14px;
+      background: #f0f6fc;
+      border: 2px solid #58a6ff;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      z-index: 3;
+      box-shadow: 0 0 4px rgba(0,0,0,0.4);
+      transition: left 0.1s linear;
+    }
+
+    .scrub-marker {
+      position: absolute;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 2;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .scrub-marker-icon {
+      font-size: 14px;
+      width: 22px;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #21262d;
+      border: 1.5px solid #30363d;
+      border-radius: 50%;
+      transition: all 0.15s;
+    }
+
+    .scrub-marker:hover .scrub-marker-icon,
+    .scrub-marker.active .scrub-marker-icon {
+      background: #1f2a37;
+      border-color: #58a6ff;
+      transform: scale(1.25);
+    }
+
+    .scrub-tooltip {
+      display: none;
+      position: absolute;
+      bottom: 100%;
+      left: 0;
+      margin-bottom: 8px;
+      padding: 6px 10px;
+      background: #1c2128;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      font-size: 12px;
+      color: #c9d1d9;
+      white-space: nowrap;
+      pointer-events: none;
+      z-index: 20;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    }
+
+    .scrub-tooltip .tooltip-icon {
+      margin-right: 4px;
+    }
+
+    .scrub-tooltip .tooltip-time {
+      color: #58a6ff;
+      margin-left: 6px;
+      font-variant-numeric: tabular-nums;
     }
 
     .no-video {
@@ -369,6 +515,15 @@ ${stepsHtml}
     const video = document.querySelector('video');
     const steps = document.querySelectorAll('.step');
     const timelinePanel = document.querySelector('.timeline-panel');
+    const duration = ${data.durationSec};
+    const markers = ${markersJson};
+
+    // Scrub bar elements
+    const scrubTrack = document.getElementById('scrubTrack');
+    const scrubProgress = document.getElementById('scrubProgress');
+    const scrubPlayhead = document.getElementById('scrubPlayhead');
+    const scrubTooltip = document.getElementById('scrubTooltip');
+    const scrubMarkers = document.querySelectorAll('.scrub-marker');
 
     function seekTo(time) {
       if (video) {
@@ -376,6 +531,92 @@ ${stepsHtml}
         video.play();
       }
     }
+
+    function formatTimeFn(sec) {
+      const m = Math.floor(sec / 60);
+      const s = Math.floor(sec % 60);
+      return m + ':' + String(s).padStart(2, '0');
+    }
+
+    // Update scrub bar position
+    function updateScrubBar(t) {
+      if (!scrubTrack || duration <= 0) return;
+      const pct = Math.min((t / duration) * 100, 100);
+      if (scrubProgress) scrubProgress.style.width = pct + '%';
+      if (scrubPlayhead) scrubPlayhead.style.left = pct + '%';
+    }
+
+    // Highlight active marker on scrub bar
+    function updateActiveMarker(t) {
+      scrubMarkers.forEach(m => {
+        const mTime = parseFloat(m.dataset.time);
+        const idx = parseInt(m.dataset.index);
+        const nextMarker = markers[idx + 1];
+        const nextTime = nextMarker ? nextMarker.time : Infinity;
+        m.classList.toggle('active', t >= mTime && t < nextTime);
+      });
+    }
+
+    // Scrub bar: click track to seek
+    if (scrubTrack && video) {
+      let isDragging = false;
+
+      function getTimeFromEvent(e) {
+        const rect = scrubTrack.getBoundingClientRect();
+        const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+        return pct * duration;
+      }
+
+      scrubTrack.addEventListener('mousedown', (e) => {
+        if (e.target.closest('.scrub-marker')) return;
+        isDragging = true;
+        const t = getTimeFromEvent(e);
+        video.currentTime = t;
+        updateScrubBar(t);
+      });
+
+      document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        const t = getTimeFromEvent(e);
+        video.currentTime = t;
+        updateScrubBar(t);
+      });
+
+      document.addEventListener('mouseup', () => {
+        if (isDragging) {
+          isDragging = false;
+          video.play();
+        }
+      });
+    }
+
+    // Scrub bar: marker hover tooltips
+    scrubMarkers.forEach(marker => {
+      marker.addEventListener('mouseenter', (e) => {
+        const idx = parseInt(marker.dataset.index);
+        const m = markers[idx];
+        if (!m || !scrubTooltip) return;
+        const action = m.action.length > 40 ? m.action.slice(0, 40) + '\u2026' : m.action;
+        scrubTooltip.innerHTML = '<span class="tooltip-icon">' + m.icon + '</span>' + action + '<span class="tooltip-time">' + formatTimeFn(m.time) + '</span>';
+        scrubTooltip.style.display = 'block';
+
+        const trackRect = scrubTrack.getBoundingClientRect();
+        const markerRect = marker.getBoundingClientRect();
+        const tooltipLeft = markerRect.left - trackRect.left + markerRect.width / 2;
+        scrubTooltip.style.left = tooltipLeft + 'px';
+        scrubTooltip.style.transform = 'translateX(-50%)';
+      });
+
+      marker.addEventListener('mouseleave', () => {
+        if (scrubTooltip) scrubTooltip.style.display = 'none';
+      });
+
+      marker.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const t = parseFloat(marker.dataset.time);
+        seekTo(t);
+      });
+    });
 
     // Highlight active step as video plays (only if video exists)
     if (video) {
@@ -401,8 +642,38 @@ ${stepsHtml}
             activeStep.scrollIntoView({ block: 'center', behavior: 'smooth' });
           }
         }
+
+        // Update scrub bar + markers
+        updateScrubBar(t);
+        updateActiveMarker(t);
       });
     }
+
+    // Keyboard navigation: left/right arrows jump between steps
+    document.addEventListener('keydown', (e) => {
+      if (!video || !markers.length) return;
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        e.preventDefault();
+        const t = video.currentTime;
+        let targetIdx = -1;
+
+        if (e.key === 'ArrowRight') {
+          // Find next marker after current time
+          for (let i = 0; i < markers.length; i++) {
+            if (markers[i].time > t + 0.5) { targetIdx = i; break; }
+          }
+          if (targetIdx === -1) targetIdx = markers.length - 1;
+        } else {
+          // Find previous marker before current time
+          for (let i = markers.length - 1; i >= 0; i--) {
+            if (markers[i].time < t - 0.5) { targetIdx = i; break; }
+          }
+          if (targetIdx === -1) targetIdx = 0;
+        }
+
+        seekTo(markers[targetIdx].time);
+      }
+    });
   </script>
 </body>
 </html>`;
