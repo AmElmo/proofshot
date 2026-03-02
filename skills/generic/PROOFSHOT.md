@@ -4,7 +4,8 @@ ProofShot is an open-source, agent-agnostic CLI that lets any AI coding agent ve
 
 After building or modifying UI features, verify with this workflow:
 
-1. Start: `proofshot start --description "what you are verifying"`
+1. Start: `proofshot start --run "your-dev-command" --port PORT --description "what you are verifying"`
+   If the server is already running, omit --run.
 2. Test: Use `proofshot exec` to navigate, click, fill forms, take screenshots
 3. Stop: `proofshot stop` — bundles video, screenshots, and error report
 

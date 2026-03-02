@@ -1,7 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import chalk from 'chalk';
-import { detectFramework } from '../server/detect.js';
 import { writeConfig, configExists, type ProofShotConfig } from '../utils/config.js';
 
 interface InitOptions {
@@ -130,10 +129,11 @@ Use ProofShot after:
 ### Step 1: Start the session
 
 \`\`\`bash
-proofshot start --description "what you are about to verify"
+proofshot start --run "your-dev-command" --port PORT --description "what you are about to verify"
 \`\`\`
 
-This starts the dev server, opens a headless browser, and begins recording.
+This opens a browser and begins recording. If --run is provided, it also starts and captures your dev server output.
+If the server is already running, omit --run (no server logs captured).
 The description appears in the proof report for the human.
 
 ### Step 2: Drive the browser and test
@@ -177,7 +177,8 @@ globs: ["**/*.tsx", "**/*.jsx", "**/*.vue", "**/*.svelte", "**/*.html"]
 
 After modifying UI files, visually verify changes with this workflow:
 
-1. Start session: \`proofshot start --description "what you are verifying"\`
+1. Start session: \`proofshot start --run "your-dev-command" --port PORT --description "what you are verifying"\`
+   If the server is already running, omit --run.
 2. Drive browser: Use \`proofshot exec\` commands to navigate, click, fill forms, and take screenshots
 3. Stop session: \`proofshot stop\` to bundle video + screenshots + error report
 
@@ -194,7 +195,8 @@ Key proofshot exec commands:
 
 After building or modifying UI features, verify with this workflow:
 
-1. Start: \`proofshot start --description "what you are verifying"\`
+1. Start: \`proofshot start --run "your-dev-command" --port PORT --description "what you are verifying"\`
+   If the server is already running, omit --run.
 2. Test: Use \`proofshot exec\` to navigate, click, fill forms, take screenshots
 3. Stop: \`proofshot stop\` — bundles video, screenshots, and error report
 
@@ -219,23 +221,10 @@ export async function initCommand(options: InitOptions): Promise<void> {
     return;
   }
 
-  // Detect framework
-  const framework = detectFramework();
-  if (!framework) {
-    console.log(
-      chalk.yellow(
-        'Could not detect framework. No package.json found or no recognized framework.',
-      ),
-    );
-    console.log(chalk.dim('Creating config with defaults. Edit proofshot.config.json to customize.'));
-  }
-
-  // Build config
+  // Build config with defaults
   const config: ProofShotConfig = {
     devServer: {
-      command: framework?.command || 'npm run dev',
-      port: framework?.port || 3000,
-      waitForText: framework?.waitForText || null,
+      port: 3000,
       startupTimeout: 30000,
     },
     output: './proofshot-artifacts',
@@ -248,8 +237,7 @@ export async function initCommand(options: InitOptions): Promise<void> {
   const configPath = writeConfig(config, cwd);
   console.log(
     chalk.green('✓') +
-      ` Created ${chalk.bold('proofshot.config.json')}` +
-      (framework ? ` (detected ${chalk.cyan(framework.name)})` : ''),
+      ` Created ${chalk.bold('proofshot.config.json')}`,
   );
 
   // Detect/select agent and install skill file

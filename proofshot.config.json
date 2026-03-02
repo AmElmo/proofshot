@@ -1,8 +1,6 @@
 {
   "devServer": {
-    "command": "npm run dev",
     "port": 3000,
-    "waitForText": null,
     "startupTimeout": 30000
   },
   "output": "./proofshot-artifacts",

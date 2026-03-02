@@ -4,7 +4,7 @@ import type { SessionLogEntry } from '../commands/exec.js';
 
 interface ViewerData {
   description: string | null;
-  framework: string;
+  serverCommand: string | null;
   durationSec: number;
   videoFilename: string | null;
   entries: SessionLogEntry[];
@@ -350,7 +350,7 @@ export function generateViewer(data: ViewerData): string {
   <div class="header">
     <h1><svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" style="width:24px;height:24px;vertical-align:middle;margin-right:8px"><path d="M8,24 L8,12 C8,8 12,8 12,8 L24,8" fill="none" stroke="#6366F1" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><path d="M40,8 L52,8 C56,8 56,12 56,12 L56,24" fill="none" stroke="#6366F1" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><path d="M8,40 L8,52 C8,56 12,56 12,56 L24,56" fill="none" stroke="#6366F1" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><path d="M40,56 L52,56 C56,56 56,52 56,52 L56,40" fill="none" stroke="#6366F1" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><path d="M20,34 L28,42 L44,22" fill="none" stroke="#22D3EE" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>ProofShot Verification</h1>
     ${descriptionHtml}
-    <p class="meta">${escapeHtml(date)} &middot; ${escapeHtml(data.framework)} &middot; ${data.durationSec}s</p>
+    <p class="meta">${escapeHtml(date)} &middot; ${data.durationSec}s</p>
     <div class="error-badges">
       <span class="error-badge ${consoleBadgeClass}"><span class="badge-dot"></span>${consoleBadgeText}</span>
       <span class="error-badge ${serverBadgeClass}"><span class="badge-dot"></span>${serverBadgeText}</span>

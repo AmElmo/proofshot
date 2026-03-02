@@ -33,15 +33,15 @@ cd your-project
 proofshot init
 ```
 
-This detects your framework (Next.js, Vite, Remix, etc.), creates a config file, and installs a skill file that teaches your AI agent the verification workflow.
+This creates a config file and installs a skill file that teaches your AI agent the verification workflow.
 
 ## How It Works
 
 ProofShot uses a **start / test / stop** workflow:
 
 ```bash
-# 1. Start — dev server, browser, recording, error capture
-proofshot start --description "Login form: fill credentials, submit, verify redirect"
+# 1. Start — browser, recording, error capture (--run starts and captures your dev server)
+proofshot start --run "npm run dev" --port 3000 --description "Login form: fill credentials, submit, verify redirect"
 
 # 2. Test — the AI agent drives the browser
 agent-browser snapshot -i                                    # See interactive elements
@@ -62,7 +62,7 @@ The skill file teaches the agent this workflow automatically. The user just says
 
 ### `proofshot init`
 
-Detects framework, creates config, installs skill file.
+Creates config and installs skill file.
 
 ```bash
 proofshot init
@@ -72,15 +72,15 @@ proofshot init --force           # Overwrite existing config
 
 ### `proofshot start`
 
-Start a verification session: dev server, browser, recording, error capture.
+Start a verification session: browser, recording, error capture.
 
 ```bash
-proofshot start                                              # Basic start
-proofshot start --description "what is being verified"       # With description for report
-proofshot start --url http://localhost:3000/login             # Open specific URL
-proofshot start --port 3001                                  # Custom port
-proofshot start --no-server                                  # Assume dev server is running
-proofshot start --headed                                     # Show browser window
+proofshot start                                                          # Server already running
+proofshot start --run "npm run dev" --port 3000                          # Start and capture server
+proofshot start --run "npm run dev" --port 3000 --description "what"     # With description for report
+proofshot start --url http://localhost:3000/login                        # Open specific URL
+proofshot start --port 3001                                              # Custom port
+proofshot start --headed                                                 # Show browser window
 ```
 
 ### `proofshot stop`
@@ -124,9 +124,7 @@ proofshot clean
 ```json
 {
   "devServer": {
-    "command": "npm run dev",
     "port": 3000,
-    "waitForText": "ready on",
     "startupTimeout": 30000
   },
   "output": "./proofshot-artifacts",
@@ -135,19 +133,7 @@ proofshot clean
 }
 ```
 
-## Supported Frameworks
-
-Auto-detected from `package.json`:
-
-- Next.js (port 3000)
-- Vite / Vue / React+Vite / Svelte (port 5173)
-- Remix (port 3000)
-- Astro (port 4321)
-- Create React App (port 3000)
-- Nuxt (port 3000)
-- SvelteKit (port 5173)
-- Angular (port 4200)
-- Any project with a `dev` script (port 3000)
+The dev server command is provided at runtime via `--run`, not in the config. If `--run` is omitted, ProofShot assumes the server is already running.
 
 ## Supported Agents
 

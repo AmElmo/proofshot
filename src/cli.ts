@@ -17,7 +17,7 @@ export function createCLI(): Command {
 
   program
     .command('init')
-    .description('Detect framework, create config, and install skill file')
+    .description('Create config and install skill file')
     .option('--agent <agent>', 'Agent type: claude, codex, cursor, gemini, copilot, generic')
     .option('--force', 'Overwrite existing config')
     .action(async (options) => {
@@ -26,10 +26,10 @@ export function createCLI(): Command {
 
   program
     .command('start')
-    .description('Start a verification session: dev server, browser, recording, error capture')
+    .description('Start a verification session: browser, recording, error capture')
     .option('--description <text>', 'What is being verified (included in the proof report)')
     .option('--port <port>', 'Override detected port', parseInt)
-    .option('--no-server', 'Don\'t start dev server, assume it\'s running')
+    .option('--run <command>', 'Start this command and capture its logs')
     .option('--headed', 'Show browser window for debugging')
     .option('--output <dir>', 'Custom output directory')
     .option('--url <url>', 'Open this URL instead of the root')
