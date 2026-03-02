@@ -60,6 +60,13 @@ function escapeHtml(str: string): string {
 }
 
 /**
+ * Serialize session log entries to a JSON string safe for embedding in HTML <script>.
+ */
+function serializeEntries(entries: SessionLogEntry[]): string {
+  return JSON.stringify(entries).replace(/<\//g, '<\\/');
+}
+
+/**
  * Generate a standalone HTML viewer file from session data.
  */
 export function generateViewer(data: ViewerData): string {
@@ -99,9 +106,15 @@ export function generateViewer(data: ViewerData): string {
 
   const hasVideo = !!data.videoFilename;
 
+  // Wrap video in a container for overlay positioning
   const videoPanelHtml = hasVideo
-    ? `<video src="./${escapeHtml(data.videoFilename!)}" controls></video>`
+    ? `<div class="video-container">
+        <video src="./${escapeHtml(data.videoFilename!)}" controls></video>
+        <div class="video-overlay"></div>
+      </div>`
     : `<div class="no-video"><p>No video recorded</p><p class="no-video-hint">Screenshots are available in the timeline</p></div>`;
+
+  const entriesJson = serializeEntries(data.entries);
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -141,6 +154,76 @@ export function generateViewer(data: ViewerData): string {
     .header .meta {
       font-size: 12px;
       color: #484f58;
+    }
+
+    /* Overlay toggle controls */
+    .overlay-toggle {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      user-select: none;
+      position: relative;
+      font-weight: 400;
+      text-transform: none;
+      letter-spacing: 0;
+      font-size: 12px;
+    }
+
+    .overlay-toggle .tooltip {
+      display: none;
+      position: absolute;
+      top: 100%;
+      right: 0;
+      margin-top: 6px;
+      background: #1c2128;
+      color: #c9d1d9;
+      font-size: 11px;
+      padding: 6px 10px;
+      border-radius: 6px;
+      white-space: nowrap;
+      pointer-events: none;
+      border: 1px solid #30363d;
+      z-index: 10;
+    }
+
+    .overlay-toggle:hover .tooltip {
+      display: block;
+    }
+
+    .overlay-toggle input[type="checkbox"] {
+      display: none;
+    }
+
+    .toggle-track {
+      position: relative;
+      width: 34px;
+      height: 18px;
+      background: #30363d;
+      border-radius: 9px;
+      transition: background 0.2s;
+      flex-shrink: 0;
+    }
+
+    .toggle-track::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 14px;
+      height: 14px;
+      background: #8b949e;
+      border-radius: 50%;
+      transition: transform 0.2s, background 0.2s;
+    }
+
+    .overlay-toggle input:checked + .toggle-track {
+      background: #1f6feb;
+    }
+
+    .overlay-toggle input:checked + .toggle-track::after {
+      transform: translateX(16px);
+      background: #fff;
     }
 
     .error-badges {
@@ -187,7 +270,7 @@ export function generateViewer(data: ViewerData): string {
 
     .viewer {
       display: flex;
-      height: calc(100vh - 140px);
+      height: calc(100vh - 180px);
       min-height: 400px;
     }
 
@@ -200,11 +283,29 @@ export function generateViewer(data: ViewerData): string {
       background: #0d1117;
     }
 
-    .video-panel video {
+    .video-container {
+      position: relative;
+      width: 100%;
+      max-height: 100%;
+    }
+
+    .video-container video {
       width: 100%;
       max-height: 100%;
       border-radius: 8px;
       background: #000;
+      display: block;
+    }
+
+    .video-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      overflow: hidden;
+      border-radius: 8px;
     }
 
     .no-video {
@@ -234,7 +335,10 @@ export function generateViewer(data: ViewerData): string {
     }
 
     .timeline-header {
-      padding: 16px 20px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px;
       font-size: 13px;
       font-weight: 600;
       color: #8b949e;
@@ -320,6 +424,62 @@ export function generateViewer(data: ViewerData): string {
       font-size: 14px;
     }
 
+    /* Overlay animations */
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      animation: ripple-expand 600ms ease-out forwards;
+    }
+
+    @keyframes ripple-expand {
+      0%   { width: 12px; height: 12px; opacity: 0.7; }
+      100% { width: 60px; height: 60px; opacity: 0; }
+    }
+
+    .ripple-click  { background: rgba(56, 132, 255, 0.5); }
+    .ripple-fill   { background: rgba(255, 152, 56, 0.5); }
+
+    .scroll-indicator {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 32px;
+      opacity: 0.6;
+      pointer-events: none;
+      animation: fade-out 800ms ease-out forwards;
+    }
+
+    @keyframes fade-out {
+      0%   { opacity: 0.6; }
+      100% { opacity: 0; }
+    }
+
+    .toast {
+      position: absolute;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.85);
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 500;
+      pointer-events: none;
+      animation: toast-in 200ms ease-out;
+      white-space: nowrap;
+      letter-spacing: 0.2px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+
+    @keyframes toast-in {
+      0%   { opacity: 0; transform: translateX(-50%) translateY(8px); }
+      100% { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+
     /* Scrollbar styling */
     .timeline-panel::-webkit-scrollbar { width: 6px; }
     .timeline-panel::-webkit-scrollbar-track { background: transparent; }
@@ -361,7 +521,10 @@ export function generateViewer(data: ViewerData): string {
       ${videoPanelHtml}
     </div>
     <div class="timeline-panel">
-      <div class="timeline-header">Timeline &middot; ${data.entries.length} actions</div>
+      <div class="timeline-header">
+        <span>Timeline &middot; ${data.entries.length} actions</span>
+        <label class="overlay-toggle"><input type="checkbox" id="toggle-overlays" checked><span class="toggle-track"></span> Action overlays<span class="tooltip">Show ripple animations and action labels on the video as each step plays.</span></label>
+      </div>
 ${stepsHtml}
     </div>
   </div>
@@ -369,6 +532,219 @@ ${stepsHtml}
     const video = document.querySelector('video');
     const steps = document.querySelectorAll('.step');
     const timelinePanel = document.querySelector('.timeline-panel');
+    const overlay = document.querySelector('.video-overlay');
+    const entries = ${entriesJson};
+
+    // --- Toggle state ---
+    const toggleOverlays = document.getElementById('toggle-overlays');
+
+    function loadToggleState() {
+      try {
+        const saved = JSON.parse(localStorage.getItem('proofshot-overlays') || '{}');
+        if (saved.overlays === false) toggleOverlays.checked = false;
+      } catch {}
+    }
+    function saveToggleState() {
+      try {
+        localStorage.setItem('proofshot-overlays', JSON.stringify({
+          overlays: toggleOverlays.checked,
+        }));
+      } catch {}
+    }
+    loadToggleState();
+
+    toggleOverlays.addEventListener('change', () => {
+      if (!toggleOverlays.checked) clearOverlays();
+      saveToggleState();
+    });
+
+    function clearOverlays() {
+      if (!overlay) return;
+      overlay.querySelectorAll('.ripple, .scroll-indicator, .toast').forEach(el => el.remove());
+    }
+
+    // --- Action icon (mirrors server-side getActionIcon) ---
+    function getActionIcon(action) {
+      const cmd = action.split(' ')[0].toLowerCase();
+      switch (cmd) {
+        case 'open': case 'navigate': return '\u{1F9ED}';
+        case 'click': return '\u{1F5B1}';
+        case 'fill': case 'type': return '\u2328';
+        case 'screenshot': return '\u{1F4F7}';
+        case 'snapshot': return '\u{1F441}';
+        case 'scroll': return '\u2195';
+        case 'press': case 'keyboard': return '\u2318';
+        default: return '\u25B6';
+      }
+    }
+
+    // --- Toast text generation ---
+    function getToastText(entry) {
+      const action = entry.action;
+      const parts = action.split(' ');
+      const cmd = parts[0].toLowerCase();
+      const label = entry.element ? entry.element.label : '';
+      const icon = getActionIcon(action);
+
+      switch (cmd) {
+        case 'click':
+          return icon + '  Click' + (label ? ': ' + label : '');
+        case 'fill': {
+          const valMatch = action.match(/"([^"]*)"/);
+          const val = valMatch ? valMatch[1] : '';
+          const target = label || '';
+          return icon + '  Type: ' + val + (target ? ' into ' + target : '');
+        }
+        case 'type': {
+          const valMatch2 = action.match(/"([^"]*)"/);
+          const val2 = valMatch2 ? valMatch2[1] : '';
+          const target2 = label || '';
+          return icon + '  Type: ' + val2 + (target2 ? ' into ' + target2 : '');
+        }
+        case 'scroll': {
+          const dir = parts[1] || '';
+          return icon + '  Scroll ' + dir;
+        }
+        case 'open': {
+          const url = parts.slice(1).join(' ');
+          try {
+            return icon + '  Navigate: ' + new URL(url).pathname;
+          } catch {
+            return icon + '  Navigate: ' + url;
+          }
+        }
+        case 'press':
+          return icon + '  Press: ' + parts.slice(1).join(' ');
+        case 'screenshot':
+          return icon + '  Screenshot';
+        default:
+          return icon + '  ' + action;
+      }
+    }
+
+    // --- Scroll direction arrows ---
+    function getScrollArrow(action) {
+      const parts = action.split(' ');
+      const dir = (parts[1] || '').toLowerCase();
+      switch (dir) {
+        case 'up': return '\\u2191';
+        case 'down': return '\\u2193';
+        case 'left': return '\\u2190';
+        case 'right': return '\\u2192';
+        default: return '\\u2195';
+      }
+    }
+
+    // --- Overlay scheduling ---
+    // Precompute overlay windows for each entry
+    const overlayWindows = entries.map((entry, i) => {
+      const cmd = entry.action.split(' ')[0].toLowerCase();
+      const nextTime = i + 1 < entries.length ? entries[i + 1].relativeTimeSec : entry.relativeTimeSec + 3;
+      const rippleEnd = entry.relativeTimeSec + 0.6;
+      const toastEnd = Math.min(nextTime, entry.relativeTimeSec + 3);
+      // Scroll gets 800ms for its indicator
+      const scrollEnd = entry.relativeTimeSec + 0.8;
+
+      return {
+        entry,
+        cmd,
+        rippleStart: entry.relativeTimeSec,
+        rippleEnd: cmd === 'scroll' ? scrollEnd : rippleEnd,
+        toastStart: entry.relativeTimeSec,
+        toastEnd,
+      };
+    });
+
+    // Track which overlays are currently rendered (by entry index)
+    const activeRipples = new Map();
+    const activeToasts = new Map();
+    let rafId = null;
+
+    function renderOverlays() {
+      if (!video || !overlay) return;
+      const t = video.currentTime;
+      const videoEl = video;
+
+      overlayWindows.forEach((win, idx) => {
+        const enabled = toggleOverlays.checked;
+
+        // --- Ripple / scroll indicator ---
+        if (enabled) {
+          if (t >= win.rippleStart && t < win.rippleEnd && !activeRipples.has(idx)) {
+            const el = document.createElement('div');
+
+            if (win.cmd === 'scroll') {
+              el.className = 'scroll-indicator';
+              el.textContent = getScrollArrow(win.entry.action);
+              overlay.appendChild(el);
+              activeRipples.set(idx, el);
+            } else if ((win.cmd === 'click' || win.cmd === 'fill' || win.cmd === 'type') && win.entry.element) {
+              const elem = win.entry.element;
+              const scaleX = videoEl.clientWidth / elem.viewport.width;
+              const scaleY = videoEl.clientHeight / elem.viewport.height;
+              const cx = (elem.bbox.x + elem.bbox.width / 2) * scaleX;
+              const cy = (elem.bbox.y + elem.bbox.height / 2) * scaleY;
+
+              el.className = 'ripple ' + (win.cmd === 'click' ? 'ripple-click' : 'ripple-fill');
+              el.style.left = cx + 'px';
+              el.style.top = cy + 'px';
+              overlay.appendChild(el);
+              activeRipples.set(idx, el);
+            }
+          }
+          if (t >= win.rippleEnd && activeRipples.has(idx)) {
+            activeRipples.get(idx).remove();
+            activeRipples.delete(idx);
+          }
+        } else if (activeRipples.has(idx)) {
+          activeRipples.get(idx).remove();
+          activeRipples.delete(idx);
+        }
+
+        // --- Toast ---
+        if (enabled) {
+          if (t >= win.toastStart && t < win.toastEnd && !activeToasts.has(idx)) {
+            activeToasts.forEach((el) => el.remove());
+            activeToasts.clear();
+
+            const el = document.createElement('div');
+            el.className = 'toast';
+            el.textContent = getToastText(win.entry);
+            overlay.appendChild(el);
+            activeToasts.set(idx, el);
+          }
+          if (t >= win.toastEnd && activeToasts.has(idx)) {
+            activeToasts.get(idx).remove();
+            activeToasts.delete(idx);
+          }
+        } else if (activeToasts.has(idx)) {
+          activeToasts.get(idx).remove();
+          activeToasts.delete(idx);
+        }
+      });
+
+      rafId = requestAnimationFrame(renderOverlays);
+    }
+
+    function startOverlayLoop() {
+      if (rafId !== null) return;
+      rafId = requestAnimationFrame(renderOverlays);
+    }
+
+    function stopOverlayLoop() {
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
+    }
+
+    // --- Seek handler: clear overlays on seek so they re-trigger correctly ---
+    function onSeeked() {
+      activeRipples.forEach(el => el.remove());
+      activeRipples.clear();
+      activeToasts.forEach(el => el.remove());
+      activeToasts.clear();
+    }
 
     function seekTo(time) {
       if (video) {
@@ -402,6 +778,12 @@ ${stepsHtml}
           }
         }
       });
+
+      // Start/stop rAF overlay loop with video play state
+      video.addEventListener('play', startOverlayLoop);
+      video.addEventListener('pause', stopOverlayLoop);
+      video.addEventListener('ended', stopOverlayLoop);
+      video.addEventListener('seeked', onSeeked);
     }
   </script>
 </body>
