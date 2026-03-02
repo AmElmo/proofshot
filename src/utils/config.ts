@@ -2,9 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 export interface DevServerConfig {
-  command: string;
   port: number;
-  waitForText: string | null;
   startupTimeout: number;
 }
 
@@ -25,9 +23,7 @@ const CONFIG_FILENAME = 'proofshot.config.json';
 
 const DEFAULT_CONFIG: ProofShotConfig = {
   devServer: {
-    command: 'npm run dev',
     port: 3000,
-    waitForText: null,
     startupTimeout: 30000,
   },
   output: './proofshot-artifacts',

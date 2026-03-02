@@ -94,7 +94,7 @@ export async function stopCommand(options: StopOptions): Promise<void> {
   const summaryPath = path.join(sessionDir, 'SUMMARY.md');
   const summary = generateProofSummary({
     description: session.description,
-    framework: session.framework,
+    serverCommand: session.serverCommand,
     port: session.port,
     videoPath: session.videoPath,
     screenshots,
@@ -125,7 +125,7 @@ export async function stopCommand(options: StopOptions): Promise<void> {
 
   const viewerPath = writeViewer(sessionDir, {
     description: session.description,
-    framework: session.framework,
+    serverCommand: session.serverCommand,
     durationSec,
     videoFilename: fs.existsSync(session.videoPath) ? path.basename(session.videoPath) : null,
     consoleErrorCount,
@@ -188,7 +188,7 @@ export async function stopCommand(options: StopOptions): Promise<void> {
 
 interface SummaryData {
   description: string | null;
-  framework: string;
+  serverCommand: string | null;
   port: number;
   videoPath: string;
   screenshots: string[];
@@ -208,8 +208,7 @@ function generateProofSummary(data: SummaryData): string {
 
 **Date:** ${date}
 **Project:** ${projectName}
-**Framework:** ${data.framework}
-**Dev Server:** localhost:${data.port}
+**Dev Server:** ${data.serverCommand ? data.serverCommand : 'external'} on localhost:${data.port}
 
 `;
 

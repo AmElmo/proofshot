@@ -24,10 +24,11 @@ Use ProofShot after:
 ### Step 1: Start the session
 
 ```bash
-proofshot start --description "what you are about to verify"
+proofshot start --run "your-dev-command" --port PORT --description "what you are about to verify"
 ```
 
-This starts the dev server, opens a headless browser, and begins recording.
+This opens a browser and begins recording. If --run is provided, it also starts and captures your dev server output.
+If the server is already running, omit --run (no server logs captured).
 The description appears in the proof report for the human.
 
 ### Step 2: Drive the browser and test

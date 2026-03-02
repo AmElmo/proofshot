@@ -2,7 +2,6 @@ import * as path from 'path';
 import chalk from 'chalk';
 import { loadConfig } from '../utils/config.js';
 import { ensureDevServer } from '../server/start.js';
-import { detectFramework } from '../server/detect.js';
 import { openBrowser } from '../browser/session.js';
 import { startRecording } from '../browser/capture.js';
 import { ensureOutputDir, generateTimestamp, generateSessionDirName } from '../artifacts/bundle.js';
@@ -11,7 +10,7 @@ import { saveSession, hasActiveSession } from '../session/state.js';
 interface StartOptions {
   description?: string;
   port?: number;
-  noServer?: boolean;
+  run?: string;
   headed?: boolean;
   output?: string;
   url?: string;
@@ -19,8 +18,6 @@ interface StartOptions {
 
 export async function startCommand(options: StartOptions): Promise<void> {
   const config = loadConfig();
-
-  // Override config with CLI options
   if (options.port) config.devServer.port = options.port;
   if (options.output) config.output = options.output;
   if (options.headed !== undefined) config.headless = !options.headed;
@@ -28,7 +25,6 @@ export async function startCommand(options: StartOptions): Promise<void> {
   const outputDir = path.resolve(config.output);
   const timestamp = generateTimestamp();
 
-  // Check for existing session
   if (hasActiveSession(outputDir)) {
     console.log(
       chalk.yellow('⚠ A session is already active.') +
@@ -37,43 +33,40 @@ export async function startCommand(options: StartOptions): Promise<void> {
     return;
   }
 
-  // Ensure root output directory
   ensureOutputDir(outputDir);
 
-  // Create per-session subfolder
   const sessionDirName = generateSessionDirName(timestamp, options.description || null);
   const sessionDir = path.join(outputDir, sessionDirName);
   ensureOutputDir(sessionDir);
 
-  // Paths for artifacts (all inside session subfolder)
   const videoPath = path.join(sessionDir, `session.webm`);
   const serverErrorLog = path.join(sessionDir, 'server.log');
 
-  // Step 1: Start dev server with error capture
-  let serverResult;
-  if (!options.noServer) {
-    console.log(chalk.dim('Starting dev server...'));
+  let serverAlreadyRunning = true;
+
+  if (options.run) {
+    console.log(chalk.dim(`Starting: ${options.run}`));
     try {
-      serverResult = await ensureDevServer(config.devServer, serverErrorLog);
-      if (serverResult.alreadyRunning) {
-        console.log(chalk.green('✓') + ` Dev server already running on :${config.devServer.port}`);
-      } else {
-        console.log(chalk.green('✓') + ` Dev server started on :${config.devServer.port}`);
-        console.log(chalk.dim(`  Server logs → ${serverErrorLog}`));
-      }
+      await ensureDevServer(
+        options.run,
+        config.devServer.port,
+        config.devServer.startupTimeout,
+        serverErrorLog,
+      );
+      serverAlreadyRunning = false;
+      console.log(chalk.green('✓') + ` Dev server started on :${config.devServer.port}`);
+      console.log(chalk.dim(`  Server logs → ${serverErrorLog}`));
     } catch (error: any) {
       console.error(chalk.red('✗') + ` Failed to start dev server: ${error.message}`);
       process.exit(1);
     }
   } else {
-    console.log(chalk.dim('Skipping dev server (--no-server)'));
-    serverResult = { alreadyRunning: true, port: config.devServer.port };
+    console.log(chalk.dim('No --run provided, assuming server is already running'));
   }
 
   const baseUrl = `http://localhost:${config.devServer.port}`;
   const openUrl = options.url || baseUrl;
 
-  // Step 2: Open browser
   console.log(chalk.dim('Opening browser...'));
   try {
     openBrowser(openUrl, config.viewport, config.headless);
@@ -87,7 +80,6 @@ export async function startCommand(options: StartOptions): Promise<void> {
     process.exit(1);
   }
 
-  // Step 3: Start recording
   try {
     startRecording(videoPath);
     console.log(chalk.green('✓') + ' Recording started');
@@ -95,8 +87,6 @@ export async function startCommand(options: StartOptions): Promise<void> {
     console.log(chalk.yellow('⚠') + ' Could not start recording, continuing without video');
   }
 
-  // Step 4: Save session state
-  const framework = detectFramework();
   saveSession({
     startedAt: new Date().toISOString(),
     description: options.description || null,
@@ -105,15 +95,14 @@ export async function startCommand(options: StartOptions): Promise<void> {
     videoPath,
     serverErrorLog,
     port: config.devServer.port,
-    framework: framework?.name || 'Unknown',
-    serverAlreadyRunning: serverResult?.alreadyRunning ?? true,
+    serverCommand: options.run || null,
+    serverAlreadyRunning,
   });
 
-  // Step 5: Print instructions for the agent
   console.log('');
   console.log(chalk.green.bold('✅ ProofShot session started'));
   console.log('');
-  console.log(`Dev server: ${chalk.cyan(framework?.name || 'Unknown')} on :${config.devServer.port}`);
+  console.log(`Server:     ${options.run ? chalk.cyan(options.run) : chalk.dim('external')} on :${config.devServer.port}`);
   console.log(`Browser:    Chromium (${config.headless ? 'headless' : 'headed'})`);
   console.log(`Recording:  ${chalk.dim(videoPath)}`);
   console.log(`Errors log: ${chalk.dim(serverErrorLog)}`);

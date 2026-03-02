@@ -4,7 +4,7 @@ import type { SessionLogEntry } from '../commands/exec.js';
 
 interface ViewerData {
   description: string | null;
-  framework: string;
+  serverCommand: string | null;
   durationSec: number;
   videoFilename: string | null;
   entries: SessionLogEntry[];
@@ -331,7 +331,7 @@ export function generateViewer(data: ViewerData): string {
   <div class="header">
     <h1>ProofShot Verification</h1>
     ${descriptionHtml}
-    <p class="meta">${escapeHtml(date)} &middot; ${escapeHtml(data.framework)} &middot; ${data.durationSec}s</p>
+    <p class="meta">${escapeHtml(date)} &middot; ${data.durationSec}s</p>
   </div>
   <div class="viewer">
     <div class="video-panel">

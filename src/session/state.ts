@@ -11,7 +11,7 @@ export interface SessionState {
   videoPath: string;
   serverErrorLog: string;
   port: number;
-  framework: string;
+  serverCommand: string | null;
   serverAlreadyRunning: boolean;
 }
 
