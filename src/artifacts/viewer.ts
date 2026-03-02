@@ -85,15 +85,17 @@ export function generateViewer(data: ViewerData): string {
     ? `<p class="description">${escapeHtml(data.description)}</p>`
     : '';
 
-  const consoleErrorsHtml =
+  const consoleBadgeClass = data.consoleErrorCount === 0 ? 'clean' : 'has-errors';
+  const consoleBadgeText =
     data.consoleErrorCount === 0
-      ? '<p class="no-errors">No console errors detected.</p>'
-      : `<p class="has-errors">${data.consoleErrorCount} error(s) detected — see SUMMARY.md for details.</p>`;
+      ? 'Console: clean'
+      : `Console: ${data.consoleErrorCount} error(s)`;
 
-  const serverErrorsHtml =
+  const serverBadgeClass = data.serverErrorCount === 0 ? 'clean' : 'has-errors';
+  const serverBadgeText =
     data.serverErrorCount === 0
-      ? '<p class="no-errors">No server errors detected.</p>'
-      : `<p class="has-errors">${data.serverErrorCount} error(s) detected — see SUMMARY.md for details.</p>`;
+      ? 'Server: clean'
+      : `Server: ${data.serverErrorCount} error(s)`;
 
   const hasVideo = !!data.videoFilename;
 
@@ -139,6 +141,48 @@ export function generateViewer(data: ViewerData): string {
     .header .meta {
       font-size: 12px;
       color: #484f58;
+    }
+
+    .error-badges {
+      display: flex;
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    .error-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .error-badge.clean {
+      background: rgba(63, 185, 80, 0.12);
+      color: #3fb950;
+      border: 1px solid rgba(63, 185, 80, 0.25);
+    }
+
+    .error-badge.has-errors {
+      background: rgba(248, 81, 73, 0.12);
+      color: #f85149;
+      border: 1px solid rgba(248, 81, 73, 0.25);
+    }
+
+    .error-badge .badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+
+    .error-badge.clean .badge-dot {
+      background: #3fb950;
+    }
+
+    .error-badge.has-errors .badge-dot {
+      background: #f85149;
     }
 
     .viewer {
@@ -265,30 +309,6 @@ export function generateViewer(data: ViewerData): string {
       color: #58a6ff;
     }
 
-    .errors-section {
-      padding: 20px 32px;
-      border-top: 1px solid #21262d;
-      background: #161b22;
-      display: flex;
-      gap: 40px;
-    }
-
-    .errors-section h2 {
-      font-size: 13px;
-      font-weight: 600;
-      color: #8b949e;
-      margin-bottom: 6px;
-    }
-
-    .no-errors {
-      font-size: 13px;
-      color: #3fb950;
-    }
-
-    .has-errors {
-      font-size: 13px;
-      color: #f85149;
-    }
 
     .empty-state {
       display: flex;
@@ -320,18 +340,21 @@ export function generateViewer(data: ViewerData): string {
         border-top: 1px solid #21262d;
         max-height: 50vh;
       }
-      .errors-section {
-        flex-direction: column;
-        gap: 16px;
+      .error-badges {
+        flex-wrap: wrap;
       }
     }
   </style>
 </head>
 <body>
   <div class="header">
-    <h1>ProofShot Verification</h1>
+    <h1><svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" style="width:24px;height:24px;vertical-align:middle;margin-right:8px"><path d="M8,24 L8,12 C8,8 12,8 12,8 L24,8" fill="none" stroke="#6366F1" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><path d="M40,8 L52,8 C56,8 56,12 56,12 L56,24" fill="none" stroke="#6366F1" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><path d="M8,40 L8,52 C8,56 12,56 12,56 L24,56" fill="none" stroke="#6366F1" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><path d="M40,56 L52,56 C56,56 56,52 56,52 L56,40" fill="none" stroke="#6366F1" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><path d="M20,34 L28,42 L44,22" fill="none" stroke="#22D3EE" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>ProofShot Verification</h1>
     ${descriptionHtml}
     <p class="meta">${escapeHtml(date)} &middot; ${data.durationSec}s</p>
+    <div class="error-badges">
+      <span class="error-badge ${consoleBadgeClass}"><span class="badge-dot"></span>${consoleBadgeText}</span>
+      <span class="error-badge ${serverBadgeClass}"><span class="badge-dot"></span>${serverBadgeText}</span>
+    </div>
   </div>
   <div class="viewer">
     <div class="video-panel">
@@ -340,16 +363,6 @@ export function generateViewer(data: ViewerData): string {
     <div class="timeline-panel">
       <div class="timeline-header">Timeline &middot; ${data.entries.length} actions</div>
 ${stepsHtml}
-    </div>
-  </div>
-  <div class="errors-section">
-    <div>
-      <h2>Console Errors</h2>
-      ${consoleErrorsHtml}
-    </div>
-    <div>
-      <h2>Server Errors</h2>
-      ${serverErrorsHtml}
     </div>
   </div>
   <script>

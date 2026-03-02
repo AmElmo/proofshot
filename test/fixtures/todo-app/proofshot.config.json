@@ -1,0 +1,17 @@
+{
+  "devServer": {
+    "command": "npm run dev",
+    "port": 5174,
+    "waitForText": "Local:",
+    "startupTimeout": 30000
+  },
+  "output": "./proofshot-artifacts",
+  "defaultPages": [
+    "/"
+  ],
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  },
+  "headless": true
+}

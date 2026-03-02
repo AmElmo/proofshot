@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ship.log -- kanban board</title>
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+
+  <header>
+    <span class="logo">ship<span class="dimmed">.log</span></span>
+    <nav>
+      <a href="/" class="active">Board</a>
+      <a href="/archive.html">Archive</a>
+    </nav>
+    <div class="header-spacer"></div>
+    <div class="search-box">
+      <input type="text" id="search-input" placeholder="Filter tasks..." />
+    </div>
+    <button class="btn" id="new-task-btn">+ New Task <span class="kbd-hint">N</span></button>
+  </header>
+
+  <div class="board" id="board">
+
+    <!-- Backlog Column -->
+    <div class="column" data-column="backlog">
+      <div class="column-header">
+        <span class="column-dot backlog"></span>
+        <span class="column-title">Backlog</span>
+        <span class="column-count" data-count="backlog">4</span>
+      </div>
+      <div class="column-body" data-drop="backlog">
+
+        <div class="task-card priority-p1" draggable="true" data-task-id="SL-101">
+          <div class="task-card-top">
+            <span class="task-id">SL-101</span>
+            <span class="avatar">JB</span>
+          </div>
+          <div class="task-title" data-editable>Fix bug that only happens on Fridays</div>
+          <div class="subtask-list">
+            <label class="subtask-item done"><input type="checkbox" checked /> Reproduce on a Friday</label>
+            <label class="subtask-item"><input type="checkbox" /> Check timezone handling</label>
+            <label class="subtask-item"><input type="checkbox" /> Write regression test</label>
+          </div>
+          <div class="task-meta">
+            <span class="priority-badge p1">P1</span>
+            <span class="tag bug">bug</span>
+            <div class="subtask-progress">
+              <span class="subtask-bar"><span class="subtask-bar-fill" style="width:33%"></span></span>
+              <span>1/3</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="task-card priority-p2" draggable="true" data-task-id="SL-102">
+          <div class="task-card-top">
+            <span class="task-id">SL-102</span>
+            <span class="avatar">AK</span>
+          </div>
+          <div class="task-title" data-editable>Rewrite everything in Rust</div>
+          <div class="subtask-list">
+            <label class="subtask-item"><input type="checkbox" /> Learn Rust</label>
+            <label class="subtask-item"><input type="checkbox" /> Rewrite core module</label>
+            <label class="subtask-item"><input type="checkbox" /> Convince team it was worth it</label>
+            <label class="subtask-item"><input type="checkbox" /> Accept defeat, revert to TypeScript</label>
+          </div>
+          <div class="task-meta">
+            <span class="priority-badge p2">P2</span>
+            <span class="tag refactor">refactor</span>
+            <div class="subtask-progress">
+              <span class="subtask-bar"><span class="subtask-bar-fill" style="width:0%"></span></span>
+              <span>0/4</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="task-card priority-p2" draggable="true" data-task-id="SL-103">
+          <div class="task-card-top">
+            <span class="task-id">SL-103</span>
+            <span class="avatar">MR</span>
+          </div>
+          <div class="task-title" data-editable>Update dependencies (pray)</div>
+          <div class="subtask-list">
+            <label class="subtask-item done"><input type="checkbox" checked /> Run npm audit</label>
+            <label class="subtask-item done"><input type="checkbox" checked /> Backup node_modules (just in case)</label>
+            <label class="subtask-item"><input type="checkbox" /> npm update && npm test</label>
+          </div>
+          <div class="task-meta">
+            <span class="priority-badge p2">P2</span>
+            <span class="tag tech-debt">tech-debt</span>
+            <div class="subtask-progress">
+              <span class="subtask-bar"><span class="subtask-bar-fill" style="width:66%"></span></span>
+              <span>2/3</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="task-card priority-p0" draggable="true" data-task-id="SL-104">
+          <div class="task-card-top">
+            <span class="task-id">SL-104</span>
+            <span class="avatar">LZ</span>
+          </div>
+          <div class="task-title" data-editable>Remove TODO comments from 2019</div>
+          <div class="subtask-list">
+            <label class="subtask-item done"><input type="checkbox" checked /> grep -r "TODO" src/</label>
+            <label class="subtask-item"><input type="checkbox" /> Weep at the results</label>
+            <label class="subtask-item"><input type="checkbox" /> Actually remove them</label>
+          </div>
+          <div class="task-meta">
+            <span class="priority-badge p0">P0</span>
+            <span class="tag tech-debt">tech-debt</span>
+            <div class="subtask-progress">
+              <span class="subtask-bar"><span class="subtask-bar-fill" style="width:33%"></span></span>
+              <span>1/3</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="column-footer">
+        <button class="add-task-btn" data-add-column="backlog">+ Add task</button>
+        <div class="add-task-form" data-form-column="backlog">
+          <input type="text" placeholder="Task title..." data-form-title />
+          <div class="form-row">
+            <select data-form-priority>
+              <option value="p2">P2</option>
+              <option value="p1">P1</option>
+              <option value="p0">P0</option>
+            </select>
+            <select data-form-tag>
+              <option value="feature">feature</option>
+              <option value="bug">bug</option>
+              <option value="refactor">refactor</option>
+              <option value="tech-debt">tech-debt</option>
+            </select>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-ghost btn-sm" data-form-cancel>Cancel</button>
+            <button class="btn btn-sm" data-form-submit>Add</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- In Progress Column -->
+    <div class="column" data-column="in-progress">
+      <div class="column-header">
+        <span class="column-dot in-progress"></span>
+        <span class="column-title">In Progress</span>
+        <span class="column-count" data-count="in-progress">3</span>
+      </div>
+      <div class="column-body" data-drop="in-progress">
+
+        <div class="task-card priority-p0" draggable="true" data-task-id="SL-105">
+          <div class="task-card-top">
+            <span class="task-id">SL-105</span>
+            <span class="avatar">JB</span>
+          </div>
+          <div class="task-title" data-editable>Debug the debugger</div>
+          <div class="subtask-list">
+            <label class="subtask-item done"><input type="checkbox" checked /> Reproduce the recursive breakpoint</label>
+            <label class="subtask-item done"><input type="checkbox" checked /> Question life choices</label>
+            <label class="subtask-item"><input type="checkbox" /> Actually fix the issue</label>
+          </div>
+          <div class="task-meta">
+            <span class="priority-badge p0">P0</span>
+            <span class="tag bug">bug</span>
+            <div class="subtask-progress">
+              <span class="subtask-bar"><span class="subtask-bar-fill" style="width:66%"></span></span>
+              <span>2/3</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="task-card priority-p1" draggable="true" data-task-id="SL-106">
+          <div class="task-card-top">
+            <span class="task-id">SL-106</span>
+            <span class="avatar">AK</span>
+          </div>
+          <div class="task-title" data-editable>Add dark mode to dark mode</div>
+          <div class="subtask-list">
+            <label class="subtask-item done"><input type="checkbox" checked /> Design "darker mode" palette</label>
+            <label class="subtask-item"><input type="checkbox" /> Implement CSS custom properties</label>
+            <label class="subtask-item"><input type="checkbox" /> Add toggle in settings</label>
+          </div>
+          <div class="task-meta">
+            <span class="priority-badge p1">P1</span>
+            <span class="tag feature">feature</span>
+            <div class="subtask-progress">
+              <span class="subtask-bar"><span class="subtask-bar-fill" style="width:33%"></span></span>
+              <span>1/3</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="task-card priority-p1" draggable="true" data-task-id="SL-107">
+          <div class="task-card-top">
+            <span class="task-id">SL-107</span>
+            <span class="avatar">MR</span>
+          </div>
+          <div class="task-title" data-editable>Write tests for the tests</div>
+          <div class="subtask-list">
+            <label class="subtask-item done"><input type="checkbox" checked /> Meta-test framework setup</label>
+            <label class="subtask-item done"><input type="checkbox" checked /> Test the test runner</label>
+            <label class="subtask-item"><input type="checkbox" /> Test the test-test runner</label>
+          </div>
+          <div class="task-meta">
+            <span class="priority-badge p1">P1</span>
+            <span class="tag refactor">refactor</span>
+            <div class="subtask-progress">
+              <span class="subtask-bar"><span class="subtask-bar-fill" style="width:66%"></span></span>
+              <span>2/3</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="column-footer">
+        <button class="add-task-btn" data-add-column="in-progress">+ Add task</button>
+        <div class="add-task-form" data-form-column="in-progress">
+          <input type="text" placeholder="Task title..." data-form-title />
+          <div class="form-row">
+            <select data-form-priority>
+              <option value="p2">P2</option>
+              <option value="p1">P1</option>
+              <option value="p0">P0</option>
+            </select>
+            <select data-form-tag>
+              <option value="feature">feature</option>
+              <option value="bug">bug</option>
+              <option value="refactor">refactor</option>
+              <option value="tech-debt">tech-debt</option>
+            </select>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-ghost btn-sm" data-form-cancel>Cancel</button>
+            <button class="btn btn-sm" data-form-submit>Add</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Shipped Column -->
+    <div class="column" data-column="shipped">
+      <div class="column-header">
+        <span class="column-dot shipped"></span>
+        <span class="column-title">Shipped</span>
+        <span class="column-count" data-count="shipped">3</span>
+      </div>
+      <div class="column-body" data-drop="shipped">
+
+        <div class="task-card priority-p0" draggable="true" data-task-id="SL-108">
+          <div class="task-card-top">
+            <span class="task-id">SL-108</span>
+            <span class="avatar">LZ</span>
+          </div>
+          <div class="task-title" data-editable>Fix production outage (it was DNS)</div>
+          <div class="subtask-list">
+            <label class="subtask-item done"><input type="checkbox" checked /> Panic</label>
+            <label class="subtask-item done"><input type="checkbox" checked /> Check DNS</label>
+            <label class="subtask-item done"><input type="checkbox" checked /> It was DNS</label>
+          </div>
+          <div class="task-meta">
+            <span class="priority-badge p0">P0</span>
+            <span class="tag bug">bug</span>
+            <div class="subtask-progress">
+              <span class="subtask-bar"><span class="subtask-bar-fill" style="width:100%"></span></span>
+              <span>3/3</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="task-card priority-p1" draggable="true" data-task-id="SL-109">
+          <div class="task-card-top">
+            <span class="task-id">SL-109</span>
+            <span class="avatar">JB</span>
+          </div>
+          <div class="task-title" data-editable>Migrate from Webpack to Vite</div>
+          <div class="subtask-list">
+            <label class="subtask-item done"><input type="checkbox" checked /> Remove webpack config (847 lines)</label>
+            <label class="subtask-item done"><input type="checkbox" checked /> Add vite config (12 lines)</label>
+            <label class="subtask-item done"><input type="checkbox" checked /> Celebrate</label>
+          </div>
+          <div class="task-meta">
+            <span class="priority-badge p1">P1</span>
+            <span class="tag refactor">refactor</span>
+            <div class="subtask-progress">
+              <span class="subtask-bar"><span class="subtask-bar-fill" style="width:100%"></span></span>
+              <span>3/3</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="task-card priority-p2" draggable="true" data-task-id="SL-110">
+          <div class="task-card-top">
+            <span class="task-id">SL-110</span>
+            <span class="avatar">AK</span>
+          </div>
+          <div class="task-title" data-editable>Add loading spinner to loading spinner</div>
+          <div class="subtask-list">
+            <label class="subtask-item done"><input type="checkbox" checked /> Design recursive spinner</label>
+            <label class="subtask-item done"><input type="checkbox" checked /> Implement with CSS animations</label>
+            <label class="subtask-item done"><input type="checkbox" checked /> Ship it (users love it)</label>
+          </div>
+          <div class="task-meta">
+            <span class="priority-badge p2">P2</span>
+            <span class="tag feature">feature</span>
+            <div class="subtask-progress">
+              <span class="subtask-bar"><span class="subtask-bar-fill" style="width:100%"></span></span>
+              <span>3/3</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="column-footer">
+        <button class="add-task-btn" data-add-column="shipped">+ Add task</button>
+        <div class="add-task-form" data-form-column="shipped">
+          <input type="text" placeholder="Task title..." data-form-title />
+          <div class="form-row">
+            <select data-form-priority>
+              <option value="p2">P2</option>
+              <option value="p1">P1</option>
+              <option value="p0">P0</option>
+            </select>
+            <select data-form-tag>
+              <option value="feature">feature</option>
+              <option value="bug">bug</option>
+              <option value="refactor">refactor</option>
+              <option value="tech-debt">tech-debt</option>
+            </select>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-ghost btn-sm" data-form-cancel>Cancel</button>
+            <button class="btn btn-sm" data-form-submit>Add</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Context Menu -->
+  <div class="context-menu" id="context-menu">
+    <div class="context-menu-item" data-action="edit">&#9998; Edit</div>
+    <div class="context-menu-item" data-action="duplicate">&#10697; Duplicate</div>
+    <div class="context-menu-divider"></div>
+    <div class="context-menu-item" data-action="archive">&#128230; Archive</div>
+    <div class="context-menu-item danger" data-action="delete">&#128465; Delete</div>
+  </div>
+
+  <!-- New Task Modal -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal">
+      <h2>&#9889; New Task</h2>
+      <div class="form-group">
+        <label>Title</label>
+        <input type="text" id="modal-title" placeholder="What needs shipping?" />
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea id="modal-desc" placeholder="Details, context, or a cry for help..."></textarea>
+      </div>
+      <div class="form-group" style="display:flex;gap:12px;">
+        <div style="flex:1;">
+          <label>Priority</label>
+          <select id="modal-priority">
+            <option value="p2">P2 - Low</option>
+            <option value="p1">P1 - Medium</option>
+            <option value="p0">P0 - Critical</option>
+          </select>
+        </div>
+        <div style="flex:1;">
+          <label>Label</label>
+          <select id="modal-tag">
+            <option value="feature">feature</option>
+            <option value="bug">bug</option>
+            <option value="refactor">refactor</option>
+            <option value="tech-debt">tech-debt</option>
+          </select>
+        </div>
+        <div style="flex:1;">
+          <label>Column</label>
+          <select id="modal-column">
+            <option value="backlog">Backlog</option>
+            <option value="in-progress">In Progress</option>
+            <option value="shipped">Shipped</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-ghost" id="modal-cancel">Cancel</button>
+        <button class="btn" id="modal-submit">Create Task</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <footer>ship.log v0.1.0 // built with sleep deprivation and caffeine</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  // ---- State ----
+  let nextId = 111;
+  let contextTarget = null;
+
+  // ---- Helpers ----
+  function $(sel, parent) { return (parent || document).querySelector(sel); }
+  function $$(sel, parent) { return [...(parent || document).querySelectorAll(sel)]; }
+
+  function toast(msg) {
+    const el = $('#toast');
+    el.textContent = msg;
+    el.classList.add('visible');
+    setTimeout(() => el.classList.remove('visible'), 2400);
+  }
+
+  function updateColumnCounts() {
+    ['backlog', 'in-progress', 'shipped'].forEach(col => {
+      const body = $(`[data-drop="${col}"]`);
+      const count = body ? body.querySelectorAll('.task-card').length : 0;
+      const badge = $(`[data-count="${col}"]`);
+      if (badge) badge.textContent = count;
+    });
+  }
+
+  function updateSubtaskProgress(card) {
+    const checks = $$('.subtask-item input[type="checkbox"]', card);
+    const done = checks.filter(c => c.checked).length;
+    const total = checks.length;
+    const pct = total ? Math.round((done / total) * 100) : 0;
+    const fill = $('.subtask-bar-fill', card);
+    const label = $('.subtask-progress span:last-child', card);
+    if (fill) fill.style.width = pct + '%';
+    if (label) label.textContent = done + '/' + total;
+    // Update subtask item styling
+    checks.forEach(c => {
+      c.closest('.subtask-item').classList.toggle('done', c.checked);
+    });
+  }
+
+  function createTaskCard(title, priority, tag, column) {
+    const id = 'SL-' + nextId++;
+    const initials = ['JB', 'AK', 'MR', 'LZ'][Math.floor(Math.random() * 4)];
+    const card = document.createElement('div');
+    card.className = `task-card priority-${priority}`;
+    card.draggable = true;
+    card.dataset.taskId = id;
+    card.innerHTML = `
+      <div class="task-card-top">
+        <span class="task-id">${id}</span>
+        <span class="avatar">${initials}</span>
+      </div>
+      <div class="task-title" data-editable>${title}</div>
+      <div class="task-meta">
+        <span class="priority-badge ${priority}">${priority.toUpperCase()}</span>
+        <span class="tag ${tag}">${tag}</span>
+      </div>
+    `;
+    setupCardEvents(card);
+    const body = $(`[data-drop="${column}"]`);
+    if (body) body.appendChild(card);
+    updateColumnCounts();
+    return card;
+  }
+
+  // ---- Drag & Drop ----
+  function setupDragDrop() {
+    const board = $('#board');
+
+    board.addEventListener('dragstart', e => {
+      const card = e.target.closest('.task-card');
+      if (!card) return;
+      card.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', card.dataset.taskId);
+    });
+
+    board.addEventListener('dragend', e => {
+      const card = e.target.closest('.task-card');
+      if (card) card.classList.remove('dragging');
+      $$('.column-body.drag-over').forEach(el => el.classList.remove('drag-over'));
+    });
+
+    $$('.column-body').forEach(body => {
+      body.addEventListener('dragover', e => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        body.classList.add('drag-over');
+
+        // Find the card we're hovering over to insert before it
+        const afterElement = getDragAfterElement(body, e.clientY);
+        const dragging = $('.task-card.dragging');
+        if (!dragging) return;
+        if (afterElement) {
+          body.insertBefore(dragging, afterElement);
+        } else {
+          body.appendChild(dragging);
+        }
+      });
+
+      body.addEventListener('dragleave', e => {
+        if (!body.contains(e.relatedTarget)) {
+          body.classList.remove('drag-over');
+        }
+      });
+
+      body.addEventListener('drop', e => {
+        e.preventDefault();
+        body.classList.remove('drag-over');
+        updateColumnCounts();
+        const taskId = e.dataTransfer.getData('text/plain');
+        toast(`Moved ${taskId} to ${body.dataset.drop.replace('-', ' ')}`);
+      });
+    });
+  }
+
+  function getDragAfterElement(container, y) {
+    const cards = [...container.querySelectorAll('.task-card:not(.dragging)')];
+    return cards.reduce((closest, child) => {
+      const box = child.getBoundingClientRect();
+      const offset = y - box.top - box.height / 2;
+      if (offset < 0 && offset > closest.offset) {
+        return { offset, element: child };
+      }
+      return closest;
+    }, { offset: Number.NEGATIVE_INFINITY }).element;
+  }
+
+  // ---- Context Menu ----
+  function setupContextMenu() {
+    const menu = $('#context-menu');
+
+    document.addEventListener('contextmenu', e => {
+      const card = e.target.closest('.task-card');
+      if (!card) return;
+      e.preventDefault();
+      contextTarget = card;
+      menu.style.left = e.clientX + 'px';
+      menu.style.top = e.clientY + 'px';
+      menu.classList.add('visible');
+    });
+
+    document.addEventListener('click', () => {
+      menu.classList.remove('visible');
+    });
+
+    menu.addEventListener('click', e => {
+      const item = e.target.closest('.context-menu-item');
+      if (!item || !contextTarget) return;
+      const action = item.dataset.action;
+      const taskId = contextTarget.dataset.taskId;
+      const title = $('.task-title', contextTarget)?.textContent || '';
+
+      switch (action) {
+        case 'edit': {
+          const titleEl = $('.task-title', contextTarget);
+          if (titleEl) startInlineEdit(titleEl);
+          break;
+        }
+        case 'duplicate': {
+          const clone = contextTarget.cloneNode(true);
+          const newId = 'SL-' + nextId++;
+          clone.dataset.taskId = newId;
+          const idEl = $('.task-id', clone);
+          if (idEl) idEl.textContent = newId;
+          setupCardEvents(clone);
+          contextTarget.parentElement.insertBefore(clone, contextTarget.nextSibling);
+          updateColumnCounts();
+          toast(`Duplicated ${taskId} as ${newId}`);
+          break;
+        }
+        case 'archive':
+          contextTarget.style.transition = 'all 0.3s';
+          contextTarget.style.opacity = '0';
+          contextTarget.style.transform = 'scale(0.9)';
+          setTimeout(() => {
+            contextTarget.remove();
+            updateColumnCounts();
+          }, 300);
+          toast(`Archived ${taskId}`);
+          break;
+        case 'delete':
+          contextTarget.style.transition = 'all 0.2s';
+          contextTarget.style.opacity = '0';
+          contextTarget.style.height = '0';
+          contextTarget.style.padding = '0';
+          contextTarget.style.margin = '0';
+          contextTarget.style.overflow = 'hidden';
+          setTimeout(() => {
+            contextTarget.remove();
+            updateColumnCounts();
+          }, 200);
+          toast(`Deleted ${taskId}`);
+          break;
+      }
+      menu.classList.remove('visible');
+    });
+  }
+
+  // ---- Inline Editing ----
+  function startInlineEdit(titleEl) {
+    if (titleEl.classList.contains('editing')) return;
+    const original = titleEl.textContent;
+    titleEl.classList.add('editing');
+    titleEl.contentEditable = true;
+    titleEl.focus();
+
+    // Select all text
+    const range = document.createRange();
+    range.selectNodeContents(titleEl);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+
+    function finish() {
+      titleEl.classList.remove('editing');
+      titleEl.contentEditable = false;
+      if (titleEl.textContent.trim() === '') {
+        titleEl.textContent = original;
+      }
+      titleEl.removeEventListener('blur', finish);
+      titleEl.removeEventListener('keydown', onKey);
+    }
+
+    function onKey(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        titleEl.blur();
+      } else if (e.key === 'Escape') {
+        titleEl.textContent = original;
+        titleEl.blur();
+      }
+    }
+
+    titleEl.addEventListener('blur', finish);
+    titleEl.addEventListener('keydown', onKey);
+  }
+
+  // ---- Card Events ----
+  function setupCardEvents(card) {
+    // Double-click to edit title
+    const title = $('[data-editable]', card);
+    if (title) {
+      title.addEventListener('dblclick', e => {
+        e.stopPropagation();
+        startInlineEdit(title);
+      });
+    }
+
+    // Subtask checkboxes
+    $$('.subtask-item input[type="checkbox"]', card).forEach(cb => {
+      cb.addEventListener('change', () => updateSubtaskProgress(card));
+    });
+  }
+
+  // ---- Add Task Forms ----
+  function setupAddTaskForms() {
+    $$('[data-add-column]').forEach(btn => {
+      const col = btn.dataset.addColumn;
+      const form = $(`[data-form-column="${col}"]`);
+      btn.addEventListener('click', () => {
+        btn.style.display = 'none';
+        form.classList.add('visible');
+        $('[data-form-title]', form).focus();
+      });
+    });
+
+    $$('[data-form-cancel]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const form = btn.closest('.add-task-form');
+        const col = form.dataset.formColumn;
+        form.classList.remove('visible');
+        $('[data-form-title]', form).value = '';
+        $(`[data-add-column="${col}"]`).style.display = '';
+      });
+    });
+
+    $$('[data-form-submit]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const form = btn.closest('.add-task-form');
+        const col = form.dataset.formColumn;
+        const title = $('[data-form-title]', form).value.trim();
+        const priority = $('[data-form-priority]', form).value;
+        const tag = $('[data-form-tag]', form).value;
+        if (!title) return;
+
+        createTaskCard(title, priority, tag, col);
+        toast(`Created task in ${col.replace('-', ' ')}`);
+
+        // Reset form
+        $('[data-form-title]', form).value = '';
+        form.classList.remove('visible');
+        $(`[data-add-column="${col}"]`).style.display = '';
+      });
+    });
+
+    // Submit on Enter
+    $$('[data-form-title]').forEach(input => {
+      input.addEventListener('keydown', e => {
+        if (e.key === 'Enter') {
+          const form = input.closest('.add-task-form');
+          $('[data-form-submit]', form).click();
+        } else if (e.key === 'Escape') {
+          const form = input.closest('.add-task-form');
+          $('[data-form-cancel]', form).click();
+        }
+      });
+    });
+  }
+
+  // ---- Modal ----
+  function setupModal() {
+    const overlay = $('#modal-overlay');
+    const openBtn = $('#new-task-btn');
+    const cancelBtn = $('#modal-cancel');
+    const submitBtn = $('#modal-submit');
+
+    function openModal() {
+      overlay.classList.add('visible');
+      $('#modal-title').value = '';
+      $('#modal-desc').value = '';
+      setTimeout(() => $('#modal-title').focus(), 50);
+    }
+
+    function closeModal() {
+      overlay.classList.remove('visible');
+    }
+
+    openBtn.addEventListener('click', openModal);
+    cancelBtn.addEventListener('click', closeModal);
+
+    overlay.addEventListener('click', e => {
+      if (e.target === overlay) closeModal();
+    });
+
+    submitBtn.addEventListener('click', () => {
+      const title = $('#modal-title').value.trim();
+      if (!title) return;
+      const priority = $('#modal-priority').value;
+      const tag = $('#modal-tag').value;
+      const column = $('#modal-column').value;
+      createTaskCard(title, priority, tag, column);
+      toast(`Created ${$('#modal-title').value} in ${column.replace('-', ' ')}`);
+      closeModal();
+    });
+
+    // Enter to submit, Escape to close
+    overlay.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeModal();
+      if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
+        e.preventDefault();
+        submitBtn.click();
+      }
+    });
+
+    // Global keyboard shortcut
+    document.addEventListener('keydown', e => {
+      // Don't trigger if typing in an input, textarea, or contenteditable
+      const tag = e.target.tagName;
+      const editable = e.target.contentEditable === 'true';
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || editable) return;
+
+      if (e.key === 'n' || e.key === 'N') {
+        e.preventDefault();
+        openModal();
+      }
+      if (e.key === 'Escape') {
+        closeModal();
+      }
+    });
+  }
+
+  // ---- Search / Filter ----
+  function setupSearch() {
+    const input = $('#search-input');
+    input.addEventListener('input', () => {
+      const q = input.value.toLowerCase().trim();
+      $$('.task-card').forEach(card => {
+        const title = ($('.task-title', card)?.textContent || '').toLowerCase();
+        const id = (card.dataset.taskId || '').toLowerCase();
+        const tags = $$('.tag', card).map(t => t.textContent.toLowerCase()).join(' ');
+        const match = !q || title.includes(q) || id.includes(q) || tags.includes(q);
+        card.style.display = match ? '' : 'none';
+      });
+      // Update counts to reflect visible
+      ['backlog', 'in-progress', 'shipped'].forEach(col => {
+        const body = $(`[data-drop="${col}"]`);
+        const visible = body ? $$('.task-card', body).filter(c => c.style.display !== 'none').length : 0;
+        const badge = $(`[data-count="${col}"]`);
+        if (badge) badge.textContent = visible;
+      });
+    });
+
+    // Keyboard shortcut: / to focus search
+    document.addEventListener('keydown', e => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.contentEditable === 'true') return;
+      if (e.key === '/') {
+        e.preventDefault();
+        input.focus();
+      }
+    });
+
+    // Escape to blur search
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        input.value = '';
+        input.dispatchEvent(new Event('input'));
+        input.blur();
+      }
+    });
+  }
+
+  // ---- Subtask checkbox events for existing cards ----
+  function setupExistingCards() {
+    $$('.task-card').forEach(card => setupCardEvents(card));
+  }
+
+  // ---- Init ----
+  setupDragDrop();
+  setupContextMenu();
+  setupAddTaskForms();
+  setupModal();
+  setupSearch();
+  setupExistingCards();
+  updateColumnCounts();
+
+})();
+</script>
+
+</body>
+</html>
