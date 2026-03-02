@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Acme SaaS — Settings</title>
+  <title>localhost:cafe -- Settings</title>
   <link rel="stylesheet" href="/src/style.css" />
 </head>
 <body>
   <nav>
-    <span class="logo">Acme SaaS</span>
+    <span class="logo">localhost:cafe</span>
     <a href="/">Home</a>
     <a href="/dashboard.html">Dashboard</a>
     <a href="/settings.html" class="active">Settings</a>
@@ -17,34 +17,34 @@
 
   <div class="container">
     <h1>Settings</h1>
-    <p class="subtitle">Manage your account and preferences</p>
+    <p class="subtitle">Configure your dev environment and preferences</p>
 
     <div class="card" style="margin-bottom: 32px;">
       <h2 style="font-size: 18px; margin-bottom: 24px;">Profile</h2>
 
       <div class="form-group">
-        <label for="name">Full Name</label>
-        <input type="text" id="name" value="Jane Doe" />
+        <label for="name">Display Name</label>
+        <input type="text" id="name" value="Ada Lovelace" />
       </div>
 
       <div class="form-group">
         <label for="email">Email</label>
-        <input type="email" id="email" value="jane@example.com" />
+        <input type="email" id="email" value="ada@localhost" />
       </div>
 
       <div class="form-group">
         <label for="bio">Bio</label>
-        <textarea id="bio" rows="3" style="resize: vertical;">Product designer at Acme. Building tools for modern teams.</textarea>
+        <textarea id="bio" rows="3" style="resize: vertical; font-family: var(--font-mono); font-size: 13px;">Full-stack developer. First programmer. I wrote the first algorithm before GitHub existed. // TODO: update this bio</textarea>
       </div>
 
       <div class="form-group">
         <label for="timezone">Timezone</label>
         <select id="timezone">
-          <option>UTC-8 (Pacific Time)</option>
-          <option>UTC-5 (Eastern Time)</option>
-          <option selected>UTC+0 (GMT)</option>
-          <option>UTC+1 (Central European)</option>
-          <option>UTC+9 (Japan)</option>
+          <option>UTC-8 (Pacific -- Silicon Valley time)</option>
+          <option>UTC-5 (Eastern -- NYC hustle)</option>
+          <option selected>UTC+0 (GMT -- production server time)</option>
+          <option>UTC+1 (CET -- Berlin startup scene)</option>
+          <option>UTC+9 (JST -- Tokyo office hours)</option>
         </select>
       </div>
 
@@ -52,69 +52,100 @@
     </div>
 
     <div class="card" style="margin-bottom: 32px;">
+      <h2 style="font-size: 18px; margin-bottom: 8px;">Theme</h2>
+      <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 16px;">Choose your fighter</p>
+
+      <div class="theme-grid">
+        <button class="theme-option" onclick="selectTheme(this)">
+          <div class="theme-swatch" style="background: linear-gradient(135deg, #1e1e1e, #2d2d2d);"></div>
+          Dark
+        </button>
+        <button class="theme-option active" onclick="selectTheme(this)">
+          <div class="theme-swatch" style="background: linear-gradient(135deg, #0a0a1a, #1a1040);"></div>
+          Midnight
+        </button>
+        <button class="theme-option" onclick="selectTheme(this)">
+          <div class="theme-swatch" style="background: linear-gradient(135deg, #002b36, #073642);"></div>
+          Solarized
+        </button>
+        <button class="theme-option" onclick="selectTheme(this)">
+          <div class="theme-swatch" style="background: linear-gradient(135deg, #2e3440, #3b4252);"></div>
+          Nord
+        </button>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom: 32px;">
       <h2 style="font-size: 18px; margin-bottom: 24px;">Notifications</h2>
 
       <div class="toggle">
         <div class="toggle-label">
-          <span>Email notifications</span>
-          <small>Receive updates about your account activity</small>
+          <span>Deploy notifications</span>
+          <small>Get pinged every time someone ships to prod</small>
         </div>
-        <div class="switch on" role="switch" tabindex="0" aria-checked="true" aria-label="Email notifications" onclick="toggleSwitch(this)" onkeydown="if(event.key===' '||event.key==='Enter'){event.preventDefault();toggleSwitch(this)}"></div>
+        <div class="switch on" role="switch" tabindex="0" aria-checked="true" aria-label="Deploy notifications" onclick="toggleSwitch(this)" onkeydown="if(event.key===' '||event.key==='Enter'){event.preventDefault();toggleSwitch(this)}"></div>
       </div>
 
       <div class="toggle">
         <div class="toggle-label">
-          <span>Weekly digest</span>
-          <small>Summary of your metrics every Monday</small>
+          <span>Build failures</span>
+          <small>Because "it compiles on my machine" is not a valid excuse</small>
         </div>
-        <div class="switch on" role="switch" tabindex="0" aria-checked="true" aria-label="Weekly digest" onclick="toggleSwitch(this)" onkeydown="if(event.key===' '||event.key==='Enter'){event.preventDefault();toggleSwitch(this)}"></div>
+        <div class="switch on" role="switch" tabindex="0" aria-checked="true" aria-label="Build failures" onclick="toggleSwitch(this)" onkeydown="if(event.key===' '||event.key==='Enter'){event.preventDefault();toggleSwitch(this)}"></div>
       </div>
 
       <div class="toggle">
         <div class="toggle-label">
-          <span>Marketing emails</span>
-          <small>Product updates and feature announcements</small>
+          <span>Slack pings at 3am</span>
+          <small>"Hey, are you awake? The site is down" -- every SRE's nightmare</small>
         </div>
-        <div class="switch" role="switch" tabindex="0" aria-checked="false" aria-label="Marketing emails" onclick="toggleSwitch(this)" onkeydown="if(event.key===' '||event.key==='Enter'){event.preventDefault();toggleSwitch(this)}"></div>
+        <div class="switch" role="switch" tabindex="0" aria-checked="false" aria-label="Slack pings at 3am" onclick="toggleSwitch(this)" onkeydown="if(event.key===' '||event.key==='Enter'){event.preventDefault();toggleSwitch(this)}"></div>
       </div>
 
       <div class="toggle">
         <div class="toggle-label">
-          <span>SMS alerts</span>
-          <small>Critical alerts sent to your phone</small>
+          <span>Weekend deploy alerts</span>
+          <small>For those brave souls who push on Saturdays. Godspeed.</small>
         </div>
-        <div class="switch" role="switch" tabindex="0" aria-checked="false" aria-label="SMS alerts" onclick="toggleSwitch(this)" onkeydown="if(event.key===' '||event.key==='Enter'){event.preventDefault();toggleSwitch(this)}"></div>
+        <div class="switch" role="switch" tabindex="0" aria-checked="false" aria-label="Weekend deploy alerts" onclick="toggleSwitch(this)" onkeydown="if(event.key===' '||event.key==='Enter'){event.preventDefault();toggleSwitch(this)}"></div>
       </div>
     </div>
 
-    <div class="card">
-      <h2 style="font-size: 18px; margin-bottom: 24px; color: #f87171;">Danger Zone</h2>
+    <div class="card danger-card">
+      <h2 class="danger-title">Danger Zone</h2>
 
-      <div style="display: flex; align-items: center; justify-content: space-between; padding: 16px 0; border-bottom: 1px solid #1e293b;">
+      <div class="danger-item">
         <div>
-          <span style="font-size: 14px;">Export data</span><br>
-          <small style="color: #64748b; font-size: 12px;">Download all your data as a CSV</small>
+          <div class="danger-item-label">Export your data</div>
+          <div class="danger-item-desc">Download everything. Your code, your logs, your Stack Overflow search history.</div>
         </div>
         <button class="btn btn-outline" style="font-size: 12px; padding: 8px 16px;">Export</button>
       </div>
 
-      <div style="display: flex; align-items: center; justify-content: space-between; padding: 16px 0;">
+      <div class="danger-item">
         <div>
-          <span style="font-size: 14px;">Delete account</span><br>
-          <small style="color: #64748b; font-size: 12px;">Permanently delete your account and all data</small>
+          <div class="danger-item-label">Nuke the account</div>
+          <div class="danger-item-desc">sudo rm -rf /your-account -- This cannot be undone. Seriously. No backsies.</div>
         </div>
-        <button class="btn" style="background: #dc2626; font-size: 12px; padding: 8px 16px;">Delete</button>
+        <button class="btn btn-danger" style="font-size: 12px; padding: 8px 16px;">Delete</button>
       </div>
     </div>
   </div>
 
   <footer>
-    &copy; 2026 Acme SaaS. All rights reserved.
+    <span>&copy; 2026 localhost:cafe &middot; 0 bugs shipped&trade; &middot; Built with &#x2615; and <a href="#">git push --force</a></span>
   </footer>
   <script>
     function toggleSwitch(el) {
       el.classList.toggle('on');
       el.setAttribute('aria-checked', el.classList.contains('on'));
+    }
+
+    function selectTheme(el) {
+      document.querySelectorAll('.theme-option').forEach(function(opt) {
+        opt.classList.remove('active');
+      });
+      el.classList.add('active');
     }
   </script>
 </body>

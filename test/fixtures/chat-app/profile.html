@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Profile &mdash; stderr.chat</title>
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+  <div class="profile-layout">
+    <!-- Nav -->
+    <nav class="profile-nav">
+      <div class="profile-nav-logo">stderr<span>.chat</span></div>
+      <a href="/index.html" class="profile-nav-link">&larr; Back to chat</a>
+    </nav>
+
+    <div class="profile-container">
+      <h1 class="profile-title">Your Profile</h1>
+
+      <!-- Avatar -->
+      <div class="avatar-section">
+        <div class="avatar-upload" id="avatar-upload">
+          <div class="avatar-upload-img" id="avatar-display">YO</div>
+          <div class="avatar-upload-overlay">Upload</div>
+          <input type="file" id="avatar-file" accept="image/*" />
+        </div>
+        <div class="avatar-info">
+          <div class="avatar-info-name" id="avatar-name-display">you</div>
+          <div class="avatar-info-hint">Click to upload a new avatar. JPG, PNG, or GIF. Max 2MB.</div>
+        </div>
+      </div>
+
+      <!-- Form -->
+      <form class="profile-form" id="profile-form" onsubmit="return false;">
+        <!-- Display Name -->
+        <div class="form-group">
+          <label class="form-label" for="display-name">Display Name</label>
+          <input class="form-input" type="text" id="display-name" value="you" maxlength="32" />
+        </div>
+
+        <!-- Status Message -->
+        <div class="form-group">
+          <label class="form-label" for="status-msg">Status Message</label>
+          <input class="form-input" type="text" id="status-msg" placeholder="What are you up to?" maxlength="80" value="Compiling..." />
+        </div>
+
+        <!-- Pronouns -->
+        <div class="form-group">
+          <label class="form-label" for="pronouns">Pronouns</label>
+          <select class="form-select" id="pronouns">
+            <option value="">Don't specify</option>
+            <option value="he/him">he/him</option>
+            <option value="she/her">she/her</option>
+            <option value="they/them" selected>they/them</option>
+            <option value="ze/zir">ze/zir</option>
+            <option value="custom">Ask me</option>
+          </select>
+        </div>
+
+        <!-- Status Selector -->
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <div class="status-selector" id="status-selector">
+            <label class="status-option selected" data-status="online">
+              <input type="radio" name="status" value="online" checked />
+              <span class="status-dot online"></span>
+              Online
+            </label>
+            <label class="status-option" data-status="away">
+              <input type="radio" name="status" value="away" />
+              <span class="status-dot away"></span>
+              Away
+            </label>
+            <label class="status-option" data-status="dnd">
+              <input type="radio" name="status" value="dnd" />
+              <span class="status-dot dnd"></span>
+              DND
+            </label>
+            <label class="status-option" data-status="invisible">
+              <input type="radio" name="status" value="invisible" />
+              <span class="status-dot invisible"></span>
+              Invisible
+            </label>
+          </div>
+        </div>
+
+        <!-- About Me -->
+        <div class="form-group">
+          <label class="form-label" for="about-me">About Me</label>
+          <textarea class="form-textarea" id="about-me" maxlength="256" rows="3" placeholder="Tell the team something about yourself...">Full-stack dev. I mass-google error messages professionally. Coffee-driven development advocate.</textarea>
+          <div class="form-char-count" id="about-char-count">72 / 256</div>
+        </div>
+
+        <!-- Accordion Sections -->
+        <div class="accordion">
+          <!-- Connected Accounts -->
+          <div class="accordion-item">
+            <div class="accordion-header" data-accordion="connected-accounts">
+              <div class="accordion-header-left">
+                <span class="accordion-icon">&#128279;</span>
+                <span class="accordion-title">Connected Accounts</span>
+              </div>
+              <span class="accordion-chevron">&#9660;</span>
+            </div>
+            <div class="accordion-body">
+              <div class="accordion-content">
+                <div class="toggle-row">
+                  <div class="toggle-label">
+                    <span class="toggle-label-icon">&#128025;</span>
+                    GitHub
+                  </div>
+                  <label class="toggle-switch">
+                    <input type="checkbox" id="toggle-github" checked />
+                    <span class="toggle-track"></span>
+                    <span class="toggle-thumb"></span>
+                  </label>
+                </div>
+                <div class="toggle-row">
+                  <div class="toggle-label">
+                    <span class="toggle-label-icon">&#129418;</span>
+                    GitLab
+                  </div>
+                  <label class="toggle-switch">
+                    <input type="checkbox" id="toggle-gitlab" />
+                    <span class="toggle-track"></span>
+                    <span class="toggle-thumb"></span>
+                  </label>
+                </div>
+                <div class="toggle-row">
+                  <div class="toggle-label">
+                    <span class="toggle-label-icon">&#128230;</span>
+                    Bitbucket
+                  </div>
+                  <label class="toggle-switch">
+                    <input type="checkbox" id="toggle-bitbucket" />
+                    <span class="toggle-track"></span>
+                    <span class="toggle-thumb"></span>
+                  </label>
+                </div>
+                <div class="toggle-row">
+                  <div class="toggle-label">
+                    <span class="toggle-label-icon">&#128172;</span>
+                    Linear
+                  </div>
+                  <label class="toggle-switch">
+                    <input type="checkbox" id="toggle-linear" checked />
+                    <span class="toggle-track"></span>
+                    <span class="toggle-thumb"></span>
+                  </label>
+                </div>
+                <div class="toggle-row">
+                  <div class="toggle-label">
+                    <span class="toggle-label-icon">&#128039;</span>
+                    Docker Hub
+                  </div>
+                  <label class="toggle-switch">
+                    <input type="checkbox" id="toggle-docker" />
+                    <span class="toggle-track"></span>
+                    <span class="toggle-thumb"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Notification Preferences -->
+          <div class="accordion-item">
+            <div class="accordion-header" data-accordion="notifications">
+              <div class="accordion-header-left">
+                <span class="accordion-icon">&#128276;</span>
+                <span class="accordion-title">Notification Preferences</span>
+              </div>
+              <span class="accordion-chevron">&#9660;</span>
+            </div>
+            <div class="accordion-body">
+              <div class="accordion-content">
+                <div class="notif-row">
+                  <span class="notif-channel">#general</span>
+                  <select class="notif-select">
+                    <option value="all" selected>All messages</option>
+                    <option value="mentions">Mentions only</option>
+                    <option value="none">Muted</option>
+                  </select>
+                </div>
+                <div class="notif-row">
+                  <span class="notif-channel">#random</span>
+                  <select class="notif-select">
+                    <option value="all">All messages</option>
+                    <option value="mentions" selected>Mentions only</option>
+                    <option value="none">Muted</option>
+                  </select>
+                </div>
+                <div class="notif-row">
+                  <span class="notif-channel">#incidents</span>
+                  <select class="notif-select">
+                    <option value="all" selected>All messages</option>
+                    <option value="mentions">Mentions only</option>
+                    <option value="none">Muted</option>
+                  </select>
+                </div>
+                <div class="notif-row">
+                  <span class="notif-channel">#deploy-log</span>
+                  <select class="notif-select">
+                    <option value="all">All messages</option>
+                    <option value="mentions">Mentions only</option>
+                    <option value="none" selected>Muted</option>
+                  </select>
+                </div>
+                <div class="notif-row">
+                  <span class="notif-channel">#watercooler</span>
+                  <select class="notif-select">
+                    <option value="all">All messages</option>
+                    <option value="mentions" selected>Mentions only</option>
+                    <option value="none">Muted</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Appearance -->
+          <div class="accordion-item">
+            <div class="accordion-header" data-accordion="appearance">
+              <div class="accordion-header-left">
+                <span class="accordion-icon">&#127912;</span>
+                <span class="accordion-title">Appearance</span>
+              </div>
+              <span class="accordion-chevron">&#9660;</span>
+            </div>
+            <div class="accordion-body">
+              <div class="accordion-content">
+                <div class="slider-row">
+                  <span class="slider-label">Font size</span>
+                  <input type="range" class="slider-input" id="font-size-slider" min="12" max="20" value="14" />
+                  <span class="slider-value" id="font-size-value">14px</span>
+                </div>
+                <div class="toggle-row">
+                  <div class="toggle-label">
+                    <span class="toggle-label-icon">&#128221;</span>
+                    Compact mode
+                  </div>
+                  <label class="toggle-switch">
+                    <input type="checkbox" id="toggle-compact" />
+                    <span class="toggle-track"></span>
+                    <span class="toggle-thumb"></span>
+                  </label>
+                </div>
+                <div class="toggle-row">
+                  <div class="toggle-label">
+                    <span class="toggle-label-icon">&#127763;</span>
+                    Reduce motion
+                  </div>
+                  <label class="toggle-switch">
+                    <input type="checkbox" id="toggle-reduce-motion" />
+                    <span class="toggle-track"></span>
+                    <span class="toggle-thumb"></span>
+                  </label>
+                </div>
+                <div class="toggle-row">
+                  <div class="toggle-label">
+                    <span class="toggle-label-icon">&#128261;</span>
+                    Message sounds
+                  </div>
+                  <label class="toggle-switch">
+                    <input type="checkbox" id="toggle-sounds" checked />
+                    <span class="toggle-track"></span>
+                    <span class="toggle-thumb"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button type="button" class="profile-save-btn" id="save-profile">Save Changes</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <script>
+    /* ==============================================
+       stderr.chat — Profile Page JS
+       ============================================== */
+
+    /* ---------- Avatar Upload ---------- */
+    const avatarFile = document.getElementById('avatar-file');
+    const avatarDisplay = document.getElementById('avatar-display');
+
+    avatarFile.addEventListener('change', () => {
+      if (avatarFile.files.length > 0) {
+        const file = avatarFile.files[0];
+        const reader = new FileReader();
+        reader.onload = e => {
+          avatarDisplay.textContent = '';
+          avatarDisplay.style.backgroundImage = `url(${e.target.result})`;
+          avatarDisplay.style.backgroundSize = 'cover';
+          avatarDisplay.style.backgroundPosition = 'center';
+          showToast(`Avatar updated: ${file.name}`);
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    /* ---------- Display Name Live Update ---------- */
+    const displayNameInput = document.getElementById('display-name');
+    const avatarNameDisplay = document.getElementById('avatar-name-display');
+
+    displayNameInput.addEventListener('input', () => {
+      avatarNameDisplay.textContent = displayNameInput.value || 'you';
+      // Update avatar initials
+      const name = displayNameInput.value.trim();
+      if (name && !avatarDisplay.style.backgroundImage) {
+        const parts = name.split(/\s+/);
+        const initials = parts.length >= 2
+          ? (parts[0][0] + parts[1][0]).toUpperCase()
+          : name.slice(0, 2).toUpperCase();
+        avatarDisplay.textContent = initials;
+      }
+    });
+
+    /* ---------- Status Selector ---------- */
+    const statusSelector = document.getElementById('status-selector');
+    const statusOptions = statusSelector.querySelectorAll('.status-option');
+
+    statusOptions.forEach(option => {
+      option.addEventListener('click', () => {
+        statusOptions.forEach(o => o.classList.remove('selected'));
+        option.classList.add('selected');
+        option.querySelector('input[type="radio"]').checked = true;
+      });
+    });
+
+    /* ---------- About Me Character Counter ---------- */
+    const aboutMe = document.getElementById('about-me');
+    const charCount = document.getElementById('about-char-count');
+
+    function updateCharCount() {
+      const len = aboutMe.value.length;
+      const max = 256;
+      charCount.textContent = `${len} / ${max}`;
+      charCount.classList.remove('warning', 'danger');
+      if (len > max * 0.9) {
+        charCount.classList.add('danger');
+      } else if (len > max * 0.75) {
+        charCount.classList.add('warning');
+      }
+    }
+
+    aboutMe.addEventListener('input', updateCharCount);
+    updateCharCount();
+
+    /* ---------- Accordion ---------- */
+    document.querySelectorAll('.accordion-header').forEach(header => {
+      header.addEventListener('click', () => {
+        const item = header.parentElement;
+        const wasOpen = item.classList.contains('open');
+
+        // Close all
+        document.querySelectorAll('.accordion-item').forEach(i => i.classList.remove('open'));
+
+        // Toggle clicked
+        if (!wasOpen) {
+          item.classList.add('open');
+        }
+      });
+    });
+
+    /* ---------- Font Size Slider ---------- */
+    const fontSizeSlider = document.getElementById('font-size-slider');
+    const fontSizeValue = document.getElementById('font-size-value');
+
+    fontSizeSlider.addEventListener('input', () => {
+      const val = fontSizeSlider.value;
+      fontSizeValue.textContent = `${val}px`;
+      document.documentElement.style.fontSize = `${val}px`;
+    });
+
+    /* ---------- Save Profile ---------- */
+    document.getElementById('save-profile').addEventListener('click', () => {
+      showToast('Profile saved successfully');
+    });
+
+    /* ---------- Toast System ---------- */
+    const toastContainer = document.getElementById('toast-container');
+
+    function showToast(message) {
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.innerHTML = `
+        <span class="toast-icon">&#10003;</span>
+        <span class="toast-message">${escapeHtml(message)}</span>
+        <button class="toast-close">&#10005;</button>`;
+
+      toastContainer.appendChild(toast);
+
+      const closeBtn = toast.querySelector('.toast-close');
+      const dismiss = () => {
+        toast.classList.add('removing');
+        setTimeout(() => toast.remove(), 300);
+      };
+
+      closeBtn.addEventListener('click', dismiss);
+      setTimeout(dismiss, 3000);
+    }
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+  </script>
+</body>
+</html>

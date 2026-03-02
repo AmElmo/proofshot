@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ship.log -- archive</title>
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+
+  <header>
+    <span class="logo">ship<span class="dimmed">.log</span></span>
+    <nav>
+      <a href="/">Board</a>
+      <a href="/archive.html" class="active">Archive</a>
+    </nav>
+    <div class="header-spacer"></div>
+    <div class="search-box">
+      <input type="text" id="search-input" placeholder="Search archive..." />
+    </div>
+  </header>
+
+  <div class="archive-container">
+
+    <h1 style="font-size: 24px; margin-bottom: 6px;">Archive</h1>
+    <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 28px;">
+      Where shipped tasks go to rest. They earned it.
+    </p>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-value">42</div>
+        <div class="stat-label">tasks shipped this sprint</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">2.3d</div>
+        <div class="stat-label">average cycle time</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">87%</div>
+        <div class="stat-label">sprint completion rate</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">7</div>
+        <div class="stat-label">P0 fires extinguished</div>
+      </div>
+    </div>
+
+    <h2 style="font-size: 16px; color: var(--text-secondary); margin-bottom: 14px; font-weight: 600;">
+      Completed Tasks
+    </h2>
+
+    <div class="archive-list" id="archive-list">
+
+      <div class="archive-item" data-archive-id="SL-089">
+        <div class="check-icon">&#10003;</div>
+        <div class="archive-item-info">
+          <div class="archive-item-title">Implement JWT refresh token rotation</div>
+          <div class="archive-item-meta">
+            <span>SL-089</span>
+            <span>P0 &middot; bug</span>
+            <span>Completed Mar 1, 2026</span>
+            <span>Cycle: 1.2d</span>
+          </div>
+        </div>
+        <button class="btn btn-ghost btn-sm" data-restore="SL-089">Restore</button>
+      </div>
+
+      <div class="archive-item" data-archive-id="SL-085">
+        <div class="check-icon">&#10003;</div>
+        <div class="archive-item-info">
+          <div class="archive-item-title">Replace moment.js with date-fns (finally)</div>
+          <div class="archive-item-meta">
+            <span>SL-085</span>
+            <span>P1 &middot; refactor</span>
+            <span>Completed Feb 28, 2026</span>
+            <span>Cycle: 3.5d</span>
+          </div>
+        </div>
+        <button class="btn btn-ghost btn-sm" data-restore="SL-085">Restore</button>
+      </div>
+
+      <div class="archive-item" data-archive-id="SL-082">
+        <div class="check-icon">&#10003;</div>
+        <div class="archive-item-info">
+          <div class="archive-item-title">Fix Safari layout bug (of course it's Safari)</div>
+          <div class="archive-item-meta">
+            <span>SL-082</span>
+            <span>P1 &middot; bug</span>
+            <span>Completed Feb 27, 2026</span>
+            <span>Cycle: 0.5d</span>
+          </div>
+        </div>
+        <button class="btn btn-ghost btn-sm" data-restore="SL-082">Restore</button>
+      </div>
+
+      <div class="archive-item" data-archive-id="SL-078">
+        <div class="check-icon">&#10003;</div>
+        <div class="archive-item-info">
+          <div class="archive-item-title">Add Cmd+K command palette</div>
+          <div class="archive-item-meta">
+            <span>SL-078</span>
+            <span>P2 &middot; feature</span>
+            <span>Completed Feb 26, 2026</span>
+            <span>Cycle: 4.1d</span>
+          </div>
+        </div>
+        <button class="btn btn-ghost btn-sm" data-restore="SL-078">Restore</button>
+      </div>
+
+      <div class="archive-item" data-archive-id="SL-074">
+        <div class="check-icon">&#10003;</div>
+        <div class="archive-item-info">
+          <div class="archive-item-title">Delete 14,000 lines of dead code</div>
+          <div class="archive-item-meta">
+            <span>SL-074</span>
+            <span>P2 &middot; tech-debt</span>
+            <span>Completed Feb 24, 2026</span>
+            <span>Cycle: 1.8d</span>
+          </div>
+        </div>
+        <button class="btn btn-ghost btn-sm" data-restore="SL-074">Restore</button>
+      </div>
+
+      <div class="archive-item" data-archive-id="SL-071">
+        <div class="check-icon">&#10003;</div>
+        <div class="archive-item-info">
+          <div class="archive-item-title">Onboard intern (teach them git rebase)</div>
+          <div class="archive-item-meta">
+            <span>SL-071</span>
+            <span>P1 &middot; feature</span>
+            <span>Completed Feb 22, 2026</span>
+            <span>Cycle: 5.0d</span>
+          </div>
+        </div>
+        <button class="btn btn-ghost btn-sm" data-restore="SL-071">Restore</button>
+      </div>
+
+      <div class="archive-item" data-archive-id="SL-068">
+        <div class="check-icon">&#10003;</div>
+        <div class="archive-item-info">
+          <div class="archive-item-title">Fix memory leak in WebSocket handler</div>
+          <div class="archive-item-meta">
+            <span>SL-068</span>
+            <span>P0 &middot; bug</span>
+            <span>Completed Feb 20, 2026</span>
+            <span>Cycle: 2.0d</span>
+          </div>
+        </div>
+        <button class="btn btn-ghost btn-sm" data-restore="SL-068">Restore</button>
+      </div>
+
+      <div class="archive-item" data-archive-id="SL-065">
+        <div class="check-icon">&#10003;</div>
+        <div class="archive-item-info">
+          <div class="archive-item-title">Write actual documentation (not just code comments)</div>
+          <div class="archive-item-meta">
+            <span>SL-065</span>
+            <span>P2 &middot; tech-debt</span>
+            <span>Completed Feb 18, 2026</span>
+            <span>Cycle: 6.2d</span>
+          </div>
+        </div>
+        <button class="btn btn-ghost btn-sm" data-restore="SL-065">Restore</button>
+      </div>
+
+      <div class="archive-item" data-archive-id="SL-061">
+        <div class="check-icon">&#10003;</div>
+        <div class="archive-item-info">
+          <div class="archive-item-title">Set up CI/CD pipeline that actually works</div>
+          <div class="archive-item-meta">
+            <span>SL-061</span>
+            <span>P0 &middot; feature</span>
+            <span>Completed Feb 15, 2026</span>
+            <span>Cycle: 3.3d</span>
+          </div>
+        </div>
+        <button class="btn btn-ghost btn-sm" data-restore="SL-061">Restore</button>
+      </div>
+
+      <div class="archive-item" data-archive-id="SL-058">
+        <div class="check-icon">&#10003;</div>
+        <div class="archive-item-info">
+          <div class="archive-item-title">Convince PM that "refactor" is a feature</div>
+          <div class="archive-item-meta">
+            <span>SL-058</span>
+            <span>P1 &middot; refactor</span>
+            <span>Completed Feb 12, 2026</span>
+            <span>Cycle: 8.0d</span>
+          </div>
+        </div>
+        <button class="btn btn-ghost btn-sm" data-restore="SL-058">Restore</button>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <footer>ship.log v0.1.0 // built with sleep deprivation and caffeine</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  function $(sel, parent) { return (parent || document).querySelector(sel); }
+  function $$(sel, parent) { return [...(parent || document).querySelectorAll(sel)]; }
+
+  function toast(msg) {
+    const el = $('#toast');
+    el.textContent = msg;
+    el.classList.add('visible');
+    setTimeout(() => el.classList.remove('visible'), 2400);
+  }
+
+  // ---- Restore buttons ----
+  $$('[data-restore]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.restore;
+      const item = btn.closest('.archive-item');
+      item.style.transition = 'all 0.3s';
+      item.style.opacity = '0';
+      item.style.transform = 'translateX(40px)';
+      setTimeout(() => item.remove(), 300);
+      toast(`Restored ${id} to backlog`);
+    });
+  });
+
+  // ---- Search ----
+  const searchInput = $('#search-input');
+  searchInput.addEventListener('input', () => {
+    const q = searchInput.value.toLowerCase().trim();
+    $$('.archive-item').forEach(item => {
+      const title = ($('.archive-item-title', item)?.textContent || '').toLowerCase();
+      const meta = ($('.archive-item-meta', item)?.textContent || '').toLowerCase();
+      const match = !q || title.includes(q) || meta.includes(q);
+      item.style.display = match ? '' : 'none';
+    });
+  });
+
+  // Escape to clear
+  searchInput.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      searchInput.value = '';
+      searchInput.dispatchEvent(new Event('input'));
+      searchInput.blur();
+    }
+  });
+
+  // / to focus search
+  document.addEventListener('keydown', e => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    if (e.key === '/') {
+      e.preventDefault();
+      searchInput.focus();
+    }
+  });
+
+})();
+</script>
+
+</body>
+</html>
