@@ -1,6 +1,6 @@
 {
   "name": "proofshot",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Open-source, agent-agnostic CLI for visual verification. Your AI coding agent builds a feature — ProofShot records video proof it works.",
   "type": "module",
   "bin": {
