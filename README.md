@@ -1,6 +1,10 @@
-# ProofShot
+<p align="center">
+  <img src="brand-assets/banners/proofshot-banner.svg" alt="ProofShot — Visual verification for AI coding agents" width="100%" />
+</p>
 
-**The open-source, agent-agnostic CLI that gives AI coding agents eyes.**
+<p align="center">
+  <strong>The open-source, agent-agnostic CLI that gives AI coding agents eyes.</strong>
+</p>
 
 Your agent builds a feature — ProofShot records video proof it works. Three commands. Any agent. Real browser verification.
 

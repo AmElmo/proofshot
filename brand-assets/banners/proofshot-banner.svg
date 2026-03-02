@@ -1,0 +1,73 @@
+<svg viewBox="0 0 1200 400" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg4" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#020617"/>
+      <stop offset="100%" stop-color="#0F172A"/>
+    </linearGradient>
+    <linearGradient id="mark4" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366F1"/>
+      <stop offset="100%" stop-color="#22D3EE"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="400" fill="url(#bg4)"/>
+
+  <!-- Large decorative viewfinder — oversized, cropped at edges -->
+  <g opacity="0.06" stroke="white" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M-40,200 L-40,20 C-40,0 -20,-20 0,-20 L180,-20"/>
+    <path d="M1020,-20 L1200,-20 C1220,-20 1240,0 1240,20 L1240,200"/>
+    <path d="M-40,200 L-40,380 C-40,400 -20,420 0,420 L180,420"/>
+    <path d="M1020,420 L1200,420 C1220,420 1240,400 1240,380 L1240,200"/>
+  </g>
+
+  <!-- Center content -->
+  <!-- Viewfinder icon — gradient -->
+  <g transform="translate(366, 60)">
+    <path d="M0,36 L0,10 C0,4 4,0 10,0 L36,0" fill="none" stroke="url(#mark4)" stroke-width="5" stroke-linecap="round"/>
+    <path d="M64,0 L90,0 C96,0 100,4 100,10 L100,36" fill="none" stroke="url(#mark4)" stroke-width="5" stroke-linecap="round"/>
+    <path d="M0,64 L0,90 C0,96 4,100 10,100 L36,100" fill="none" stroke="url(#mark4)" stroke-width="5" stroke-linecap="round"/>
+    <path d="M64,100 L90,100 C96,100 100,96 100,90 L100,64" fill="none" stroke="url(#mark4)" stroke-width="5" stroke-linecap="round"/>
+    <path d="M30,56 L42,68 L72,32" fill="none" stroke="#22D3EE" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- Wordmark -->
+  <text x="490" y="130" font-family="Inter, SF Pro Display, -apple-system, sans-serif" font-size="56" font-weight="800" fill="white" letter-spacing="-1">ProofShot</text>
+
+  <!-- Hero tagline — large and punchy -->
+  <text x="600" y="220" text-anchor="middle" font-family="Inter, SF Pro Display, -apple-system, sans-serif" font-size="28" font-weight="300" fill="#CBD5E1">Your agent codes it.</text>
+  <text x="600" y="260" text-anchor="middle" font-family="Inter, SF Pro Display, -apple-system, sans-serif" font-size="28" font-weight="600" fill="white">ProofShot proves it works.</text>
+
+  <!-- Feature bar at bottom — 4 items evenly spaced across 800px pill (x=200..1000), centers at 320, 480, 720, 880 with separators at 400, 600, 800 -->
+  <g transform="translate(0, 310)">
+    <rect x="200" y="0" width="800" height="60" rx="30" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+
+    <g font-family="Inter, -apple-system, sans-serif" font-size="14">
+      <!-- 4 items evenly spaced: pill is 200–1000, divide into 5 slots of 160px → centers at 360, 520, 680, 840 -->
+      <!-- Video Recording -->
+      <text x="360" y="22" text-anchor="middle" fill="#6366F1" font-weight="600" font-size="18">&#x25B6;</text>
+      <text x="360" y="44" text-anchor="middle" fill="#94A3B8">Video Recording</text>
+
+      <!-- Separator at midpoint 440 -->
+      <circle cx="440" cy="30" r="2" fill="#334155"/>
+
+      <!-- Screenshots -->
+      <text x="520" y="22" text-anchor="middle" fill="#22D3EE" font-weight="600" font-size="18">&#x25A3;</text>
+      <text x="520" y="44" text-anchor="middle" fill="#94A3B8">Screenshots</text>
+
+      <!-- Separator at midpoint 600 -->
+      <circle cx="600" cy="30" r="2" fill="#334155"/>
+
+      <!-- Error Reports -->
+      <text x="680" y="22" text-anchor="middle" fill="#F87171" font-weight="600" font-size="18">&#x26A0;</text>
+      <text x="680" y="44" text-anchor="middle" fill="#94A3B8">Error Reports</text>
+
+      <!-- Separator at midpoint 760 -->
+      <circle cx="760" cy="30" r="2" fill="#334155"/>
+
+      <!-- Interactive Viewer -->
+      <text x="840" y="22" text-anchor="middle" fill="#A78BFA" font-weight="600" font-size="18">&#x29C9;</text>
+      <text x="840" y="44" text-anchor="middle" fill="#94A3B8">Interactive Viewer</text>
+    </g>
+  </g>
+</svg>
