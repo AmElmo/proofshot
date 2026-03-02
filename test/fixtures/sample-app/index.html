@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Acme SaaS — Home</title>
+  <title>localhost:cafe -- Ship it</title>
   <link rel="stylesheet" href="/src/style.css" />
 </head>
 <body>
   <nav>
-    <span class="logo">Acme SaaS</span>
+    <span class="logo">localhost:cafe</span>
     <a href="/" class="active">Home</a>
     <a href="/dashboard.html">Dashboard</a>
     <a href="/settings.html">Settings</a>
@@ -16,48 +16,58 @@
   </nav>
 
   <div class="container">
-    <h1>Build faster with Acme</h1>
-    <p class="subtitle">The all-in-one platform for modern teams. Ship products, track metrics, and grow.</p>
+    <div class="hero">
+      <div class="hero-tag">
+        <span>$</span> npm i --save-dev good-vibes
+      </div>
+      <h1>Deploy first.<br>Ask questions never.</h1>
+      <p class="subtitle">The developer platform that ships faster than you can say "it works on my machine." CI/CD, monitoring, and zero-downtime deploys -- without the YAML nightmares.</p>
 
-    <div style="display: flex; gap: 16px; margin-bottom: 64px;">
-      <a href="/dashboard.html" class="btn">Get Started</a>
-      <a href="#features" class="btn btn-outline">Learn More</a>
+      <div class="hero-cta">
+        <a href="/dashboard.html" class="btn">Get Started Free</a>
+        <a href="#features" class="btn btn-outline">Read the Docs</a>
+      </div>
     </div>
 
     <div id="features" class="card-grid">
       <div class="card">
-        <h3>Analytics</h3>
-        <p>Real-time dashboards with actionable insights. Track every metric that matters to your business.</p>
+        <div class="feature-icon">&#x26A1;</div>
+        <h3>Hot Reload Everything</h3>
+        <p>Changes go live in milliseconds. Your code, your config, your regrets -- all hot-reloaded instantly. No more Cmd+R.</p>
       </div>
       <div class="card">
-        <h3>Collaboration</h3>
-        <p>Work together in real-time. Share projects, leave comments, and keep everyone aligned.</p>
+        <div class="feature-icon">&#x1F680;</div>
+        <h3>Zero-Downtime Deploys</h3>
+        <p>Rolling deployments so smooth your users won't even notice. Yes, even on Friday afternoons. We won't judge.</p>
       </div>
       <div class="card">
-        <h3>Automation</h3>
-        <p>Set up workflows that run on autopilot. Save hours every week on repetitive tasks.</p>
+        <div class="feature-icon">&#x1F916;</div>
+        <h3>CI/CD That Sparks Joy</h3>
+        <p>Pipelines that actually make sense. Write once, deploy everywhere. No 400-line YAML files required. We promise.</p>
       </div>
     </div>
 
-    <h2>Trusted by teams everywhere</h2>
+    <div class="section-header">
+      <h2>Trusted by developers who ship</h2>
+    </div>
     <div class="card-grid">
       <div class="card" style="text-align: center;">
-        <div class="stat">12,000+</div>
-        <p>Active users</p>
+        <div class="stat">69,420</div>
+        <p>Deploys shipped</p>
       </div>
       <div class="card" style="text-align: center;">
-        <div class="stat">99.9%</div>
-        <p>Uptime</p>
+        <div class="stat">99.99%</div>
+        <p>Uptime (we hope)</p>
       </div>
       <div class="card" style="text-align: center;">
-        <div class="stat">4.8/5</div>
-        <p>User rating</p>
+        <div class="stat">&infin;</div>
+        <p>Coffee consumed</p>
       </div>
     </div>
   </div>
 
   <footer>
-    &copy; 2026 Acme SaaS. All rights reserved.
+    <span>&copy; 2026 localhost:cafe &middot; 0 bugs shipped&trade; &middot; Built with &#x2615; and <a href="#">git push --force</a></span>
   </footer>
 </body>
 </html>

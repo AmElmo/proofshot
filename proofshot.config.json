@@ -1,6 +1,6 @@
 {
   "devServer": {
-    "port": 5173,
+    "port": 3000,
     "startupTimeout": 30000
   },
   "output": "./proofshot-artifacts",

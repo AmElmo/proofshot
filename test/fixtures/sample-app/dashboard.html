@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Acme SaaS — Dashboard</title>
+  <title>localhost:cafe -- Dashboard</title>
   <link rel="stylesheet" href="/src/style.css" />
 </head>
 <body>
   <nav>
-    <span class="logo">Acme SaaS</span>
+    <span class="logo">localhost:cafe</span>
     <a href="/">Home</a>
     <a href="/dashboard.html" class="active">Dashboard</a>
     <a href="/settings.html">Settings</a>
@@ -17,61 +17,72 @@
 
   <div class="container">
     <h1>Dashboard</h1>
-    <p class="subtitle">Your metrics at a glance</p>
+    <p class="subtitle">Your engineering metrics at a glance</p>
+
+    <div class="status-bar">
+      <div class="status-dot"></div>
+      <span>All systems nominal &mdash; last incident: 42 days ago</span>
+    </div>
 
     <div class="card-grid">
       <div class="card">
-        <p style="color: #64748b; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Revenue</p>
-        <div class="stat">$48,250</div>
-        <p style="color: #4ade80; font-size: 14px;">+12.5% from last month</p>
+        <p class="metric-label">Deploys Today</p>
+        <div class="stat">1,337</div>
+        <p class="metric-trend up">+23 since lunch</p>
       </div>
       <div class="card">
-        <p style="color: #64748b; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Users</p>
-        <div class="stat">1,284</div>
-        <p style="color: #4ade80; font-size: 14px;">+8.2% from last month</p>
+        <p class="metric-label">PRs Merged</p>
+        <div class="stat">420</div>
+        <p class="metric-trend up">+69 this week (nice)</p>
       </div>
       <div class="card">
-        <p style="color: #64748b; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Conversion</p>
-        <div class="stat">3.2%</div>
-        <p style="color: #f87171; font-size: 14px;">-0.4% from last month</p>
+        <p class="metric-label">Avg Build Time</p>
+        <div class="stat">4.2s</div>
+        <p class="metric-trend down">+0.8s -- blame webpack</p>
       </div>
     </div>
 
     <h2>Recent Activity</h2>
     <div class="card">
-      <table style="width: 100%; border-collapse: collapse;">
+      <table>
         <thead>
-          <tr style="border-bottom: 1px solid #334155;">
-            <th style="text-align: left; padding: 12px 8px; color: #64748b; font-size: 12px; text-transform: uppercase;">Event</th>
-            <th style="text-align: left; padding: 12px 8px; color: #64748b; font-size: 12px; text-transform: uppercase;">User</th>
-            <th style="text-align: left; padding: 12px 8px; color: #64748b; font-size: 12px; text-transform: uppercase;">Date</th>
-            <th style="text-align: right; padding: 12px 8px; color: #64748b; font-size: 12px; text-transform: uppercase;">Status</th>
+          <tr>
+            <th>Event</th>
+            <th>Engineer</th>
+            <th>When</th>
+            <th style="text-align: right;">Status</th>
           </tr>
         </thead>
         <tbody>
-          <tr style="border-bottom: 1px solid #1e293b;">
-            <td style="padding: 12px 8px; font-size: 14px;">New signup</td>
-            <td style="padding: 12px 8px; font-size: 14px; color: #94a3b8;">alice@example.com</td>
-            <td style="padding: 12px 8px; font-size: 14px; color: #94a3b8;">2 min ago</td>
-            <td style="padding: 12px 8px; text-align: right;"><span style="background: #064e3b; color: #4ade80; padding: 4px 10px; border-radius: 9999px; font-size: 12px;">Active</span></td>
-          </tr>
-          <tr style="border-bottom: 1px solid #1e293b;">
-            <td style="padding: 12px 8px; font-size: 14px;">Purchase</td>
-            <td style="padding: 12px 8px; font-size: 14px; color: #94a3b8;">bob@example.com</td>
-            <td style="padding: 12px 8px; font-size: 14px; color: #94a3b8;">15 min ago</td>
-            <td style="padding: 12px 8px; text-align: right;"><span style="background: #064e3b; color: #4ade80; padding: 4px 10px; border-radius: 9999px; font-size: 12px;">Completed</span></td>
-          </tr>
-          <tr style="border-bottom: 1px solid #1e293b;">
-            <td style="padding: 12px 8px; font-size: 14px;">Support ticket</td>
-            <td style="padding: 12px 8px; font-size: 14px; color: #94a3b8;">carol@example.com</td>
-            <td style="padding: 12px 8px; font-size: 14px; color: #94a3b8;">1 hour ago</td>
-            <td style="padding: 12px 8px; text-align: right;"><span style="background: #422006; color: #fbbf24; padding: 4px 10px; border-radius: 9999px; font-size: 12px;">Pending</span></td>
+          <tr>
+            <td>Force pushed to main</td>
+            <td style="color: var(--text-secondary); font-family: var(--font-mono); font-size: 13px;">@intern_dev</td>
+            <td style="color: var(--text-secondary);">2 min ago</td>
+            <td><span class="badge badge-fire">On Fire</span></td>
           </tr>
           <tr>
-            <td style="padding: 12px 8px; font-size: 14px;">Subscription upgrade</td>
-            <td style="padding: 12px 8px; font-size: 14px; color: #94a3b8;">dave@example.com</td>
-            <td style="padding: 12px 8px; font-size: 14px; color: #94a3b8;">3 hours ago</td>
-            <td style="padding: 12px 8px; text-align: right;"><span style="background: #064e3b; color: #4ade80; padding: 4px 10px; border-radius: 9999px; font-size: 12px;">Active</span></td>
+            <td>Deployed to prod on Friday 5pm</td>
+            <td style="color: var(--text-secondary); font-family: var(--font-mono); font-size: 13px;">@yolo_shipper</td>
+            <td style="color: var(--text-secondary);">17 min ago</td>
+            <td><span class="badge badge-shipped">Shipped</span></td>
+          </tr>
+          <tr>
+            <td>Merged PR #420 -- "fix: fix the fix"</td>
+            <td style="color: var(--text-secondary); font-family: var(--font-mono); font-size: 13px;">@senior_dev</td>
+            <td style="color: var(--text-secondary);">1 hour ago</td>
+            <td><span class="badge badge-lgtm">LGTM</span></td>
+          </tr>
+          <tr>
+            <td>Broke the build (again)</td>
+            <td style="color: var(--text-secondary); font-family: var(--font-mono); font-size: 13px;">@coffee_driven</td>
+            <td style="color: var(--text-secondary);">3 hours ago</td>
+            <td><span class="badge badge-coffee">Needs Coffee</span></td>
+          </tr>
+          <tr>
+            <td>Reverted "temporary fix" from 2019</td>
+            <td style="color: var(--text-secondary); font-family: var(--font-mono); font-size: 13px;">@legacy_hunter</td>
+            <td style="color: var(--text-secondary);">5 hours ago</td>
+            <td><span class="badge badge-reverted">Reverted</span></td>
           </tr>
         </tbody>
       </table>
@@ -84,7 +95,7 @@
   </div>
 
   <footer>
-    &copy; 2026 Acme SaaS. All rights reserved.
+    <span>&copy; 2026 localhost:cafe &middot; 0 bugs shipped&trade; &middot; Built with &#x2615; and <a href="#">git push --force</a></span>
   </footer>
 </body>
 </html>

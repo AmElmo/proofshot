@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>stderr.chat</title>
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+  <div class="app-layout">
+    <!-- ========== SIDEBAR ========== -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">stderr<span>.chat</span></div>
+      </div>
+
+      <div class="sidebar-search">
+        <input type="text" id="channel-search" placeholder="Search channels..." />
+      </div>
+
+      <div class="channel-list">
+        <div class="channel-section-title">Channels</div>
+
+        <div class="channel-item active" data-channel="general">
+          <span class="channel-hash">#</span>
+          <span class="channel-name">general</span>
+          <span class="channel-badge">3</span>
+        </div>
+        <div class="channel-item" data-channel="random">
+          <span class="channel-hash">#</span>
+          <span class="channel-name">random</span>
+          <span class="channel-badge">7</span>
+        </div>
+        <div class="channel-item" data-channel="incidents">
+          <span class="channel-hash">#</span>
+          <span class="channel-name">incidents</span>
+          <span class="channel-badge">1</span>
+        </div>
+        <div class="channel-item" data-channel="deploy-log">
+          <span class="channel-hash">#</span>
+          <span class="channel-name">deploy-log</span>
+        </div>
+        <div class="channel-item" data-channel="watercooler">
+          <span class="channel-hash">#</span>
+          <span class="channel-name">watercooler</span>
+          <span class="channel-badge">12</span>
+        </div>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-user-avatar">YO</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name">you</div>
+          <div class="sidebar-user-status">
+            <span class="status-dot online"></span> Online
+          </div>
+        </div>
+        <a href="/profile.html" class="header-btn tooltip-container" title="Profile">
+          <span>&#9881;</span>
+          <span class="tooltip">Settings</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- ========== MAIN AREA ========== -->
+    <main class="main-area">
+      <!-- Header -->
+      <header class="chat-header">
+        <div class="chat-header-channel">
+          <span class="chat-header-name" id="header-channel-name">#general</span>
+        </div>
+        <span class="chat-header-desc" id="header-channel-desc">Where all the important stuff gets ignored</span>
+        <div class="chat-header-actions">
+          <span class="member-count">&#128101; <span id="member-count">14</span></span>
+          <input type="text" class="header-search" placeholder="Search messages..." />
+          <button class="header-btn tooltip-container">
+            &#128204;
+            <span class="tooltip">Pinned messages</span>
+          </button>
+          <button class="header-btn tooltip-container">
+            &#128276;
+            <span class="tooltip">Notifications</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Messages -->
+      <div class="messages-area" id="messages-area">
+
+        <!-- ===== #general ===== -->
+        <div class="message-container active" id="channel-general">
+          <div class="system-message">
+            <span class="system-message-text">Today &mdash; March 2, 2026</span>
+          </div>
+
+          <!-- Message 1 -->
+          <div class="message">
+            <div class="message-avatar avatar-blue">DK</div>
+            <div class="message-content">
+              <div class="message-header">
+                <span class="message-username">dan_k</span>
+                <span class="message-timestamp">09:14</span>
+              </div>
+              <div class="message-body">
+                Anyone else's Docker eating all their RAM? My laptop fan sounds like it's preparing for takeoff.
+              </div>
+              <div class="message-reactions">
+                <button class="reaction active" data-emoji="fire">
+                  <span class="reaction-emoji">&#128293;</span>
+                  <span class="reaction-count">4</span>
+                </button>
+                <button class="reaction" data-emoji="eyes">
+                  <span class="reaction-emoji">&#128064;</span>
+                  <span class="reaction-count">2</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Message 2 -->
+          <div class="message">
+            <div class="message-avatar avatar-green">SR</div>
+            <div class="message-content">
+              <div class="message-header">
+                <span class="message-username">sre_rachel</span>
+                <span class="message-timestamp">09:17</span>
+              </div>
+              <div class="message-body">
+                Just deployed to prod. Going to lunch. If anything breaks, I was never here. &#128064;
+              </div>
+              <div class="message-reactions">
+                <button class="reaction" data-emoji="thumbsup">
+                  <span class="reaction-emoji">&#128077;</span>
+                  <span class="reaction-count">6</span>
+                </button>
+                <button class="reaction active" data-emoji="fire">
+                  <span class="reaction-emoji">&#128293;</span>
+                  <span class="reaction-count">1</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Message 3 — with code block -->
+          <div class="message">
+            <div class="message-avatar avatar-purple">MZ</div>
+            <div class="message-content">
+              <div class="message-header">
+                <span class="message-username">mz_dev</span>
+                <span class="message-timestamp">09:23</span>
+              </div>
+              <div class="message-body">
+                Has anyone seen this error? I've been staring at it for 20 minutes:
+                <pre><code><span class="code-keyword">TypeError</span>: Cannot read properties of <span class="code-keyword">undefined</span>
+  (<span class="code-string">reading 'map'</span>)
+    <span class="code-comment">at UserList.render (UserList.tsx:42)</span>
+    <span class="code-comment">at processChild (react-dom.js:1234)</span></code></pre>
+              </div>
+              <div class="message-reactions">
+                <button class="reaction" data-emoji="eyes">
+                  <span class="reaction-emoji">&#128064;</span>
+                  <span class="reaction-count">3</span>
+                </button>
+              </div>
+              <!-- Thread -->
+              <button class="thread-toggle" data-thread="thread-1">
+                &#128172; 3 replies &mdash; click to expand
+              </button>
+              <div class="thread-replies" id="thread-1">
+                <div class="thread-message">
+                  <div class="thread-avatar avatar-blue">DK</div>
+                  <div class="thread-content">
+                    <div class="thread-header">
+                      <span class="thread-username">dan_k</span>
+                      <span class="thread-timestamp">09:25</span>
+                    </div>
+                    <div class="thread-body">Classic. Your API is returning <code>null</code> instead of an empty array. Check the backend.</div>
+                  </div>
+                </div>
+                <div class="thread-message">
+                  <div class="thread-avatar avatar-red">NP</div>
+                  <div class="thread-content">
+                    <div class="thread-header">
+                      <span class="thread-username">npm_yolo</span>
+                      <span class="thread-timestamp">09:27</span>
+                    </div>
+                    <div class="thread-body">Add <code>?.map()</code> and call it a day. Optional chaining is basically a bandaid for the soul.</div>
+                  </div>
+                </div>
+                <div class="thread-message">
+                  <div class="thread-avatar avatar-purple">MZ</div>
+                  <div class="thread-content">
+                    <div class="thread-header">
+                      <span class="thread-username">mz_dev</span>
+                      <span class="thread-timestamp">09:30</span>
+                    </div>
+                    <div class="thread-body">Fixed it. It was the backend. Thanks @dan_k, you saved my afternoon.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Message 4 -->
+          <div class="message">
+            <div class="message-avatar avatar-red">NP</div>
+            <div class="message-content">
+              <div class="message-header">
+                <span class="message-username">npm_yolo</span>
+                <span class="message-timestamp">09:41</span>
+              </div>
+              <div class="message-body">
+                The tests pass locally&hellip;
+              </div>
+              <div class="message-reactions">
+                <button class="reaction" data-emoji="thumbsup">
+                  <span class="reaction-emoji">&#128077;</span>
+                  <span class="reaction-count">1</span>
+                </button>
+                <button class="reaction active" data-emoji="eyes">
+                  <span class="reaction-emoji">&#128064;</span>
+                  <span class="reaction-count">8</span>
+                </button>
+                <button class="reaction" data-emoji="fire">
+                  <span class="reaction-emoji">&#128293;</span>
+                  <span class="reaction-count">2</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Message 5 -->
+          <div class="message">
+            <div class="message-avatar avatar-orange">JT</div>
+            <div class="message-content">
+              <div class="message-header">
+                <span class="message-username">jtrace</span>
+                <span class="message-timestamp">10:02</span>
+              </div>
+              <div class="message-body">
+                Who broke the pipeline? The deploy dashboard is redder than my code review comments.
+              </div>
+              <div class="message-reactions">
+                <button class="reaction" data-emoji="fire">
+                  <span class="reaction-emoji">&#128293;</span>
+                  <span class="reaction-count">5</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Message 6 — code block -->
+          <div class="message">
+            <div class="message-avatar avatar-green">SR</div>
+            <div class="message-content">
+              <div class="message-header">
+                <span class="message-username">sre_rachel</span>
+                <span class="message-timestamp">10:08</span>
+              </div>
+              <div class="message-body">
+                Found the issue. Someone committed this gem:
+                <pre><code><span class="code-keyword">if</span> (<span class="code-func">process</span>.<span class="code-func">env</span>.<span class="code-string">NODE_ENV</span> === <span class="code-string">'production'</span>) {
+  <span class="code-func">console</span>.<span class="code-func">log</span>(<span class="code-string">'TODO: add error handling'</span>);
+}</code></pre>
+              </div>
+              <div class="message-reactions">
+                <button class="reaction active" data-emoji="thumbsup">
+                  <span class="reaction-emoji">&#128077;</span>
+                  <span class="reaction-count">11</span>
+                </button>
+                <button class="reaction" data-emoji="fire">
+                  <span class="reaction-emoji">&#128293;</span>
+                  <span class="reaction-count">7</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Message 7 -->
+          <div class="message">
+            <div class="message-avatar avatar-blue">DK</div>
+            <div class="message-content">
+              <div class="message-header">
+                <span class="message-username">dan_k</span>
+                <span class="message-timestamp">10:15</span>
+              </div>
+              <div class="message-body">
+                Pro tip: <code>git blame</code> doesn't lie. But sometimes you wish it would.
+              </div>
+              <div class="message-reactions">
+                <button class="reaction" data-emoji="thumbsup">
+                  <span class="reaction-emoji">&#128077;</span>
+                  <span class="reaction-count">3</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Message 8 -->
+          <div class="message">
+            <div class="message-avatar avatar-red">NP</div>
+            <div class="message-content">
+              <div class="message-header">
+                <span class="message-username">npm_yolo</span>
+                <span class="message-timestamp">10:22</span>
+              </div>
+              <div class="message-body">
+                Friendly reminder that <code>rm -rf /</code> is not a deployment strategy, no matter what the Hacker News comments say.
+              </div>
+              <div class="message-reactions">
+                <button class="reaction" data-emoji="fire">
+                  <span class="reaction-emoji">&#128293;</span>
+                  <span class="reaction-count">3</span>
+                </button>
+                <button class="reaction" data-emoji="eyes">
+                  <span class="reaction-emoji">&#128064;</span>
+                  <span class="reaction-count">1</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Message 9 -->
+          <div class="message">
+            <div class="message-avatar avatar-orange">JT</div>
+            <div class="message-content">
+              <div class="message-header">
+                <span class="message-username">jtrace</span>
+                <span class="message-timestamp">10:34</span>
+              </div>
+              <div class="message-body">
+                Meeting in 10. Agenda: "Why does staging work but prod doesn't?" — a recurring classic.
+              </div>
+              <div class="message-reactions">
+                <button class="reaction active" data-emoji="thumbsup">
+                  <span class="reaction-emoji">&#128077;</span>
+                  <span class="reaction-count">2</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Message 10 -->
+          <div class="message">
+            <div class="message-avatar avatar-purple">MZ</div>
+            <div class="message-content">
+              <div class="message-header">
+                <span class="message-username">mz_dev</span>
+                <span class="message-timestamp">10:41</span>
+              </div>
+              <div class="message-body">
+                I just wrote a 200-line function and I'm not proud of it. But it works. Ship it? &#128674;
+              </div>
+              <div class="message-reactions">
+                <button class="reaction" data-emoji="thumbsup">
+                  <span class="reaction-emoji">&#128077;</span>
+                  <span class="reaction-count">4</span>
+                </button>
+                <button class="reaction" data-emoji="fire">
+                  <span class="reaction-emoji">&#128293;</span>
+                  <span class="reaction-count">2</span>
+                </button>
+                <button class="reaction" data-emoji="eyes">
+                  <span class="reaction-emoji">&#128064;</span>
+                  <span class="reaction-count">1</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== #random ===== -->
+        <div class="message-container" id="channel-random">
+          <div class="system-message">
+            <span class="system-message-text">Today &mdash; March 2, 2026</span>
+          </div>
+          <div class="message">
+            <div class="message-avatar avatar-red">NP</div>
+            <div class="message-content">
+              <div class="message-header">
+                <span class="message-username">npm_yolo</span>
+                <span class="message-timestamp">08:30</span>
+              </div>
+              <div class="message-body">Hot take: tabs are superior. Fight me.</div>
+              <div class="message-reactions">
+                <button class="reaction active" data-emoji="fire">
+                  <span class="reaction-emoji">&#128293;</span>
+                  <span class="reaction-count">12</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="message">
+            <div class="message-avatar avatar-green">SR</div>
+            <div class="message-content">
+              <div class="message-header">
+                <span class="message-username">sre_rachel</span>
+                <span class="message-timestamp">08:33</span>
+              </div>
+              <div class="message-body">
+                Spaces gang. Our code looks the same everywhere. Your tabs look different on every editor.
+              </div>
+              <div class="message-reactions">
+                <button class="reaction" data-emoji="thumbsup">
+                  <span class="reaction-emoji">&#128077;</span>
+                  <span class="reaction-count">5</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="message">
+            <div class="message-avatar avatar-blue">DK</div>
+            <div class="message-content">
+              <div class="message-header">
+                <span class="message-username">dan_k</span>
+                <span class="message-timestamp">08:35</span>
+              </div>
+              <div class="message-body">I use whatever <code>.editorconfig</code> says. I have no loyalty.</div>
+              <div class="message-reactions">
+                <button class="reaction" data-emoji="eyes">
+                  <span class="reaction-emoji">&#128064;</span>
+                  <span class="reaction-count">3</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="message">
+            <div class="message-avatar avatar-orange">JT</div>
+            <div class="message-content">
+              <div class="message-header">
+                <span class="message-username">jtrace</span>
+                <span class="message-timestamp">09:10</span>
+              </div>
+              <div class="message-body">
+                Just realized I've been mass-replying to the wrong Slack workspace for a week. Nobody noticed. What does that say about my contributions?
+              </div>
+              <div class="message-reactions">
+                <button class="reaction" data-emoji="fire">
+                  <span class="reaction-emoji">&#128293;</span>
+                  <span class="reaction-count">8</span>
+                </button>
+                <button class="reaction active" data-emoji="thumbsup">
+                  <span class="reaction-emoji">&#128077;</span>
+                  <span class="reaction-count">3</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== #incidents ===== -->
+        <div class="message-container" id="channel-incidents">
+          <div class="system-message">
+            <span class="system-message-text">Today &mdash; March 2, 2026</span>
+          </div>
+          <div class="message">
+            <div class="message-avatar avatar-red">NP</div>
+            <div class="message-content">
+              <div class="message-header">
+                <span class="message-username">npm_yolo</span>
+                <span class="message-timestamp">07:45</span>
+              </div>
+              <div class="message-body">
+                <strong style="color:var(--red);">INCIDENT-4821</strong> &mdash; API latency spike on <code>/api/v2/users</code>. p99 hit 12s. Investigating.
+              </div>
+              <div class="message-reactions">
+                <button class="reaction" data-emoji="eyes">
+                  <span class="reaction-emoji">&#128064;</span>
+                  <span class="reaction-count">6</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="message">
+            <div class="message-avatar avatar-green">SR</div>
+            <div class="message-content">
+              <div class="message-header">
+                <span class="message-username">sre_rachel</span>
+                <span class="message-timestamp">08:02</span>
+              </div>
+              <div class="message-body">
+                Root cause: runaway query on the users table. Missing index on <code>created_at</code>. Deploying fix now.
+                <pre><code><span class="code-keyword">CREATE INDEX</span> idx_users_created_at
+  <span class="code-keyword">ON</span> users (<span class="code-string">created_at</span> <span class="code-keyword">DESC</span>);</code></pre>
+              </div>
+            </div>
+          </div>
+          <div class="message">
+            <div class="message-avatar avatar-green">SR</div>
+            <div class="message-content">
+              <div class="message-header">
+                <span class="message-username">sre_rachel</span>
+                <span class="message-timestamp">08:18</span>
+              </div>
+              <div class="message-body">
+                <strong style="color:var(--accent);">RESOLVED</strong> &mdash; p99 back to 180ms. Crisis averted. Postmortem at 2pm.
+              </div>
+              <div class="message-reactions">
+                <button class="reaction" data-emoji="thumbsup">
+                  <span class="reaction-emoji">&#128077;</span>
+                  <span class="reaction-count">9</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== #deploy-log ===== -->
+        <div class="message-container" id="channel-deploy-log">
+          <div class="system-message">
+            <span class="system-message-text">Today &mdash; March 2, 2026</span>
+          </div>
+          <div class="message">
+            <div class="message-avatar avatar-green">BO</div>
+            <div class="message-content">
+              <div class="message-header">
+                <span class="message-username" style="color:var(--text-muted);font-style:italic;">deploy-bot</span>
+                <span class="message-timestamp">06:00</span>
+              </div>
+              <div class="message-body">
+                <code>[deploy]</code> <strong style="color:var(--accent);">SUCCESS</strong> &mdash; <code>api-service@v2.14.3</code> deployed to <code>us-east-1</code>. 4 pods healthy.
+              </div>
+            </div>
+          </div>
+          <div class="message">
+            <div class="message-avatar avatar-green">BO</div>
+            <div class="message-content">
+              <div class="message-header">
+                <span class="message-username" style="color:var(--text-muted);font-style:italic;">deploy-bot</span>
+                <span class="message-timestamp">06:01</span>
+              </div>
+              <div class="message-body">
+                <code>[deploy]</code> <strong style="color:var(--accent);">SUCCESS</strong> &mdash; <code>web-frontend@v3.8.0</code> deployed to CDN. Cache invalidated.
+              </div>
+            </div>
+          </div>
+          <div class="message">
+            <div class="message-avatar avatar-red">BO</div>
+            <div class="message-content">
+              <div class="message-header">
+                <span class="message-username" style="color:var(--text-muted);font-style:italic;">deploy-bot</span>
+                <span class="message-timestamp">07:30</span>
+              </div>
+              <div class="message-body">
+                <code>[deploy]</code> <strong style="color:var(--red);">FAILED</strong> &mdash; <code>auth-service@v1.9.1</code> rollback triggered. Health check timeout after 60s.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== #watercooler ===== -->
+        <div class="message-container" id="channel-watercooler">
+          <div class="system-message">
+            <span class="system-message-text">Today &mdash; March 2, 2026</span>
+          </div>
+          <div class="message">
+            <div class="message-avatar avatar-orange">JT</div>
+            <div class="message-content">
+              <div class="message-header">
+                <span class="message-username">jtrace</span>
+                <span class="message-timestamp">08:00</span>
+              </div>
+              <div class="message-body">
+                Anyone want to do a coffee run? I need at least 3 espressos to review that PR.
+              </div>
+              <div class="message-reactions">
+                <button class="reaction active" data-emoji="thumbsup">
+                  <span class="reaction-emoji">&#128077;</span>
+                  <span class="reaction-count">4</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="message">
+            <div class="message-avatar avatar-purple">MZ</div>
+            <div class="message-content">
+              <div class="message-header">
+                <span class="message-username">mz_dev</span>
+                <span class="message-timestamp">08:15</span>
+              </div>
+              <div class="message-body">
+                My cat just walked across my keyboard and somehow fixed a bug. I'm not even joking.
+              </div>
+              <div class="message-reactions">
+                <button class="reaction" data-emoji="fire">
+                  <span class="reaction-emoji">&#128293;</span>
+                  <span class="reaction-count">14</span>
+                </button>
+                <button class="reaction" data-emoji="eyes">
+                  <span class="reaction-emoji">&#128064;</span>
+                  <span class="reaction-count">6</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="message">
+            <div class="message-avatar avatar-blue">DK</div>
+            <div class="message-content">
+              <div class="message-header">
+                <span class="message-username">dan_k</span>
+                <span class="message-timestamp">08:45</span>
+              </div>
+              <div class="message-body">
+                Thinking about rewriting our entire backend in Rust over the weekend. What could go wrong?
+              </div>
+              <div class="message-reactions">
+                <button class="reaction" data-emoji="fire">
+                  <span class="reaction-emoji">&#128293;</span>
+                  <span class="reaction-count">2</span>
+                </button>
+                <button class="reaction" data-emoji="thumbsup">
+                  <span class="reaction-emoji">&#128077;</span>
+                  <span class="reaction-count">1</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ========== INPUT AREA ========== -->
+      <div class="input-area">
+        <div class="input-toolbar">
+          <button class="toolbar-btn tooltip-container" id="emoji-toggle">
+            &#128578;
+            <span class="tooltip">Emoji picker</span>
+          </button>
+          <button class="toolbar-btn tooltip-container" id="file-attach-btn">
+            &#128206;
+            <span class="tooltip">Attach file</span>
+          </button>
+          <span class="toolbar-separator"></span>
+          <button class="toolbar-btn tooltip-container" id="markdown-toggle">
+            <span style="font-family:var(--font-mono);font-size:0.78rem;font-weight:700;">Md</span>
+            <span class="tooltip">Markdown preview</span>
+          </button>
+        </div>
+
+        <div class="input-wrapper">
+          <div class="textarea-container">
+            <!-- Emoji Picker -->
+            <div class="emoji-picker" id="emoji-picker">
+              <div class="emoji-picker-title">Pick an emoji</div>
+              <div class="emoji-grid">
+                <button class="emoji-btn" data-emoji="&#128077;">&#128077;</button>
+                <button class="emoji-btn" data-emoji="&#128078;">&#128078;</button>
+                <button class="emoji-btn" data-emoji="&#128293;">&#128293;</button>
+                <button class="emoji-btn" data-emoji="&#128064;">&#128064;</button>
+                <button class="emoji-btn" data-emoji="&#128640;">&#128640;</button>
+                <button class="emoji-btn" data-emoji="&#127881;">&#127881;</button>
+                <button class="emoji-btn" data-emoji="&#10004;">&#10004;</button>
+                <button class="emoji-btn" data-emoji="&#10060;">&#10060;</button>
+                <button class="emoji-btn" data-emoji="&#128187;">&#128187;</button>
+                <button class="emoji-btn" data-emoji="&#128736;">&#128736;</button>
+                <button class="emoji-btn" data-emoji="&#9889;">&#9889;</button>
+                <button class="emoji-btn" data-emoji="&#128680;">&#128680;</button>
+                <button class="emoji-btn" data-emoji="&#128173;">&#128173;</button>
+                <button class="emoji-btn" data-emoji="&#128526;">&#128526;</button>
+                <button class="emoji-btn" data-emoji="&#129300;">&#129300;</button>
+                <button class="emoji-btn" data-emoji="&#128128;">&#128128;</button>
+                <button class="emoji-btn" data-emoji="&#127867;">&#127867;</button>
+                <button class="emoji-btn" data-emoji="&#128640;">&#9749;</button>
+                <button class="emoji-btn" data-emoji="&#128175;">&#128175;</button>
+                <button class="emoji-btn" data-emoji="&#128578;">&#128578;</button>
+                <button class="emoji-btn" data-emoji="&#129315;">&#129315;</button>
+              </div>
+            </div>
+
+            <textarea id="message-input" placeholder="Message #general..." rows="1"></textarea>
+            <div class="markdown-preview" id="markdown-preview"></div>
+
+            <!-- File attachment indicator -->
+            <div id="file-attachment" style="display:none;"></div>
+          </div>
+          <button class="send-btn" id="send-btn">Send</button>
+        </div>
+        <div class="input-hint">
+          <span id="input-hint-text">Enter to send &middot; Shift+Enter for newline</span>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- File Drop Overlay -->
+  <div class="file-drop-overlay" id="file-drop-overlay">
+    <div class="file-drop-zone">
+      <div class="file-drop-zone-icon">&#128206;</div>
+      <div class="file-drop-zone-text">Drop files here</div>
+      <div class="file-drop-zone-sub">Upload to #general</div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Hidden file input -->
+  <input type="file" id="file-input" style="display:none;" />
+
+  <script>
+    /* ==============================================
+       stderr.chat — Vanilla JS Interactivity
+       ============================================== */
+
+    const CHANNEL_META = {
+      general:    { desc: 'Where all the important stuff gets ignored', members: 14 },
+      random:     { desc: 'Off-topic banter, memes, and mass bike shedding', members: 14 },
+      incidents:  { desc: 'Production is on fire. Again.', members: 8 },
+      'deploy-log': { desc: 'Automated deploy notifications', members: 14 },
+      watercooler: { desc: 'Casual chat for humans pretending to not be at work', members: 11 },
+    };
+
+    let activeChannel = 'general';
+    let mdPreviewOn = false;
+    let attachedFile = null;
+
+    /* ---------- Channel Switching ---------- */
+    const channelItems = document.querySelectorAll('.channel-item');
+    const channelContainers = document.querySelectorAll('.message-container');
+    const headerName = document.getElementById('header-channel-name');
+    const headerDesc = document.getElementById('header-channel-desc');
+    const memberCount = document.getElementById('member-count');
+    const messageInput = document.getElementById('message-input');
+
+    function switchChannel(name) {
+      activeChannel = name;
+      channelItems.forEach(el => {
+        el.classList.toggle('active', el.dataset.channel === name);
+      });
+      channelContainers.forEach(el => {
+        el.classList.toggle('active', el.id === `channel-${name}`);
+      });
+      const meta = CHANNEL_META[name] || {};
+      headerName.textContent = `#${name}`;
+      headerDesc.textContent = meta.desc || '';
+      memberCount.textContent = meta.members || 0;
+      messageInput.placeholder = `Message #${name}...`;
+
+      // Scroll to bottom of messages
+      const area = document.getElementById('messages-area');
+      area.scrollTop = area.scrollHeight;
+    }
+
+    channelItems.forEach(item => {
+      item.addEventListener('click', () => switchChannel(item.dataset.channel));
+    });
+
+    /* ---------- Channel Search Filter ---------- */
+    const channelSearch = document.getElementById('channel-search');
+    channelSearch.addEventListener('input', () => {
+      const q = channelSearch.value.toLowerCase();
+      channelItems.forEach(item => {
+        const name = item.dataset.channel;
+        item.style.display = name.includes(q) ? '' : 'none';
+      });
+    });
+
+    /* ---------- Send Message ---------- */
+    function sendMessage() {
+      const text = messageInput.value.trim();
+      if (!text && !attachedFile) return;
+
+      const container = document.getElementById(`channel-${activeChannel}`);
+      const msgEl = document.createElement('div');
+      msgEl.className = 'message';
+
+      let bodyHtml = escapeHtml(text).replace(/\n/g, '<br>');
+
+      let attachmentHtml = '';
+      if (attachedFile) {
+        attachmentHtml = `
+          <div class="file-attachment">
+            <span class="file-attachment-icon">&#128206;</span>
+            <span class="file-attachment-name">${escapeHtml(attachedFile.name)}</span>
+            <span class="file-attachment-size">${attachedFile.size}</span>
+          </div>`;
+        clearAttachment();
+      }
+
+      const now = new Date();
+      const ts = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+
+      msgEl.innerHTML = `
+        <div class="message-avatar avatar-green">YO</div>
+        <div class="message-content">
+          <div class="message-header">
+            <span class="message-username">you</span>
+            <span class="message-timestamp">${ts}</span>
+          </div>
+          <div class="message-body">${bodyHtml}${attachmentHtml}</div>
+        </div>`;
+
+      container.appendChild(msgEl);
+      messageInput.value = '';
+      autoGrow(messageInput);
+      updateMarkdownPreview();
+
+      const area = document.getElementById('messages-area');
+      area.scrollTop = area.scrollHeight;
+
+      showToast('Message sent');
+    }
+
+    document.getElementById('send-btn').addEventListener('click', sendMessage);
+
+    messageInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    /* ---------- Auto-grow Textarea ---------- */
+    function autoGrow(el) {
+      el.style.height = 'auto';
+      el.style.height = Math.min(el.scrollHeight, 160) + 'px';
+    }
+
+    messageInput.addEventListener('input', () => {
+      autoGrow(messageInput);
+      if (mdPreviewOn) updateMarkdownPreview();
+    });
+
+    /* ---------- Markdown Preview ---------- */
+    const markdownToggle = document.getElementById('markdown-toggle');
+    const markdownPreview = document.getElementById('markdown-preview');
+
+    markdownToggle.addEventListener('click', () => {
+      mdPreviewOn = !mdPreviewOn;
+      markdownToggle.classList.toggle('active', mdPreviewOn);
+      markdownPreview.classList.toggle('visible', mdPreviewOn);
+      messageInput.style.display = mdPreviewOn ? 'none' : '';
+      if (mdPreviewOn) updateMarkdownPreview();
+    });
+
+    function updateMarkdownPreview() {
+      let raw = messageInput.value;
+      // Basic markdown: bold, italic, inline code
+      let html = escapeHtml(raw);
+      html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+      html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+      html = html.replace(/`(.+?)`/g, '<code>$1</code>');
+      html = html.replace(/\n/g, '<br>');
+      markdownPreview.innerHTML = html || '<span style="color:var(--text-muted);">Preview will appear here...</span>';
+    }
+
+    /* ---------- Emoji Picker ---------- */
+    const emojiToggle = document.getElementById('emoji-toggle');
+    const emojiPicker = document.getElementById('emoji-picker');
+
+    emojiToggle.addEventListener('click', e => {
+      e.stopPropagation();
+      emojiPicker.classList.toggle('visible');
+    });
+
+    emojiPicker.querySelectorAll('.emoji-btn').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const emoji = btn.textContent;
+        messageInput.value += emoji;
+        messageInput.focus();
+        autoGrow(messageInput);
+        if (mdPreviewOn) updateMarkdownPreview();
+      });
+    });
+
+    document.addEventListener('click', e => {
+      if (!emojiPicker.contains(e.target) && e.target !== emojiToggle) {
+        emojiPicker.classList.remove('visible');
+      }
+    });
+
+    /* ---------- Reactions ---------- */
+    document.addEventListener('click', e => {
+      const reaction = e.target.closest('.reaction');
+      if (!reaction) return;
+      const countEl = reaction.querySelector('.reaction-count');
+      let count = parseInt(countEl.textContent, 10);
+      if (reaction.classList.contains('active')) {
+        count = Math.max(0, count - 1);
+        reaction.classList.remove('active');
+      } else {
+        count += 1;
+        reaction.classList.add('active');
+      }
+      countEl.textContent = count;
+    });
+
+    /* ---------- Thread Expand/Collapse ---------- */
+    document.querySelectorAll('.thread-toggle').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const threadId = btn.dataset.thread;
+        const thread = document.getElementById(threadId);
+        const isExpanded = thread.classList.contains('expanded');
+        thread.classList.toggle('expanded');
+        btn.innerHTML = isExpanded
+          ? '&#128172; 3 replies &mdash; click to expand'
+          : '&#128172; 3 replies &mdash; click to collapse';
+      });
+    });
+
+    /* ---------- File Attachment ---------- */
+    const fileInput = document.getElementById('file-input');
+    const fileAttachBtn = document.getElementById('file-attach-btn');
+    const fileAttachmentEl = document.getElementById('file-attachment');
+    const fileDropOverlay = document.getElementById('file-drop-overlay');
+
+    fileAttachBtn.addEventListener('click', () => fileInput.click());
+
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files.length > 0) {
+        handleFileAttach(fileInput.files[0]);
+      }
+    });
+
+    function handleFileAttach(file) {
+      const size = file.size < 1024
+        ? `${file.size} B`
+        : file.size < 1024 * 1024
+        ? `${(file.size / 1024).toFixed(1)} KB`
+        : `${(file.size / (1024 * 1024)).toFixed(1)} MB`;
+
+      attachedFile = { name: file.name, size };
+
+      fileAttachmentEl.innerHTML = `
+        <div class="file-attachment">
+          <span class="file-attachment-icon">&#128206;</span>
+          <span class="file-attachment-name">${escapeHtml(file.name)}</span>
+          <span class="file-attachment-size">${size}</span>
+          <button class="file-attachment-remove" id="remove-attachment">&#10005;</button>
+        </div>`;
+      fileAttachmentEl.style.display = 'block';
+
+      document.getElementById('remove-attachment').addEventListener('click', clearAttachment);
+      showToast(`File attached: ${file.name}`);
+    }
+
+    function clearAttachment() {
+      attachedFile = null;
+      fileAttachmentEl.innerHTML = '';
+      fileAttachmentEl.style.display = 'none';
+      fileInput.value = '';
+    }
+
+    /* ---------- Drag & Drop ---------- */
+    let dragCounter = 0;
+
+    document.addEventListener('dragenter', e => {
+      e.preventDefault();
+      dragCounter++;
+      if (dragCounter === 1) {
+        fileDropOverlay.classList.add('visible');
+      }
+    });
+
+    document.addEventListener('dragleave', e => {
+      e.preventDefault();
+      dragCounter--;
+      if (dragCounter <= 0) {
+        dragCounter = 0;
+        fileDropOverlay.classList.remove('visible');
+      }
+    });
+
+    document.addEventListener('dragover', e => {
+      e.preventDefault();
+    });
+
+    document.addEventListener('drop', e => {
+      e.preventDefault();
+      dragCounter = 0;
+      fileDropOverlay.classList.remove('visible');
+      if (e.dataTransfer.files.length > 0) {
+        handleFileAttach(e.dataTransfer.files[0]);
+      }
+    });
+
+    /* ---------- Toast Notifications ---------- */
+    const toastContainer = document.getElementById('toast-container');
+
+    function showToast(message) {
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.innerHTML = `
+        <span class="toast-icon">&#10003;</span>
+        <span class="toast-message">${escapeHtml(message)}</span>
+        <button class="toast-close">&#10005;</button>`;
+
+      toastContainer.appendChild(toast);
+
+      const closeBtn = toast.querySelector('.toast-close');
+      const dismiss = () => {
+        toast.classList.add('removing');
+        setTimeout(() => toast.remove(), 300);
+      };
+
+      closeBtn.addEventListener('click', dismiss);
+      setTimeout(dismiss, 3000);
+    }
+
+    /* ---------- Helpers ---------- */
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    /* ---------- Initial scroll ---------- */
+    const area = document.getElementById('messages-area');
+    area.scrollTop = area.scrollHeight;
+  </script>
+</body>
+</html>
