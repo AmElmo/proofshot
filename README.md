@@ -183,6 +183,11 @@ Check `proofshot-artifacts/` for the video, screenshots, and report.
 
 ProofShot automatically detects errors from server logs across 10+ languages: JavaScript/Node.js, Python, Ruby/Rails, Go, Java/Kotlin, Rust, PHP, C#/.NET, Elixir/Phoenix, and more. Add patterns for new languages in [`src/utils/error-patterns.ts`](src/utils/error-patterns.ts).
 
+## Documentation
+
+- **[Architecture](docs/architecture.md)** — How ProofShot works under the hood, why agent-browser was chosen, the session lifecycle, viewer internals, and design decisions.
+- **[Test Apps](docs/test-apps.md)** — Three sample apps with ready-to-use prompts for testing ProofShot end-to-end across different UI patterns (SaaS dashboard, kanban board, chat interface).
+
 ## Contributing
 
 Contributions welcome! The project uses TypeScript (ESM-only) with tsup for builds and vitest for tests.
