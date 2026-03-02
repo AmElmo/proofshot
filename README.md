@@ -154,6 +154,56 @@ Skill files are provided for:
 - **Codex** — Appends to `AGENTS.md`
 - **Generic** — `PROOFSHOT.md` in project root
 
+## Try It — Sample App
+
+The repo includes a sample Vite app (`test/fixtures/sample-app/`) so you can see ProofShot in action without setting up your own project.
+
+### 1. Clone and build
+
+```bash
+git clone https://github.com/proofshot/proofshot.git
+cd proofshot
+npm install
+npm run build
+npm link                    # makes `proofshot` available globally
+```
+
+### 2. Set up the sample app
+
+```bash
+cd test/fixtures/sample-app
+npm install
+proofshot init --force
+```
+
+### 3. Tell your AI agent to verify it
+
+Open your AI agent (Claude Code, Cursor, etc.) in the `test/fixtures/sample-app/` directory and give it a prompt like:
+
+> Verify the Acme SaaS sample app with proofshot. Start on the homepage, check the hero section and scroll down to see the feature cards and stats. Then navigate to the Dashboard and check the metrics and activity table. Finally go to Settings, update the profile name to "John Smith" and email to "john@acme.com", toggle on the Marketing emails and SMS alerts switches, and click Save Profile. Screenshot each page and every key interaction.
+
+The agent reads the skill file installed by `proofshot init`, runs the full `start → exec → stop` workflow autonomously, and produces the proof artifacts.
+
+### 4. Check the output
+
+After the agent finishes, open `proofshot-artifacts/` to find:
+
+- `session.webm` — video recording of the entire session
+- `step-*.png` — screenshots at key moments
+- `SUMMARY.md` — markdown report with errors and screenshots
+- `viewer.html` — standalone HTML viewer (open in your browser)
+
+### Alternative: run the automated test script
+
+If you just want to see the CLI work end-to-end without an AI agent:
+
+```bash
+cd test/fixtures/sample-app
+bash test-proofshot.sh
+```
+
+This runs the full lifecycle: `init → start → browser interactions → stop → pr → clean`.
+
 Built on [agent-browser](https://github.com/vercel-labs/agent-browser) by Vercel.
 
 ## License
