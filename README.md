@@ -25,7 +25,7 @@ AI coding agents build UI features blind. They write code but can't verify the r
 
 ProofShot closes the loop: an open-source CLI that plugs into *any* AI coding agent and gives it a verification workflow — test in a real browser, record video proof, collect errors, and bundle everything for the human to review.
 
-The human gets a video recording, screenshots of key moments, and a report of any console or server errors found. No vendor lock-in. No cloud dependency.
+The human gets a video recording, screenshots of key moments, and a report of any console or server errors found. View artifacts locally, or run `proofshot pr` to upload everything to the GitHub PR as an inline comment. No vendor lock-in. No cloud dependency.
 
 ## Install
 
@@ -124,12 +124,15 @@ proofshot diff --baseline ./previous-artifacts
 
 ### `proofshot pr`
 
-Format proof artifacts as a GitHub PR description snippet.
+Upload session artifacts to GitHub and post a verification comment on the PR. Finds all sessions recorded on the current branch, uploads screenshots and video, and posts a formatted comment with inline media.
 
 ```bash
-proofshot pr                # Output to stdout
-proofshot pr >> pr-body.md  # Append to file
+proofshot pr              # Auto-detect PR from current branch
+proofshot pr 42           # Target a specific PR
+proofshot pr --dry-run    # Preview the markdown without posting
 ```
+
+Requires the [GitHub CLI](https://cli.github.com) (`gh`) to be installed and authenticated. Converts `.webm` video to `.mp4` if `ffmpeg` is available.
 
 ### `proofshot clean`
 

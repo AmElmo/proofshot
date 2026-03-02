@@ -82,12 +82,21 @@ proofshot stop
 This stops recording, collects console + server errors, and generates
 a SUMMARY.md with video, screenshots, and error report.
 
+### Step 4 (optional): Post proof to the PR
+
+\`\`\`bash
+proofshot pr              # Auto-detect PR from current branch
+proofshot pr 42           # Target a specific PR number
+\`\`\`
+
+This uploads screenshots and video to GitHub and posts a formatted comment on the PR with inline media. Requires \`gh\` CLI to be authenticated.
+
 ## Tips
 
 - Always include a meaningful --description so the human knows what was tested
 - Take screenshots before AND after key actions (e.g., before form submit, after redirect)
 - If you find errors during verification, fix them and re-run the workflow
-- The proof artifacts in ./proofshot-artifacts/ can be referenced in commit messages or PRs
+- Use \`proofshot pr\` after stopping to attach proof directly to the pull request
 `;
   }
 
@@ -103,6 +112,7 @@ After modifying UI files, visually verify changes with this workflow:
    If the server is already running, omit --run.
 2. Drive browser: Use \`proofshot exec\` commands to navigate, click, fill forms, and take screenshots
 3. Stop session: \`proofshot stop\` to bundle video + screenshots + error report
+4. (Optional) Post to PR: \`proofshot pr\` to upload proof to the GitHub PR
 
 Key proofshot exec commands:
 - \`proofshot exec snapshot -i\` — see interactive elements
@@ -121,6 +131,7 @@ After building or modifying UI features, verify with this workflow:
    If the server is already running, omit --run.
 2. Test: Use \`proofshot exec\` to navigate, click, fill forms, take screenshots
 3. Stop: \`proofshot stop\` — bundles video, screenshots, and error report
+4. (Optional) Post to PR: \`proofshot pr\` — uploads proof to the GitHub PR
 
 Key proofshot exec commands:
 - \`proofshot exec snapshot -i\` — see interactive elements

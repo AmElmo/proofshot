@@ -63,9 +63,11 @@ export function createCLI(): Command {
 
   program
     .command('pr')
-    .description('Format artifacts as a GitHub PR description snippet')
-    .action(async () => {
-      await prCommand();
+    .description('Upload session artifacts and post a ProofShot comment on a GitHub PR')
+    .argument('[pr-number]', 'PR number (auto-detects from current branch if omitted)')
+    .option('--dry-run', 'Generate the comment markdown without posting')
+    .action(async (prNumber, options) => {
+      await prCommand({ prNumber, ...options });
     });
 
   program

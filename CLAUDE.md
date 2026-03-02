@@ -19,8 +19,9 @@ src/
 ├── browser/                # agent-browser CLI wrappers (session, capture, interact, navigate)
 ├── server/                 # Dev server detection, startup, port waiting
 ├── session/state.ts        # .session.json lifecycle (save/load/clear)
+├── session/metadata.ts     # Persistent per-session metadata (branch, commit) for PR matching
 ├── artifacts/              # Output generation (viewer.html, SUMMARY.md, PR format)
-└── utils/                  # Config, exec helpers, port utils, error patterns
+└── utils/                  # Config, exec helpers, port utils, error patterns, GitHub API
 ```
 
 **Entry point:** `bin/proofshot.ts` → `src/cli.ts` → `src/commands/*.ts`
@@ -31,13 +32,15 @@ src/
 - **Build before test** — CLI runs from `dist/`, always `npm run build` after code changes
 - **agent-browser** — external peer dependency (Rust CLI + Node daemon). All browser commands go through `ab()` in `utils/exec.ts` which calls `agent-browser <command>` via `execSync`
 - **Session state** — `start` writes `.session.json`, `exec` and `stop` read it. `stop` clears it. Don't assume session exists without checking
+- **Session metadata** — `start` writes `metadata.json` inside each session folder with git branch/commit. This persists after `stop` and is used by `pr` to match sessions to branches
 - **Per-session subfolders** — artifacts go in `proofshot-artifacts/YYYY-MM-DD_HH-mm-ss_slug/`
 
 ## Command lifecycle
 
-1. `proofshot start` — spawns dev server, opens browser, starts recording, saves session state
+1. `proofshot start` — spawns dev server, opens browser, starts recording, saves session state + writes `metadata.json` with git branch/commit
 2. `proofshot exec <args>` — logs action to `session-log.json`, forwards to `agent-browser`
 3. `proofshot stop` — collects errors, stops recording, trims video, generates SUMMARY.md + viewer.html, clears session
+4. `proofshot pr [number]` — finds sessions for current branch, uploads artifacts to GitHub, posts PR comment
 
 ## Adding a new command
 
@@ -63,6 +66,7 @@ Edit `src/utils/error-patterns.ts` — add a new entry to the `PATTERNS` array:
 
 | File | Created by | Contains |
 |---|---|---|
+| `metadata.json` | `start` | Git branch, commit SHA, timestamp (persists after stop) |
 | `session.webm` | `start` | Video recording (Playwright screencast) |
 | `session-log.json` | `exec` (appended each call) | Action timeline with relative timestamps |
 | `server.log` | `start` (piped stdout+stderr) | All dev server output |

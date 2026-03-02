@@ -1,11 +1,13 @@
 import * as path from 'path';
 import chalk from 'chalk';
+import { execSync } from 'child_process';
 import { loadConfig } from '../utils/config.js';
 import { ensureDevServer } from '../server/start.js';
 import { openBrowser } from '../browser/session.js';
 import { startRecording } from '../browser/capture.js';
 import { ensureOutputDir, generateTimestamp, generateSessionDirName } from '../artifacts/bundle.js';
 import { saveSession, hasActiveSession } from '../session/state.js';
+import { writeMetadata } from '../session/metadata.js';
 
 interface StartOptions {
   description?: string;
@@ -41,6 +43,34 @@ export async function startCommand(options: StartOptions): Promise<void> {
 
   const videoPath = path.join(sessionDir, `session.webm`);
   const serverErrorLog = path.join(sessionDir, 'server.log');
+
+  // Capture git metadata for branch-based PR matching
+  let branch = '';
+  let commitSha = '';
+  try {
+    branch = execSync('git branch --show-current', {
+      encoding: 'utf-8',
+      stdio: ['pipe', 'pipe', 'pipe'],
+    }).trim();
+  } catch {
+    // Not in a git repo or git not available — non-fatal
+  }
+  try {
+    commitSha = execSync('git rev-parse HEAD', {
+      encoding: 'utf-8',
+      stdio: ['pipe', 'pipe', 'pipe'],
+    }).trim();
+  } catch {
+    // Non-fatal
+  }
+
+  // Write persistent metadata (survives proofshot stop)
+  writeMetadata(sessionDir, {
+    branch,
+    commitSha,
+    startedAt: new Date().toISOString(),
+    description: options.description || null,
+  });
 
   let serverAlreadyRunning = true;
 

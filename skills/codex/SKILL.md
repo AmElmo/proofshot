@@ -54,9 +54,18 @@ proofshot stop
 This stops recording, collects console + server errors, and generates
 a SUMMARY.md with video, screenshots, and error report.
 
+### Step 4 (optional): Post proof to the PR
+
+```bash
+proofshot pr              # Auto-detect PR from current branch
+proofshot pr 42           # Target a specific PR number
+```
+
+This uploads screenshots and video to GitHub and posts a formatted comment on the PR with inline media. Requires `gh` CLI to be authenticated.
+
 ## Tips
 
 - Always include a meaningful --description so the human knows what was tested
 - Take screenshots before AND after key actions (e.g., before form submit, after redirect)
 - If you find errors during verification, fix them and re-run the workflow
-- The proof artifacts in ./proofshot-artifacts/ can be referenced in commit messages or PRs
+- Use `proofshot pr` after stopping to attach proof directly to the pull request
