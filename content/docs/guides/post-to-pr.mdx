@@ -1,0 +1,68 @@
+---
+title: "How to post proof to a GitHub PR"
+description: "Upload session artifacts and post a verification comment on your pull request."
+---
+
+import { Callout, Steps } from 'nextra/components'
+
+# How to post proof to a GitHub PR
+
+After a verification session, upload screenshots and video to GitHub and post a formatted comment on your pull request with embedded proof artifacts.
+
+<Callout type="info">
+**Prerequisites:** [GitHub CLI](https://cli.github.com/) (`gh`) installed and authenticated. At least one completed ProofShot session on the current branch.
+</Callout>
+
+<Steps>
+### Run a verification session
+
+Complete a full `start` → test → `stop` cycle on your feature branch. ProofShot records the branch name and commit SHA in each session's `metadata.json`.
+
+### Post to the PR
+
+```sh
+proofshot pr
+```
+
+ProofShot finds all sessions recorded on the current branch, uploads screenshots and video to GitHub, and posts a formatted comment on the PR.
+
+To target a specific PR number:
+
+```sh
+proofshot pr 42
+```
+
+### Preview before posting
+
+To see the markdown that would be posted without actually posting:
+
+```sh
+proofshot pr --dry-run
+```
+
+This outputs the formatted comment to stdout so you can review it.
+</Steps>
+
+## How it works
+
+1. ProofShot reads `metadata.json` from each session folder in `proofshot-artifacts/`
+2. Sessions matching the current git branch are selected
+3. Screenshots and video are uploaded as GitHub user-attachments
+4. If ffmpeg is available, `.webm` video is converted to `.mp4` for better browser compatibility
+5. A formatted markdown comment is posted on the PR with inline media
+
+## Troubleshooting
+
+**"No sessions found for current branch"**
+Make sure you ran `proofshot start` and `proofshot stop` on the same branch you're posting from. The `metadata.json` file persists after `stop` — check that it exists in your session folders.
+
+**"gh: command not found"**
+Install the [GitHub CLI](https://cli.github.com/) and authenticate with `gh auth login`.
+
+**Video not showing in the PR comment**
+GitHub doesn't support `.webm` in markdown comments. Install ffmpeg so ProofShot can convert the video to `.mp4` before uploading.
+
+## What's next?
+
+- [CLI reference for `proofshot pr`](/docs/reference/cli#proofshot-pr) — all flags and options
+- [Output artifacts reference](/docs/reference/artifacts) — what gets uploaded

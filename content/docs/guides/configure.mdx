@@ -1,0 +1,61 @@
+---
+title: "How to configure ProofShot"
+description: "Customize ProofShot's behavior with a configuration file or command-line flags."
+---
+
+import { Callout, Steps } from 'nextra/components'
+
+# How to configure ProofShot
+
+ProofShot works out of the box with sensible defaults. For projects with non-standard setups, you can customize behavior with a config file or command-line flags.
+
+<Steps>
+### Create a config file
+
+Create `proofshot.config.json` in your project root:
+
+```json filename="proofshot.config.json"
+{
+  "devServer": {
+    "port": 5173,
+    "startupTimeout": 60000
+  },
+  "output": "./proofshot-artifacts",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  }
+}
+```
+
+ProofShot searches for this file starting from your current directory upward to the filesystem root — so it works in monorepos when the config lives at the repo root.
+
+### Override with CLI flags
+
+Command-line flags take precedence over the config file:
+
+```sh
+proofshot start --port 8080 --output ./my-artifacts --headed
+```
+</Steps>
+
+## All configuration options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `devServer.port` | `number` | `3000` | Port your dev server runs on |
+| `devServer.startupTimeout` | `number` | `30000` | Max wait time (ms) for the dev server to start |
+| `output` | `string` | `./proofshot-artifacts` | Directory for session artifacts |
+| `defaultPages` | `string[]` | `["/"]` | Pages to open by default |
+| `viewport.width` | `number` | `1280` | Browser viewport width in pixels |
+| `viewport.height` | `number` | `720` | Browser viewport height in pixels |
+| `headless` | `boolean` | `true` | Run the browser without a visible window |
+
+<Callout type="info">
+You don't need a config file for most projects. The defaults work for standard setups, and CLI flags cover one-off overrides.
+</Callout>
+
+## What's next?
+
+- [Configuration reference](/docs/reference/configuration) — complete config spec
+- [CLI reference](/docs/reference/cli) — all command-line flags

@@ -1,0 +1,48 @@
+---
+title: "How to run visual regression tests"
+description: "Compare screenshots against a baseline to catch unintended visual changes."
+---
+
+import { Callout, Steps } from 'nextra/components'
+
+# How to run visual regression tests
+
+Compare current screenshots against a previous session's screenshots to detect unintended visual changes between builds or branches.
+
+<Callout type="info">
+**Prerequisites:** At least two completed ProofShot sessions — one to serve as the baseline, one as the current state.
+</Callout>
+
+<Steps>
+### Capture a baseline
+
+Run a verification session on your stable branch (e.g., `main`) and take screenshots:
+
+```sh
+proofshot start --run "npm run dev" --port 3000
+agent-browser open http://localhost:3000
+agent-browser screenshot homepage.png
+agent-browser open http://localhost:3000/dashboard
+agent-browser screenshot dashboard.png
+proofshot stop
+```
+
+Note the session folder path in `proofshot-artifacts/` — this is your baseline.
+
+### Make changes and capture again
+
+Switch to your feature branch, make your changes, and run another session with the same screenshots.
+
+### Compare with diff
+
+```sh
+proofshot diff --baseline ./proofshot-artifacts/2025-01-15_10-30-00_baseline/
+```
+
+ProofShot compares matching screenshots by filename and outputs diff images highlighting pixel-level changes.
+</Steps>
+
+## What's next?
+
+- [Verify a feature](/docs/guides/verify-feature) — full verification workflow
+- [Output artifacts reference](/docs/reference/artifacts) — what diff produces

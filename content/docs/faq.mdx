@@ -1,0 +1,61 @@
+---
+title: "Frequently Asked Questions"
+description: "Common questions about ProofShot — setup, usage, troubleshooting, and compatibility."
+---
+
+# Frequently Asked Questions
+
+## Setup
+
+**Does ProofShot work with my AI coding agent?**
+If your agent can run shell commands, it works with ProofShot. The CLI is agent-agnostic — there's no SDK or API integration required. Built-in skill installation covers Claude Code, Cursor, Codex, Gemini CLI, and Windsurf.
+
+**Do I need to configure ProofShot for each project?**
+No. Skills install at user level (your home directory), so one `proofshot install` works across all projects on your machine. The optional `proofshot.config.json` is only needed if you want to customize defaults like port or viewport size.
+
+**What does the agent-browser dependency do?**
+[agent-browser](https://github.com/vercel-labs/agent-browser) is a Rust CLI + Node.js daemon that manages a headless Chromium browser. ProofShot delegates all browser work to it — opening pages, clicking elements, taking screenshots, recording video. It's installed automatically with ProofShot.
+
+**Do I need ffmpeg?**
+No. ffmpeg is optional. Without it, ProofShot skips video trimming (you get the full uncut recording) and `.webm` to `.mp4` conversion (GitHub PR comments may not display `.webm` inline). Everything else works the same.
+
+## Usage
+
+**How does the agent know the ProofShot workflow?**
+The skill file installed by `proofshot install` teaches your agent the three-step workflow, all browser commands, and when to take screenshots. You just prompt naturally — "verify this feature with proofshot" — and the agent handles the rest.
+
+**What are `@eN` references?**
+Stable handles to interactive elements on a page. When your agent runs `agent-browser snapshot -i`, it gets a list like `@e1: button "Submit"`, `@e2: input "Email"`. These references persist across commands within a session, so the agent can target elements reliably without CSS selectors.
+
+**Can I run multiple sessions at the same time?**
+Yes. Session state (`.session.json`) lives in the output directory, not globally. Different projects with different output directories can run sessions concurrently.
+
+**What languages does error detection support?**
+JavaScript/Node.js, Python, Ruby/Rails, Go, Java/Kotlin, Rust, PHP, C#/.NET, Elixir/Phoenix, plus generic patterns for `FATAL`, `CRITICAL`, and segfaults. See [How to add error patterns](/docs/guides/add-error-pattern) to extend support.
+
+**How does video trimming work?**
+When ffmpeg is available, `proofshot stop` cuts dead time from the video — keeping a 5-second buffer before the first action and a 3-second buffer after the last. All timestamps in `session-log.json` are adjusted by the trim offset to stay in sync with the trimmed video.
+
+## Troubleshooting
+
+**"No active session" when running exec or stop**
+You need to run `proofshot start` first. Each session writes `.session.json` — if it's missing, there's no active session to operate on.
+
+**Server errors aren't being detected**
+Server log capture only works when ProofShot starts the server itself via `--run`. If your server was already running on the port, ProofShot skips spawning and gets no logs.
+
+**The browser window doesn't appear**
+ProofShot runs headless by default. Use `--headed` to see the browser window: `proofshot start --headed`.
+
+**"Port already in use" error**
+Another process is using the port. Either stop that process, use a different port (`--port`), or omit `--run` to let ProofShot attach to the existing server.
+
+**Video has long pauses**
+Install ffmpeg to enable automatic video trimming. Without it, you get the full uncut recording.
+
+**PR comment shows no video**
+GitHub markdown doesn't render `.webm` inline. Install ffmpeg so ProofShot can convert to `.mp4` before uploading.
+
+---
+
+Still have questions? [Open an issue on GitHub](https://github.com/proofshot/proofshot/issues).

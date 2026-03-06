@@ -1,0 +1,135 @@
+---
+title: "Quick Start"
+description: "Install ProofShot and verify your first feature in under 5 minutes."
+---
+
+import { Callout, Steps, Tabs } from 'nextra/components'
+
+# Quick Start
+
+Install ProofShot and verify your first feature in under 5 minutes. By the end, you'll have a video recording, screenshots, and an error report — proof that your agent's code works.
+
+<Callout type="info">
+**Prerequisites:** Node.js 18+ and an AI coding agent that can run shell commands (Claude Code, Cursor, Codex, Gemini CLI, Windsurf, or any other).
+</Callout>
+
+<Steps>
+### Install ProofShot
+
+<Tabs items={["npm", "pnpm", "yarn"]}>
+<Tabs.Tab>
+```sh
+npm install -g proofshot
+```
+</Tabs.Tab>
+<Tabs.Tab>
+```sh
+pnpm add -g proofshot
+```
+</Tabs.Tab>
+<Tabs.Tab>
+```sh
+yarn global add proofshot
+```
+</Tabs.Tab>
+</Tabs>
+
+This installs the CLI and downloads [agent-browser](https://github.com/vercel-labs/agent-browser) with headless Chromium.
+
+### Install the skill for your AI agent
+
+```sh
+proofshot install
+```
+
+ProofShot detects your installed AI tools and sets up a skill file for each one. The skill teaches your agent the ProofShot workflow — no per-project configuration needed.
+
+You should see output like:
+
+```
+Detected tools:
+  ✓ Claude Code
+  ✓ Cursor
+
+Installing skills...
+  ✓ Claude Code → ~/.claude/skills/proofshot/SKILL.md
+  ✓ Cursor → ~/.cursor/rules/proofshot.mdc
+
+Done! Your AI agent now knows how to use ProofShot.
+```
+
+### Start a verification session
+
+In your project directory, tell your AI agent to verify a feature. For example:
+
+> Verify the login page with proofshot. Start the dev server, check that the form renders, fill in credentials, and submit. Screenshot each step.
+
+The agent will run:
+
+```sh
+proofshot start --run "npm run dev" --port 3000 --description "Login page verification"
+```
+
+This starts your dev server, opens a headless browser, and begins recording video.
+
+### The agent tests in the browser
+
+Your agent drives the browser using `agent-browser` commands:
+
+```sh
+agent-browser snapshot -i          # See interactive elements (@e1, @e2, ...)
+agent-browser open http://localhost:3000/login
+agent-browser fill @e2 "user@example.com"
+agent-browser fill @e3 "password123"
+agent-browser click @e5             # Submit button
+agent-browser screenshot step-login.png
+```
+
+Each action is logged with timestamps and element data for the interactive viewer.
+
+### Stop and collect proof
+
+```sh
+proofshot stop
+```
+
+ProofShot stops recording, collects console and server errors, trims the video, and generates your proof artifacts.
+
+### Review the artifacts
+
+Open `proofshot-artifacts/` to find your session folder. Inside:
+
+- **`viewer.html`** — Open in a browser. Interactive viewer with video playback, a timeline of every action, click overlays, and error badges.
+- **`SUMMARY.md`** — Markdown report with screenshots, error counts, and session details.
+- **`session.webm`** — The full video recording.
+- **`step-*.png`** — Screenshots captured at key moments.
+</Steps>
+
+## Try it without your own project
+
+Clone the repo and use the included sample app:
+
+```sh
+git clone https://github.com/proofshot/proofshot.git
+cd proofshot
+npm install && npm run build && npm link
+
+cd test/fixtures/sample-app && npm install
+```
+
+Then open your AI agent in the `test/fixtures/sample-app/` directory and prompt:
+
+> Verify the sample app with proofshot. Check the homepage hero section, navigate to the Dashboard, then go to Settings and update the profile name. Screenshot each page.
+
+Or run the automated script without an agent:
+
+```sh
+bash test-proofshot.sh
+```
+
+## What's next?
+
+- [Verify a feature end-to-end](/docs/guides/verify-feature) — detailed walkthrough of the verification workflow
+- [Post proof to a GitHub PR](/docs/guides/post-to-pr) — upload artifacts and post a PR comment
+- [CLI command reference](/docs/reference/cli) — all commands and flags
+- [How ProofShot works](/docs/concepts/how-it-works) — architecture and design decisions
