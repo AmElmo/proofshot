@@ -34,6 +34,7 @@ export function createCLI(): Command {
     .option('--headed', 'Show browser window for debugging')
     .option('--output <dir>', 'Custom output directory')
     .option('--url <url>', 'Open this URL instead of the root')
+    .option('--force', 'Override a stale session without running stop first')
     .action(async (options) => {
       await startCommand(options);
     });

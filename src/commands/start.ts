@@ -6,7 +6,7 @@ import { ensureDevServer } from '../server/start.js';
 import { openBrowser } from '../browser/session.js';
 import { startRecording } from '../browser/capture.js';
 import { ensureOutputDir, generateTimestamp, generateSessionDirName } from '../artifacts/bundle.js';
-import { saveSession, hasActiveSession } from '../session/state.js';
+import { saveSession, hasActiveSession, clearSession } from '../session/state.js';
 import { writeMetadata } from '../session/metadata.js';
 
 interface StartOptions {
@@ -28,11 +28,16 @@ export async function startCommand(options: StartOptions): Promise<void> {
   const timestamp = generateTimestamp();
 
   if (hasActiveSession(outputDir)) {
-    console.log(
-      chalk.yellow('⚠ A session is already active.') +
-        chalk.dim(' Run "proofshot stop" first, or "proofshot clean" to reset.'),
-    );
-    return;
+    if (options.force) {
+      clearSession(outputDir);
+      console.log(chalk.yellow('⚠') + chalk.dim(' Cleared stale session'));
+    } else {
+      console.log(
+        chalk.yellow('⚠ A session is already active.') +
+          chalk.dim(' Run "proofshot stop" first, or use --force to override.'),
+      );
+      return;
+    }
   }
 
   ensureOutputDir(outputDir);

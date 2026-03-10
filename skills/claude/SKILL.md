@@ -27,10 +27,12 @@ Use ProofShot after:
 proofshot start --run "your-dev-command" --port PORT --description "what you are about to verify"
 ```
 
-This opens a browser and begins recording.
+This opens a browser and begins recording. If the port is already in use, proofshot will kill the existing process automatically.
 
 **Always use `--run`** to let proofshot start and capture your dev server output (server logs appear in the proof report).
 Only omit `--run` if the server was explicitly started by the user or another process — without it, no server logs are captured.
+
+If a previous session was not stopped cleanly, add `--force` to override it.
 
 ### Step 2: Drive the browser and test
 
