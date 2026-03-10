@@ -1,0 +1,183 @@
+---
+title: "CLI Command Reference"
+description: "Complete reference for all ProofShot CLI commands, flags, and options."
+---
+
+# CLI Command Reference
+
+All ProofShot commands and their options.
+
+## `proofshot install`
+
+Detect AI coding tools on your machine and install the ProofShot skill file for each one. Run once per machine.
+
+```sh
+proofshot install [options]
+```
+
+| Flag | Description |
+|------|-------------|
+| `--only <tools>` | Only install for specific tools (comma-separated). Values: `claude`, `cursor`, `codex`, `gemini`, `windsurf` |
+| `--skip <tools>` | Skip specific tools (comma-separated) |
+| `--force` | Overwrite existing skill files |
+
+**Examples:**
+
+```sh
+proofshot install                    # Interactive tool selection
+proofshot install --only claude      # Claude Code only
+proofshot install --skip cursor      # All detected except Cursor
+proofshot install --force            # Overwrite existing installations
+```
+
+---
+
+## `proofshot start`
+
+Start a verification session. Opens a browser, begins video recording, and optionally starts your dev server.
+
+```sh
+proofshot start [options]
+```
+
+| Flag | Description | Default |
+|------|-------------|---------|
+| `--run <command>` | Shell command to start your dev server | — |
+| `--port <port>` | Port your dev server runs on | `3000` |
+| `--url <url>` | URL to open instead of the root | `http://localhost:<port>` |
+| `--description <text>` | Description of what you're verifying (appears in reports) | — |
+| `--headed` | Show the browser window (visible Chromium) | `false` |
+| `--output <dir>` | Custom output directory for artifacts | `./proofshot-artifacts` |
+
+**Examples:**
+
+```sh
+proofshot start                                            # Server already running on port 3000
+proofshot start --run "npm run dev" --port 3000             # Start server, capture logs
+proofshot start --url http://localhost:3000/login            # Open a specific page
+proofshot start --description "Verify checkout flow"        # Add description to report
+proofshot start --headed                                    # Show the browser window
+```
+
+**What happens:**
+1. If `--run` is provided: starts the dev server, pipes output to `server.log`, waits for the port
+2. Opens headless Chromium via agent-browser
+3. Navigates to `--url` (or `http://localhost:<port>`)
+4. Starts video recording (retries up to 3 times)
+5. Writes `.session.json` and `metadata.json` (git branch and commit SHA)
+
+---
+
+## `proofshot stop`
+
+Stop the active session. Collects errors, trims video, and generates proof artifacts.
+
+```sh
+proofshot stop [options]
+```
+
+| Flag | Description | Default |
+|------|-------------|---------|
+| `--no-close` | Keep the browser open after stopping | `false` |
+
+**What happens:**
+1. Collects console errors and output from the browser
+2. Stops video recording
+3. Closes the browser (unless `--no-close`)
+4. Trims video dead time (requires ffmpeg): 5s buffer before first action, 3s after last
+5. Scans `server.log` for errors across 10+ languages
+6. Generates `SUMMARY.md` and `viewer.html`
+7. Clears `.session.json`
+
+---
+
+## `proofshot exec`
+
+Pass-through to agent-browser with automatic session logging. Captures timestamps, element bounding boxes, and resolves screenshot paths into the session directory.
+
+```sh
+proofshot exec <command> [args...]
+```
+
+**Examples:**
+
+```sh
+proofshot exec click @e3
+proofshot exec fill @e2 "user@example.com"
+proofshot exec screenshot step-checkout.png
+proofshot exec scroll down
+proofshot exec press Enter
+```
+
+Every `exec` call appends an entry to `session-log.json` with:
+- Relative timestamp from session start
+- The command and arguments
+- Element bounding box and label (for `click`, `fill`, `type` targeting `@eN` refs)
+
+This data powers the interactive viewer's timeline and overlays.
+
+---
+
+## `proofshot diff`
+
+Compare current screenshots against a baseline for visual regression testing.
+
+```sh
+proofshot diff --baseline <path>
+```
+
+| Flag | Description |
+|------|-------------|
+| `--baseline <path>` | Path to the baseline session folder |
+
+**Example:**
+
+```sh
+proofshot diff --baseline ./proofshot-artifacts/2025-01-15_10-30-00_main/
+```
+
+Compares screenshots by filename. Outputs diff images highlighting pixel changes.
+
+---
+
+## `proofshot pr`
+
+Upload session artifacts to GitHub and post a verification comment on the pull request.
+
+```sh
+proofshot pr [number] [options]
+```
+
+| Argument / Flag | Description |
+|-----------------|-------------|
+| `[number]` | PR number. If omitted, auto-detected from current branch |
+| `--dry-run` | Print the markdown comment without posting |
+
+**Examples:**
+
+```sh
+proofshot pr               # Auto-detect PR from branch
+proofshot pr 42            # Post to PR #42
+proofshot pr --dry-run     # Preview without posting
+```
+
+**Requires:** [GitHub CLI](https://cli.github.com/) (`gh`) installed and authenticated.
+
+**What happens:**
+1. Reads `metadata.json` from each session folder
+2. Selects sessions matching the current git branch
+3. Uploads screenshots and video to GitHub
+4. Converts `.webm` to `.mp4` if ffmpeg is available
+5. Posts a formatted markdown comment on the PR
+
+---
+
+## `proofshot clean`
+
+Remove the entire artifacts directory.
+
+```sh
+proofshot clean
+```
+
+Deletes `./proofshot-artifacts/` (or the configured output directory). No flags.

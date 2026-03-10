@@ -3,12 +3,49 @@ import * as path from 'path';
 import { execSync } from 'child_process';
 import chalk from 'chalk';
 import { loadConfig } from '../utils/config.js';
-import { closeBrowser, getConsoleErrors, getConsoleOutput } from '../browser/session.js';
+import { closeBrowser, getConsoleErrors, getConsoleOutput, getConsoleOutputJson } from '../browser/session.js';
 import { stopRecording } from '../browser/capture.js';
 import { loadSession, clearSession } from '../session/state.js';
-import { writeViewer } from '../artifacts/viewer.js';
+import { writeViewer, type TimestampedLogEntry } from '../artifacts/viewer.js';
 import { extractServerErrors } from '../utils/error-patterns.js';
 import { loadSessionLog } from './exec.js';
+
+/**
+ * Parse server.log lines with "epochMs\ttext" format.
+ * Returns { entries (with relativeTimeSec), cleanText (timestamps stripped) }.
+ */
+function parseTimestampedServerLog(
+  raw: string,
+  startTimeMs: number,
+): { entries: TimestampedLogEntry[]; cleanText: string } {
+  if (!raw.trim()) return { entries: [], cleanText: '' };
+
+  const lines = raw.split('\n').filter((l) => l.trim());
+  const entries: TimestampedLogEntry[] = [];
+  const cleanLines: string[] = [];
+
+  for (const line of lines) {
+    const tabIdx = line.indexOf('\t');
+    if (tabIdx > 0) {
+      const epochStr = line.slice(0, tabIdx);
+      const epochMs = parseInt(epochStr, 10);
+      if (!isNaN(epochMs) && epochMs > 1e12) {
+        const text = line.slice(tabIdx + 1);
+        entries.push({
+          text,
+          relativeTimeSec: Math.max(0, parseFloat(((epochMs - startTimeMs) / 1000).toFixed(1))),
+        });
+        cleanLines.push(text);
+        continue;
+      }
+    }
+    // Fallback: line without timestamp prefix
+    entries.push({ text: line, relativeTimeSec: -1 });
+    cleanLines.push(line);
+  }
+
+  return { entries, cleanText: cleanLines.join('\n') };
+}
 
 interface StopOptions {
   noClose?: boolean;
@@ -37,9 +74,16 @@ export async function stopCommand(options: StopOptions): Promise<void> {
   console.log(chalk.dim('Collecting errors...'));
   let consoleErrors = '';
   let consoleOutput = '';
+  let consoleEntries: TimestampedLogEntry[] = [];
   try {
     consoleErrors = getConsoleErrors();
     consoleOutput = getConsoleOutput();
+    // Get timestamped console messages for viewer sync
+    const consoleMessages = getConsoleOutputJson();
+    consoleEntries = consoleMessages.map((msg) => ({
+      text: `[${msg.type}] ${msg.text}`,
+      relativeTimeSec: Math.max(0, parseFloat(((msg.timestamp - startTime) / 1000).toFixed(1))),
+    }));
   } catch {
     // Browser may already be closed
   }
@@ -59,10 +103,14 @@ export async function stopCommand(options: StopOptions): Promise<void> {
     closeBrowser();
   }
 
-  // Step 4: Read server log
+  // Step 4: Read server log (with timestamp parsing)
   let serverLog = '';
+  let serverEntries: TimestampedLogEntry[] = [];
   if (fs.existsSync(session.serverErrorLog)) {
-    serverLog = fs.readFileSync(session.serverErrorLog, 'utf-8');
+    const rawServerLog = fs.readFileSync(session.serverErrorLog, 'utf-8');
+    const parsed = parseTimestampedServerLog(rawServerLog, startTime);
+    serverLog = parsed.cleanText;
+    serverEntries = parsed.entries;
   }
 
   // Use session subfolder for all artifacts
@@ -129,6 +177,15 @@ export async function stopCommand(options: StopOptions): Promise<void> {
     fs.writeFileSync(logPath, JSON.stringify(viewerEntries, null, 2) + '\n');
   }
 
+  // Apply trimOffsetSec to log entries (same adjustment as session log)
+  const adjustTime = (e: TimestampedLogEntry): TimestampedLogEntry =>
+    trimOffsetSec > 0
+      ? { ...e, relativeTimeSec: parseFloat((e.relativeTimeSec - trimOffsetSec).toFixed(1)) }
+      : e;
+
+  const viewerConsoleEntries = consoleEntries.map(adjustTime);
+  const viewerServerEntries = serverEntries.map(adjustTime);
+
   const viewerPath = writeViewer(sessionDir, {
     description: session.description,
     serverCommand: session.serverCommand,
@@ -136,6 +193,10 @@ export async function stopCommand(options: StopOptions): Promise<void> {
     videoFilename: fs.existsSync(session.videoPath) ? path.basename(session.videoPath) : null,
     consoleErrorCount,
     serverErrorCount,
+    consoleOutput,
+    serverLog,
+    consoleEntries: viewerConsoleEntries.length > 0 ? viewerConsoleEntries : undefined,
+    serverEntries: viewerServerEntries.length > 0 ? viewerServerEntries : undefined,
     entries: viewerEntries.length > 0 ? viewerEntries : undefined,
   });
 

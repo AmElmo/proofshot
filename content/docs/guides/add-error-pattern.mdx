@@ -1,0 +1,73 @@
+---
+title: "How to add error detection for a new language"
+description: "Extend ProofShot's server error detection to support additional programming languages."
+---
+
+import { Callout, Steps } from 'nextra/components'
+
+# How to add error detection for a new language
+
+ProofShot scans server logs for errors across 10+ languages. If your stack uses a language that isn't covered, you can add detection patterns in a single file.
+
+<Callout type="info">
+**Prerequisites:** A local clone of the ProofShot repository and familiarity with regular expressions.
+</Callout>
+
+<Steps>
+### Open the error patterns file
+
+```sh
+src/utils/error-patterns.ts
+```
+
+This file exports a `PATTERNS` array. Each entry has a `name` and an array of regex `patterns`.
+
+### Add a new entry
+
+Add your language to the `PATTERNS` array:
+
+```typescript filename="src/utils/error-patterns.ts"
+{
+  name: 'Swift',
+  patterns: [
+    /Fatal error:/,
+    /Thread \d+: signal SIGABRT/,
+    /Swift runtime failure:/,
+    /Precondition failed:/,
+  ],
+},
+```
+
+Each regex is tested against individual lines of the server log. If a line matches any pattern, it's flagged as an error.
+
+### Build and test
+
+```sh
+npm run build
+npm test
+```
+
+### Submit a PR
+
+Contributions are welcome. Add your patterns and open a pull request.
+</Steps>
+
+## Currently supported languages
+
+| Language | Example patterns |
+|----------|-----------------|
+| JavaScript / Node.js | `Error:`, `ERR_`, unhandled rejections |
+| Python | `Traceback`, `File:line`, exception classes |
+| Ruby / Rails | `ActionController` errors, `FATAL--` |
+| Go | `panic:`, goroutine stacks |
+| Java / Kotlin | `Exception in thread`, `Caused by:` |
+| Rust | `thread panicked`, `error[E***]` |
+| PHP | `Parse error`, `Fatal error` |
+| C# / .NET | `Unhandled exception` |
+| Elixir / Phoenix | `** (EXIT)`, runtime errors |
+| Generic | `FATAL`, `CRITICAL`, `Segmentation fault` |
+
+## What's next?
+
+- [CLI reference](/docs/reference/cli) — command details
+- [How ProofShot works](/docs/concepts/how-it-works) — architecture overview

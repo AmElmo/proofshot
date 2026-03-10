@@ -1,0 +1,78 @@
+---
+title: "How to install ProofShot skills for your agent"
+description: "Set up ProofShot's skill file so your AI coding agent knows the verification workflow."
+---
+
+import { Callout, Steps } from 'nextra/components'
+
+# How to install agent skills
+
+ProofShot teaches your AI coding agent the verification workflow through a skill file. Once installed, your agent knows how to run `proofshot start`, drive the browser, capture screenshots, and run `proofshot stop` — all from a simple prompt like "verify this with proofshot."
+
+<Callout type="info">
+**Prerequisites:** ProofShot installed globally (`npm install -g proofshot`).
+</Callout>
+
+<Steps>
+### Detect and install
+
+```sh
+proofshot install
+```
+
+ProofShot scans your machine for supported AI tools and installs a skill file for each one. You'll see checkboxes to select which tools to configure.
+
+### Install for specific tools only
+
+```sh
+proofshot install --only claude
+proofshot install --only cursor,codex
+```
+
+### Skip specific tools
+
+```sh
+proofshot install --skip gemini
+```
+
+### Force reinstall
+
+```sh
+proofshot install --force
+```
+
+Overwrites existing skill files. Useful after updating ProofShot to get the latest skill content.
+</Steps>
+
+## Where skills are installed
+
+All skills install at **user level** — one install works across every project on your machine.
+
+| Agent | Location | Strategy |
+|-------|----------|----------|
+| **Claude Code** | `~/.claude/skills/proofshot/SKILL.md` | Standalone file |
+| **Cursor** | `~/.cursor/rules/proofshot.mdc` | Standalone file |
+| **Codex** | `~/.codex/skills/proofshot/SKILL.md` | Standalone file |
+| **Gemini CLI** | `~/.gemini/GEMINI.md` | Appended with markers |
+| **Windsurf** | `~/.codeium/windsurf/memories/global_rules.md` | Appended with markers |
+
+Tools using the **append** strategy wrap ProofShot's content in `<!-- proofshot:start -->` / `<!-- proofshot:end -->` markers. Running `proofshot install` again replaces only the marked section — your other content is preserved.
+
+## What the skill teaches the agent
+
+The skill file gives your agent:
+
+- The three-step workflow (`start` → test → `stop`)
+- All `agent-browser` commands for browser interaction
+- When to take screenshots for maximum coverage
+- How to read element snapshots and use `@eN` references
+- Error awareness (what to check in the proof report)
+
+You don't need to explain ProofShot to your agent. Just prompt it naturally:
+
+> Verify the signup flow with proofshot. Fill in the registration form, submit it, and check that the welcome page loads.
+
+## What's next?
+
+- [Quick Start](/docs/quick-start) — run your first verification session
+- [CLI reference for `proofshot install`](/docs/reference/cli#proofshot-install) — all flags

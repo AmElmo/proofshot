@@ -94,6 +94,28 @@
     </div>
   </div>
 
+  <script>
+    console.log('[app] Dashboard page loaded');
+    console.log('[api] Fetching metrics from /api/metrics...');
+    console.log('[api] Response: { deploys: 1337, prs: 420, buildTime: "4.2s" }');
+    console.log('[app] Rendering metric cards');
+
+    // Simulate live activity feed
+    setTimeout(function() {
+      console.log('[ws] WebSocket connected to /ws/activity');
+      console.log('[ws] Received event: { type: "deploy", user: "@intern_dev", status: "on-fire" }');
+    }, 800);
+
+    // Export button handler
+    document.querySelector('.btn')?.addEventListener('click', function() {
+      console.log('[app] Export Report clicked');
+      console.warn('[app] Export is disabled in demo mode — no data to export');
+    });
+
+    // Simulate a deprecation warning
+    console.warn('[compat] Dashboard v1 API is deprecated. Migrate to v2 before 2027-01-01.');
+  </script>
+
   <footer>
     <span>&copy; 2026 localhost:cafe &middot; 0 bugs shipped&trade; &middot; Built with &#x2615; and <a href="#">git push --force</a></span>
   </footer>

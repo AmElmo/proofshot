@@ -1,0 +1,1408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ProofShot — Visual proof for AI-built code</title>
+  <meta name="description" content="Open-source CLI that gives AI coding agents visual verification. Your agent builds a feature — ProofShot records video proof it works." />
+  <meta property="og:title" content="ProofShot — Visual proof for AI-built code" />
+  <meta property="og:description" content="Open-source CLI that gives AI coding agents visual verification. Your agent builds a feature — ProofShot records video proof it works." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://proofshot.argil.io" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script defer src="https://cloud.umami.is/script.js" data-website-id="c8819712-abe9-42ed-bec1-c11b5c0602b7"></script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+    :root {
+      --bg: #020617;
+      --surface: #0F172A;
+      --card: #1e293b;
+      --card-border: rgba(99,102,241,0.08);
+      --card-hover: rgba(99,102,241,0.14);
+      --text: #f0f6fc;
+      --text-secondary: #94A3B8;
+      --text-dim: #475569;
+      --accent: #6366F1;
+      --accent-hover: #818cf8;
+      --cyan: #22D3EE;
+      --green: #3fb950;
+      --orange: #f89b4b;
+      --pink: #ec4899;
+      --red: #f85149;
+      --code-bg: #0d1117;
+      --max-width: 1080px;
+      --h-pad: 3rem;
+      --v-pad: 5rem;
+      --font: 'Inter', system-ui, -apple-system, sans-serif;
+      --mono: 'JetBrains Mono', 'Fira Code', monospace;
+    }
+
+    html { scroll-behavior: smooth }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    a { color: var(--accent); text-decoration: none; transition: color .15s }
+    a:hover { color: var(--accent-hover) }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(2,6,23,0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--card-border);
+    }
+    .nav-inner {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 0 var(--h-pad);
+      height: 60px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-logo {
+      font-weight: 800; font-size: 1.15rem; color: var(--text);
+      display: flex; align-items: center; gap: .6rem;
+      letter-spacing: -0.02em;
+    }
+    .nav-logo svg { width: 30px; height: 30px }
+    .nav-links { display: flex; align-items: center; gap: 1.5rem }
+    .nav-links a { color: var(--text-secondary); font-size: .9rem; font-weight: 500 }
+    .nav-links a:hover { color: var(--text) }
+    .btn-pill {
+      display: inline-flex; align-items: center; gap: .5rem;
+      background: var(--accent); color: #fff;
+      font-weight: 600; font-size: .85rem;
+      padding: 8px 20px; border-radius: 100px;
+      transition: transform .1s, background .15s;
+      border: none; cursor: pointer;
+    }
+    .btn-pill:hover { background: var(--accent-hover); transform: scale(1.04); color: #fff }
+
+    /* ── HERO ── */
+    .hero {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: calc(var(--v-pad) * 1.3) var(--h-pad) var(--v-pad);
+      text-align: center;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: .4rem;
+      background: var(--card); border: 1px solid var(--card-border);
+      border-radius: 100px; padding: 5px 14px;
+      font-size: .8rem; color: var(--text-secondary);
+      margin-bottom: 1.5rem;
+    }
+    .hero-badge span { color: var(--cyan); font-weight: 600 }
+    .hero h1 {
+      font-size: clamp(2.4rem, 5.5vw, 3.8rem);
+      font-weight: 800; line-height: 1.1;
+      letter-spacing: -0.03em;
+      margin-bottom: 1.2rem;
+    }
+    .hero h1 .grad {
+      background: linear-gradient(135deg, var(--cyan) 0%, #a78bfa 50%, var(--cyan) 100%);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: grad-shimmer 3s ease-in-out infinite;
+      filter: drop-shadow(0 0 24px rgba(34,211,238,0.3));
+    }
+    @keyframes grad-shimmer {
+      0% { background-position: 0% center }
+      50% { background-position: 100% center }
+      100% { background-position: 0% center }
+    }
+    .hero p.tagline {
+      font-size: 1.15rem; color: var(--text-secondary);
+      max-width: 560px; margin: 0 auto 2rem;
+      line-height: 1.7;
+    }
+    .hero-actions {
+      display: flex; align-items: center; justify-content: center;
+      gap: 1rem; flex-wrap: wrap; margin-bottom: 2.5rem;
+    }
+    .btn-ghost {
+      display: inline-flex; align-items: center; gap: .5rem;
+      color: var(--text-secondary);
+      font-weight: 500; font-size: .9rem;
+      padding: 8px 20px; border-radius: 100px;
+      border: 1px solid rgba(99,102,241,0.2);
+      transition: border-color .15s, color .15s;
+    }
+    .btn-ghost:hover { border-color: rgba(99,102,241,0.5); color: var(--text) }
+    .btn-ghost svg { width: 18px; height: 18px }
+
+    .install-block {
+      display: inline-flex; align-items: center; gap: .75rem;
+      background: var(--code-bg); border: 1px solid var(--card-border);
+      border-radius: 8px; padding: 12px 20px;
+      font-family: var(--mono); font-size: .9rem;
+      color: inherit; cursor: default;
+    }
+    button.install-block {
+      cursor: pointer; transition: border-color .2s, background .2s;
+    }
+    button.install-block:hover {
+      border-color: var(--accent); background: rgba(99,102,241,0.06);
+    }
+    .install-block .prompt { color: var(--cyan); user-select: none }
+    .install-block code { color: var(--text-secondary) }
+    .install-block code strong { color: var(--text); font-weight: 500 }
+    .install-block .copy-icon {
+      color: var(--text-dim); transition: color .2s; flex-shrink: 0;
+    }
+    button.install-block:hover .copy-icon { color: var(--text-secondary) }
+
+    /* ── DEMO VIEWER ── */
+    .demo-viewer {
+      max-width: 960px; margin: 3rem auto 0;
+      border-radius: 12px; overflow: hidden;
+      border: 1px solid rgba(99,102,241,0.12);
+      background: #0d1117;
+      box-shadow: 0 24px 80px rgba(99,102,241,0.08), 0 0 0 1px rgba(99,102,241,0.06);
+    }
+    .demo-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 20px;
+      background: #161b22;
+      border-bottom: 1px solid #21262d;
+    }
+    .demo-header-left {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 13px; font-weight: 600; color: #f0f6fc;
+    }
+    .demo-header-left svg { width: 18px; height: 18px }
+    .demo-badges {
+      display: flex; gap: 8px;
+    }
+    .demo-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 2px 10px; border-radius: 6px;
+      font-size: 11px; font-weight: 500;
+    }
+    .demo-badge.clean {
+      background: rgba(63,185,80,0.12); color: #3fb950;
+      border: 1px solid rgba(63,185,80,0.25);
+    }
+    .demo-badge-dot {
+      width: 5px; height: 5px; border-radius: 50%; background: currentColor;
+    }
+    .demo-body {
+      display: flex;
+      height: 480px;
+    }
+
+    /* Video panel */
+    .demo-video-panel {
+      flex: 0 0 62%;
+      display: flex; flex-direction: column;
+      background: #0d1117;
+    }
+    .demo-screen {
+      flex: 1; position: relative;
+      overflow: hidden;
+      margin: 12px 12px 0;
+      border-radius: 6px;
+      background: #111827;
+      box-shadow: 0 0 0 2px rgba(239,68,68,0.7);
+      animation: rec-border 2s ease-in-out infinite;
+    }
+    @keyframes rec-border {
+      0%,100% { box-shadow: 0 0 0 2px rgba(239,68,68,0.7), 0 0 8px rgba(239,68,68,0.3) }
+      50% { box-shadow: 0 0 0 2px rgba(239,68,68,0.4), 0 0 2px rgba(239,68,68,0.1) }
+    }
+    .rec-badge {
+      position: absolute; top: 8px; right: 8px; z-index: 60;
+      display: flex; align-items: center; gap: 5px;
+      background: rgba(0,0,0,0.7); border-radius: 4px;
+      padding: 2px 8px 2px 6px;
+      font-family: var(--mono); font-size: 9px; font-weight: 700;
+      color: #ef4444; letter-spacing: 0.5px;
+    }
+    .rec-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: #ef4444;
+      animation: rec-blink 1.2s ease-in-out infinite;
+    }
+    @keyframes rec-blink {
+      0%,100% { opacity: 1 }
+      50% { opacity: 0.2 }
+    }
+    /* Mock browser chrome */
+    .mock-browser {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+    }
+    .mock-url-bar {
+      display: flex; align-items: center; gap: 6px;
+      padding: 6px 10px;
+      background: #1f2937;
+      border-bottom: 1px solid #374151;
+      font-family: var(--mono); font-size: 10px; color: #6b7280;
+    }
+    .mock-dots { display: flex; gap: 4px }
+    .mock-dots span { width: 6px; height: 6px; border-radius: 50%; background: #374151 }
+    .mock-url { flex: 1; text-align: center; color: #9ca3af }
+    .mock-content {
+      flex: 1; position: relative; overflow: hidden;
+    }
+
+    /* ── SCREEN LAYERS (fade in/out over 16s cycle) ── */
+    .mock-screen { position: absolute; inset: 0; opacity: 0; transition: none }
+
+    /* Screen 1: Kanban board (0s–5s) */
+    .mock-screen.s-board { animation: screen-board 16s ease-in-out infinite }
+    @keyframes screen-board {
+      0% { opacity: 1 } 4% { opacity: 1 }
+      30% { opacity: 1 } 33% { opacity: 0 }
+      100% { opacity: 0 }
+    }
+
+    /* Screen 2: Modal overlay (5s–10s) */
+    .mock-screen.s-modal { animation: screen-modal 16s ease-in-out infinite }
+    @keyframes screen-modal {
+      0% { opacity: 0 } 32% { opacity: 0 }
+      35% { opacity: 1 } 60% { opacity: 1 }
+      63% { opacity: 0 } 100% { opacity: 0 }
+    }
+
+    /* Screen 3: Board scrolled with new card (10s–16s) */
+    .mock-screen.s-result { animation: screen-result 16s ease-in-out infinite }
+    @keyframes screen-result {
+      0% { opacity: 0 } 62% { opacity: 0 }
+      65% { opacity: 1 } 95% { opacity: 1 }
+      100% { opacity: 0 }
+    }
+
+    /* ── WIREFRAME APP ── */
+    .wf { padding: 12px; height: 100%; display: flex; flex-direction: column }
+    .wf-nav {
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 12px; padding-bottom: 8px;
+      border-bottom: 1px solid #1e293b;
+    }
+    .wf-logo { width: 14px; height: 14px; border-radius: 3px; background: #6366F1 }
+    .wf-nav-line { height: 6px; border-radius: 3px; background: #1e293b }
+    .wf-btn {
+      font-size: 9px; font-weight: 600; color: #fff;
+      background: #6366F1; border-radius: 4px;
+      padding: 3px 10px; cursor: default; margin-left: auto;
+      white-space: nowrap;
+    }
+    .wf-body { flex: 1; display: flex; flex-direction: column; gap: 8px }
+    .wf-row { display: flex; gap: 8px }
+    .wf-block {
+      background: #1e293b; border-radius: 4px;
+      height: 28px;
+    }
+    .wf-block.w1 { flex: 1 }
+    .wf-block.w2 { flex: 2 }
+    .wf-block.w3 { flex: 3 }
+    .wf-block.h-sm { height: 20px }
+    .wf-block.h-lg { height: 36px }
+    .wf-block.accent {
+      background: rgba(99,102,241,0.12);
+      border: 1px solid rgba(99,102,241,0.3);
+    }
+    .wf-block.new-item {
+      border: 1px solid #6366F1; background: rgba(99,102,241,0.08);
+      animation: wf-glow 16s ease-in-out infinite;
+    }
+    @keyframes wf-glow {
+      0%,64% { box-shadow: none }
+      68% { box-shadow: 0 0 12px rgba(99,102,241,0.3) }
+      85% { box-shadow: 0 0 4px rgba(99,102,241,0.1) }
+      100% { box-shadow: none }
+    }
+
+    /* ── MODAL ── */
+    .modal-backdrop {
+      position: absolute; inset: 0;
+      background: rgba(0,0,0,0.6);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .modal-card {
+      width: 220px; background: #1e293b;
+      border: 1px solid #374151; border-radius: 8px;
+      padding: 14px; transform: translateY(8px);
+      animation: modal-slide 16s ease-in-out infinite;
+    }
+    @keyframes modal-slide {
+      0%,32% { transform: translateY(8px); opacity: 0 }
+      36% { transform: translateY(0); opacity: 1 }
+      60% { transform: translateY(0); opacity: 1 }
+      63% { transform: translateY(-4px); opacity: 0 }
+      100% { transform: translateY(8px); opacity: 0 }
+    }
+    .modal-title {
+      font-size: 11px; font-weight: 700; color: #f0f6fc;
+      margin-bottom: 12px;
+    }
+    .modal-field { margin-bottom: 8px }
+    .modal-label {
+      font-size: 8px; font-weight: 600; color: #6b7280;
+      text-transform: uppercase; letter-spacing: 0.3px;
+      margin-bottom: 3px;
+    }
+    .modal-input {
+      width: 100%; height: 24px;
+      background: #111827; border: 1px solid #374151;
+      border-radius: 4px; position: relative; overflow: hidden;
+    }
+    .modal-input-text {
+      position: absolute; inset: 0;
+      display: flex; align-items: center;
+      padding: 0 8px; font-family: var(--mono); font-size: 9px;
+      color: #e5e7eb; opacity: 0;
+    }
+    /* Staggered fill animations */
+    .modal-field:nth-child(2) .modal-input-text { animation: mfill1 16s ease-in-out infinite }
+    .modal-field:nth-child(3) .modal-input-text { animation: mfill2 16s ease-in-out infinite }
+    @keyframes mfill1 {
+      0%,37% { opacity: 0 } 40%,60% { opacity: 1 } 63%,100% { opacity: 0 }
+    }
+    @keyframes mfill2 {
+      0%,42% { opacity: 0 } 45%,60% { opacity: 1 } 63%,100% { opacity: 0 }
+    }
+    .modal-select {
+      display: flex; gap: 4px; margin-top: 2px;
+    }
+    .modal-tag {
+      font-size: 8px; font-weight: 600; padding: 2px 8px;
+      border-radius: 3px; color: #fff; opacity: 0.3;
+    }
+    .modal-tag.active { opacity: 1 }
+    .modal-tag.t1 { background: #dc2626 }
+    .modal-tag.t2 { background: #ea580c }
+    .modal-tag.t3 { background: #2563eb }
+    .modal-tag.selected-anim {
+      animation: tag-select 16s ease-in-out infinite;
+    }
+    @keyframes tag-select { 0%,47% { opacity: 0.3 } 50%,60% { opacity: 1 } 63%,100% { opacity: 0.3 } }
+    .modal-btn-row { display: flex; justify-content: flex-end; margin-top: 10px }
+    .modal-btn {
+      font-size: 9px; font-weight: 600; color: #fff;
+      background: #6366F1; border-radius: 5px;
+      padding: 4px 12px; position: relative; overflow: hidden;
+    }
+    .modal-btn::after {
+      content: ''; position: absolute; inset: 0;
+      background: rgba(255,255,255,0.2);
+      opacity: 0; animation: mbtn-flash 16s ease-in-out infinite;
+    }
+    @keyframes mbtn-flash { 0%,55% { opacity: 0 } 57% { opacity: 1 } 60%,100% { opacity: 0 } }
+
+    /* Scroll indicator on result screen */
+    .scroll-anim {
+      animation: board-scroll 16s ease-in-out infinite;
+    }
+    @keyframes board-scroll {
+      0%,65% { transform: translateY(0) }
+      72% { transform: translateY(-20px) }
+      90%,100% { transform: translateY(-20px) }
+    }
+
+    /* JS-driven click pulse */
+    .click-pulse {
+      position: absolute; pointer-events: none; z-index: 50;
+      width: 0; height: 0;
+    }
+    .click-pulse::before {
+      content: '';
+      position: absolute; left: 0; top: 0;
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: rgba(99,102,241,0.9);
+      transform: translate(-50%,-50%);
+      animation: pulse-dot 0.6s ease-out forwards;
+    }
+    .click-pulse::after {
+      content: '';
+      position: absolute; left: 0; top: 0;
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      border: 3px solid rgba(99,102,241,0.8);
+      background: rgba(99,102,241,0.15);
+      transform: translate(-50%,-50%) scale(0.2);
+      animation: pulse-ring 0.6s ease-out forwards;
+    }
+    @keyframes pulse-dot {
+      0%   { transform: translate(-50%,-50%) scale(0); opacity: 0 }
+      15%  { transform: translate(-50%,-50%) scale(1); opacity: 1 }
+      70%  { transform: translate(-50%,-50%) scale(1); opacity: 1 }
+      100% { transform: translate(-50%,-50%) scale(0); opacity: 0 }
+    }
+    @keyframes pulse-ring {
+      0%   { transform: translate(-50%,-50%) scale(0.2); opacity: 0 }
+      15%  { transform: translate(-50%,-50%) scale(0.5); opacity: 1 }
+      100% { transform: translate(-50%,-50%) scale(2); opacity: 0 }
+    }
+
+    /* Typewriter cursor */
+    .typing-cursor {
+      display: inline-block; width: 1px; height: 1em;
+      background: #6366F1; margin-left: 1px;
+      animation: cursor-blink 0.5s step-end infinite;
+      vertical-align: text-bottom;
+    }
+    @keyframes cursor-blink { 0%,100% { opacity: 1 } 50% { opacity: 0 } }
+
+    /* Screenshot flash overlay */
+    .screenshot-flash {
+      position: absolute; inset: 0; z-index: 60;
+      background: #fff; pointer-events: none;
+      animation: snap-flash 0.4s ease-out forwards;
+    }
+    @keyframes snap-flash { 0% { opacity: 0.8 } 100% { opacity: 0 } }
+
+    /* Smooth scroll for interactive mode */
+    .scroll-smooth { transition: transform 0.8s ease-in-out }
+
+    /* Toasts */
+    .mock-toast {
+      position: absolute; bottom: 10px; left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.88);
+      color: #fff; padding: 4px 12px;
+      border-radius: 8px; font-size: 10px; font-weight: 500;
+      white-space: nowrap; pointer-events: none;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    }
+    .toast-1 { opacity: 0; animation: toast-1 16s ease-in-out infinite }
+    .toast-2 { opacity: 0; animation: toast-2 16s ease-in-out infinite }
+    .toast-3 { opacity: 0; animation: toast-3 16s ease-in-out infinite }
+    .toast-4 { opacity: 0; animation: toast-4 16s ease-in-out infinite }
+    @keyframes toast-1 {
+      0%,3% { opacity:0; transform:translateX(-50%) translateY(4px) }
+      5%,14% { opacity:1; transform:translateX(-50%) translateY(0) }
+      17%,100% { opacity:0 }
+    }
+    @keyframes toast-2 {
+      0%,19% { opacity:0; transform:translateX(-50%) translateY(4px) }
+      21%,29% { opacity:1; transform:translateX(-50%) translateY(0) }
+      32%,100% { opacity:0 }
+    }
+    @keyframes toast-3 {
+      0%,38% { opacity:0; transform:translateX(-50%) translateY(4px) }
+      40%,54% { opacity:1; transform:translateX(-50%) translateY(0) }
+      57%,100% { opacity:0 }
+    }
+    @keyframes toast-4 {
+      0%,70% { opacity:0; transform:translateX(-50%) translateY(4px) }
+      72%,84% { opacity:1; transform:translateX(-50%) translateY(0) }
+      87%,100% { opacity:0 }
+    }
+
+    /* Scrub bar */
+    .demo-scrub {
+      padding: 8px 12px 6px;
+      background: #161b22;
+      border-top: 1px solid #21262d;
+    }
+    .demo-scrub-track {
+      position: relative; height: 4px;
+      background: #21262d; border-radius: 2px;
+    }
+    .demo-scrub-fill {
+      width: 0%; height: 100%;
+      background: #58a6ff; border-radius: 2px;
+      animation: scrub-fill 12s linear infinite;
+    }
+    .demo-scrub-markers {
+      position: absolute; inset: 0;
+      display: flex; align-items: center;
+    }
+    .demo-scrub-dot {
+      position: absolute; width: 8px; height: 8px;
+      background: #21262d; border: 1px solid #30363d;
+      border-radius: 50%; transform: translateX(-50%);
+      font-size: 7px; display: flex; align-items: center;
+      justify-content: center;
+    }
+    @keyframes scrub-fill {
+      0% { width: 0% }
+      95% { width: 100% }
+      100% { width: 0% }
+    }
+    .demo-scrub-fill {
+      animation: scrub-fill 16s linear infinite;
+    }
+
+    /* Timeline panel */
+    .demo-timeline {
+      flex: 0 0 38%;
+      border-left: 1px solid #21262d;
+      background: #161b22;
+      overflow-y: auto;
+      font-size: 12px;
+    }
+    .demo-timeline-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 14px;
+      font-size: 11px; font-weight: 600; color: #8b949e;
+      text-transform: uppercase; letter-spacing: 0.5px;
+      border-bottom: 1px solid #21262d;
+      position: sticky; top: 0; background: #161b22; z-index: 2;
+    }
+    .demo-step {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 14px;
+      border-bottom: 1px solid #21262d;
+      transition: background .15s;
+      cursor: pointer;
+    }
+    .demo-step:hover:not(.active) {
+      background: rgba(88,166,255,0.04);
+    }
+    .demo-step.active {
+      background: #1f2a37;
+      border-left: 2px solid #58a6ff;
+      padding-left: 12px;
+    }
+    .demo-step-num {
+      font-size: 10px; color: #484f58;
+      min-width: 14px; text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+    .demo-step-icon { font-size: 13px; min-width: 18px; text-align: center }
+    .demo-step-action {
+      flex: 1; font-family: var(--mono); font-size: 11px;
+      color: #c9d1d9; white-space: nowrap; overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .demo-step.active .demo-step-action { color: #f0f6fc }
+    .demo-step-time {
+      font-size: 10px; color: #484f58;
+      font-variant-numeric: tabular-nums;
+    }
+    .demo-step.active .demo-step-time { color: #58a6ff }
+
+    /* Animate active step — synced to 16s cycle */
+    .demo-step:nth-child(2)  { animation: step-active 16s ease-in-out infinite; animation-delay: 0s }
+    .demo-step:nth-child(3)  { animation: step-active 16s ease-in-out infinite; animation-delay: 1.6s }
+    .demo-step:nth-child(4)  { animation: step-active 16s ease-in-out infinite; animation-delay: 3.2s }
+    .demo-step:nth-child(5)  { animation: step-active 16s ease-in-out infinite; animation-delay: 5.0s }
+    .demo-step:nth-child(6)  { animation: step-active 16s ease-in-out infinite; animation-delay: 6.2s }
+    .demo-step:nth-child(7)  { animation: step-active 16s ease-in-out infinite; animation-delay: 7.4s }
+    .demo-step:nth-child(8)  { animation: step-active 16s ease-in-out infinite; animation-delay: 9.0s }
+    .demo-step:nth-child(9)  { animation: step-active 16s ease-in-out infinite; animation-delay: 10.8s }
+    .demo-step:nth-child(10) { animation: step-active 16s ease-in-out infinite; animation-delay: 12.5s }
+
+    @keyframes step-active {
+      0%,4% { background: #1f2a37; border-left: 2px solid #58a6ff; padding-left: 12px }
+      10%,100% { background: transparent; border-left: none; padding-left: 14px }
+    }
+
+    /* Pause/resume for interactive mode */
+    .demo-paused .mock-screen,
+    .demo-paused .mock-toast,
+    .demo-paused .demo-scrub-fill,
+    .demo-paused .demo-screen,
+    .demo-paused .rec-dot,
+    .demo-paused .modal-card,
+    .demo-paused .modal-input-text,
+    .demo-paused .modal-tag.selected-anim,
+    .demo-paused .modal-btn::after,
+    .demo-paused .scroll-anim,
+    .demo-paused .wf-block.new-item,
+    .demo-paused .demo-step { animation: none !important }
+    .demo-restart * { animation: none !important }
+
+    .demo-paused .demo-step.active {
+      background: #1f2a37;
+      border-left: 2px solid #58a6ff;
+      padding-left: 12px;
+    }
+
+    /* ── SECTION SHARED ── */
+    section {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: var(--v-pad) var(--h-pad);
+    }
+    .section-label {
+      font-family: var(--mono); font-size: .8rem;
+      color: var(--cyan); font-weight: 500;
+      text-transform: uppercase; letter-spacing: .1em;
+      margin-bottom: .75rem;
+    }
+    .section-title {
+      font-size: clamp(1.6rem, 3.5vw, 2.2rem);
+      font-weight: 700; letter-spacing: -0.02em;
+      margin-bottom: .75rem; line-height: 1.2;
+    }
+    .section-desc {
+      color: var(--text-secondary); font-size: 1rem;
+      max-width: 520px; margin-bottom: 2.5rem;
+      line-height: 1.7;
+    }
+
+    /* ── HOW IT WORKS ── */
+    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem }
+    .step {
+      background: var(--card); border: 1px solid var(--card-border);
+      border-radius: 12px; padding: 1.75rem;
+      transition: border-color .2s;
+    }
+    .step:hover { border-color: var(--card-hover) }
+    .step-num {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 32px; height: 32px; border-radius: 8px;
+      background: rgba(99,102,241,0.1); color: var(--accent);
+      font-family: var(--mono); font-size: .85rem; font-weight: 600;
+      margin-bottom: 1rem;
+    }
+    .step h3 { font-size: 1.05rem; font-weight: 600; margin-bottom: .5rem }
+    .step p { color: var(--text-secondary); font-size: .88rem; line-height: 1.6 }
+    .step-code {
+      margin-top: 1rem; padding: 10px 14px;
+      background: var(--code-bg); border-radius: 6px;
+      font-family: var(--mono); font-size: .8rem;
+      color: var(--text-secondary); overflow-x: auto;
+    }
+    .step-code .cmd { color: var(--cyan) }
+    .step-code .flag { color: var(--orange) }
+    .step-code .str { color: var(--accent) }
+
+    /* ── FEATURES ── */
+    .features { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem }
+    .feature {
+      background: var(--card); border: 1px solid var(--card-border);
+      border-radius: 12px; padding: 1.75rem;
+      transition: border-color .2s;
+    }
+    .feature:hover { border-color: var(--card-hover) }
+    .feature-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 1rem;
+    }
+    .feature-icon.video { background: rgba(236,72,153,0.1); color: var(--pink) }
+    .feature-icon.errors { background: rgba(248,155,75,0.1); color: var(--orange) }
+    .feature-icon.timeline { background: rgba(99,102,241,0.1); color: var(--accent) }
+    .feature-icon.artifacts { background: rgba(34,211,238,0.1); color: var(--cyan) }
+    .feature h3 { font-size: 1.05rem; font-weight: 600; margin-bottom: .5rem }
+    .feature p { color: var(--text-secondary); font-size: .88rem; line-height: 1.6 }
+
+    /* ── AGENTS ── */
+    .agents-grid {
+      display: flex; flex-wrap: wrap; gap: 1rem;
+      margin-top: 1.5rem;
+      justify-content: center;
+    }
+    .agent-tag {
+      display: inline-flex; align-items: center; gap: .65rem;
+      background: var(--card); border: 1px solid var(--card-border);
+      border-radius: 12px; padding: 14px 22px;
+      font-size: .95rem; font-weight: 500; color: var(--text-secondary);
+      transition: border-color .2s, background .2s, transform .2s;
+    }
+    .agent-tag:hover {
+      border-color: rgba(99,102,241,0.4);
+      background: rgba(30,41,59,0.8);
+      transform: translateY(-2px);
+    }
+    .agent-tag svg {
+      flex-shrink: 0;
+    }
+
+    /* ── CTA ── */
+    .cta-section {
+      text-align: center;
+      padding: var(--v-pad) var(--h-pad) calc(var(--v-pad) * 1.5);
+    }
+    .cta-section h2 {
+      font-size: clamp(1.6rem, 3.5vw, 2.2rem);
+      font-weight: 700; letter-spacing: -0.02em;
+      margin-bottom: 1rem;
+    }
+    .cta-section p {
+      color: var(--text-secondary); font-size: 1rem;
+      max-width: 460px; margin: 0 auto 2rem;
+    }
+    .cta-install {
+      display: flex; flex-direction: column; align-items: center; gap: 1rem;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--card-border);
+      padding: 2rem var(--h-pad);
+    }
+    .footer-inner {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .footer-inner span { color: var(--text-dim); font-size: .82rem }
+    .footer-links { display: flex; gap: 1.5rem }
+    .footer-links a { color: var(--text-dim); font-size: .82rem }
+    .footer-links a:hover { color: var(--text) }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      :root { --h-pad: 1.25rem; --v-pad: 3rem }
+      .steps { grid-template-columns: 1fr }
+      .features { grid-template-columns: 1fr }
+      .nav-links .hide-mobile { display: none }
+      .hero h1 { font-size: 2rem }
+      .demo-body { flex-direction: column; height: auto }
+      .demo-video-panel { flex: none; height: 220px }
+      .demo-timeline { flex: none; height: 240px; border-left: none; border-top: 1px solid #21262d }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<nav>
+  <div class="nav-inner">
+    <a href="/" class="nav-logo">
+      <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+        <path d="M8,24 L8,12 C8,8 12,8 12,8 L24,8" fill="none" stroke="#6366F1" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M40,8 L52,8 C56,8 56,12 56,12 L56,24" fill="none" stroke="#6366F1" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M8,40 L8,52 C8,56 12,56 12,56 L24,56" fill="none" stroke="#6366F1" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M40,56 L52,56 C56,56 56,52 56,52 L56,40" fill="none" stroke="#6366F1" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M20,34 L28,42 L44,22" fill="none" stroke="#22D3EE" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      ProofShot
+    </a>
+    <div class="nav-links">
+      <a href="https://github.com/AmElmo/proofshot#readme" class="hide-mobile">Docs</a>
+      <a href="https://github.com/AmElmo/proofshot" class="hide-mobile">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:middle"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+      </a>
+      <a href="https://github.com/AmElmo/proofshot#readme" class="btn-pill">Docs</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ── HERO ── -->
+<div class="hero">
+  <div class="hero-badge">
+    <span>Open Source</span> &mdash; MIT Licensed
+  </div>
+  <h1>Your AI agent says it's done.<br/>Get the <span class="grad">proof.</span></h1>
+  <p class="tagline">Let your AI agent prove its own work with video recording, error logs, and proof artifacts — every time it ships code.</p>
+  <div class="hero-actions">
+    <button class="install-block" id="heroInstall" title="Click to copy">
+      <span class="prompt">$</span>
+      <code>npm install -g <strong>proofshot</strong></code>
+      <svg class="copy-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+    </button>
+    <a href="https://github.com/AmElmo/proofshot" class="btn-ghost">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+      GitHub
+    </a>
+  </div>
+
+  <!-- ── EMBEDDED DEMO VIEWER ── -->
+  <div class="demo-viewer">
+    <div class="demo-header">
+      <div class="demo-header-left">
+        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+          <path d="M8,24 L8,12 C8,8 12,8 12,8 L24,8" fill="none" stroke="#6366F1" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M40,8 L52,8 C56,8 56,12 56,12 L56,24" fill="none" stroke="#6366F1" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M8,40 L8,52 C8,56 12,56 12,56 L24,56" fill="none" stroke="#6366F1" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M40,56 L52,56 C56,56 56,52 56,52 L56,40" fill="none" stroke="#6366F1" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M20,34 L28,42 L44,22" fill="none" stroke="#22D3EE" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        ProofShot Verification
+      </div>
+      <div class="demo-badges">
+        <span class="demo-badge clean"><span class="demo-badge-dot"></span>Console: clean</span>
+        <span class="demo-badge clean"><span class="demo-badge-dot"></span>Server: clean</span>
+      </div>
+    </div>
+
+    <div class="demo-body">
+      <!-- Video panel with animated mock app -->
+      <div class="demo-video-panel">
+        <div class="demo-screen">
+          <div class="rec-badge"><span class="rec-dot"></span>REC</div>
+          <div class="mock-browser">
+            <div class="mock-url-bar">
+              <div class="mock-dots"><span></span><span></span><span></span></div>
+              <div class="mock-url">localhost:3000/board</div>
+            </div>
+            <div class="mock-content">
+              <!-- SCREEN 1: Wireframe app -->
+              <div class="mock-screen s-board">
+                <div class="wf">
+                  <div class="wf-nav">
+                    <div class="wf-logo"></div>
+                    <div class="wf-nav-line" style="width:40px"></div>
+                    <div class="wf-nav-line" style="width:30px"></div>
+                    <div class="wf-btn">+ Add</div>
+                  </div>
+                  <div class="wf-body">
+                    <div class="wf-row"><div class="wf-block w3"></div><div class="wf-block w1"></div></div>
+                    <div class="wf-row"><div class="wf-block w2 h-lg"></div></div>
+                    <div class="wf-row"><div class="wf-block w1"></div><div class="wf-block w1"></div><div class="wf-block w1"></div></div>
+                    <div class="wf-row"><div class="wf-block w2 h-sm"></div><div class="wf-block w1 h-sm"></div></div>
+                    <div class="wf-row"><div class="wf-block w1 h-lg"></div><div class="wf-block w2"></div></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- SCREEN 2: Modal over dimmed wireframe -->
+              <div class="mock-screen s-modal">
+                <div class="modal-backdrop">
+                  <div class="modal-card">
+                    <div class="modal-title">New item</div>
+                    <div class="modal-field">
+                      <div class="modal-label">Name</div>
+                      <div class="modal-input"><div class="modal-input-text">Enable dark mode</div></div>
+                    </div>
+                    <div class="modal-field">
+                      <div class="modal-label">Owner</div>
+                      <div class="modal-input"><div class="modal-input-text">@emma</div></div>
+                    </div>
+                    <div class="modal-field">
+                      <div class="modal-label">Priority</div>
+                      <div class="modal-select">
+                        <span class="modal-tag t1">P0</span>
+                        <span class="modal-tag t2 selected-anim">P1</span>
+                        <span class="modal-tag t3">P2</span>
+                      </div>
+                    </div>
+                    <div class="modal-btn-row"><div class="modal-btn">Create</div></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- SCREEN 3: Wireframe with new item added -->
+              <div class="mock-screen s-result">
+                <div class="wf scroll-anim">
+                  <div class="wf-nav">
+                    <div class="wf-logo"></div>
+                    <div class="wf-nav-line" style="width:40px"></div>
+                    <div class="wf-nav-line" style="width:30px"></div>
+                    <div class="wf-btn">+ Add</div>
+                  </div>
+                  <div class="wf-body">
+                    <div class="wf-row"><div class="wf-block w3 new-item"></div><div class="wf-block w1"></div></div>
+                    <div class="wf-row"><div class="wf-block w3"></div><div class="wf-block w1"></div></div>
+                    <div class="wf-row"><div class="wf-block w2 h-lg"></div></div>
+                    <div class="wf-row"><div class="wf-block w1"></div><div class="wf-block w1"></div><div class="wf-block w1"></div></div>
+                    <div class="wf-row"><div class="wf-block w2 h-sm"></div><div class="wf-block w1 h-sm"></div></div>
+                    <div class="wf-row"><div class="wf-block w1 h-lg"></div><div class="wf-block w2"></div></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Toasts -->
+              <div class="mock-toast toast-1">&#x1F9ED; Navigate: /board</div>
+              <div class="mock-toast toast-2">&#x1F5B1; Click: + Add</div>
+              <div class="mock-toast toast-3">&#x2328; Type: Enable dark mode</div>
+              <div class="mock-toast toast-4">&#x2195; Scroll down</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="demo-scrub">
+          <div class="demo-scrub-track">
+            <div class="demo-scrub-fill"></div>
+            <div class="demo-scrub-markers">
+              <div class="demo-scrub-dot" style="left:2%"></div>
+              <div class="demo-scrub-dot" style="left:13%"></div>
+              <div class="demo-scrub-dot" style="left:25%"></div>
+              <div class="demo-scrub-dot" style="left:38%"></div>
+              <div class="demo-scrub-dot" style="left:44%"></div>
+              <div class="demo-scrub-dot" style="left:51%"></div>
+              <div class="demo-scrub-dot" style="left:63%"></div>
+              <div class="demo-scrub-dot" style="left:76%"></div>
+              <div class="demo-scrub-dot" style="left:88%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Timeline panel -->
+      <div class="demo-timeline">
+        <div class="demo-timeline-header">
+          <span>Timeline &middot; 9 actions</span>
+        </div>
+        <div class="demo-step">
+          <span class="demo-step-num">1</span>
+          <span class="demo-step-icon">&#x1F9ED;</span>
+          <span class="demo-step-action">navigate &quot;http://localhost:3000/board&quot;</span>
+          <span class="demo-step-time">0:00</span>
+        </div>
+        <div class="demo-step">
+          <span class="demo-step-num">2</span>
+          <span class="demo-step-icon">&#x1F441;</span>
+          <span class="demo-step-action">snapshot &quot;app page&quot;</span>
+          <span class="demo-step-time">0:02</span>
+        </div>
+        <div class="demo-step">
+          <span class="demo-step-num">3</span>
+          <span class="demo-step-icon">&#x1F5B1;</span>
+          <span class="demo-step-action">click &quot;+ Add&quot;</span>
+          <span class="demo-step-time">0:04</span>
+        </div>
+        <div class="demo-step">
+          <span class="demo-step-num">4</span>
+          <span class="demo-step-icon">&#x2328;</span>
+          <span class="demo-step-action">fill &quot;name&quot; &quot;Enable dark mode&quot;</span>
+          <span class="demo-step-time">0:06</span>
+        </div>
+        <div class="demo-step">
+          <span class="demo-step-num">5</span>
+          <span class="demo-step-icon">&#x2328;</span>
+          <span class="demo-step-action">fill &quot;owner&quot; &quot;@emma&quot;</span>
+          <span class="demo-step-time">0:07</span>
+        </div>
+        <div class="demo-step">
+          <span class="demo-step-num">6</span>
+          <span class="demo-step-icon">&#x1F5B1;</span>
+          <span class="demo-step-action">click &quot;P1&quot; priority</span>
+          <span class="demo-step-time">0:08</span>
+        </div>
+        <div class="demo-step">
+          <span class="demo-step-num">7</span>
+          <span class="demo-step-icon">&#x1F5B1;</span>
+          <span class="demo-step-action">click &quot;Create&quot;</span>
+          <span class="demo-step-time">0:10</span>
+        </div>
+        <div class="demo-step">
+          <span class="demo-step-num">8</span>
+          <span class="demo-step-icon">&#x2195;</span>
+          <span class="demo-step-action">scroll down</span>
+          <span class="demo-step-time">0:12</span>
+        </div>
+        <div class="demo-step">
+          <span class="demo-step-num">9</span>
+          <span class="demo-step-icon">&#x1F4F7;</span>
+          <span class="demo-step-action">screenshot &quot;page with new item&quot;</span>
+          <span class="demo-step-time">0:14</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  (function() {
+    var viewer = document.querySelector('.demo-viewer');
+    var mockContent = document.querySelector('.mock-content');
+    var demoSteps = document.querySelectorAll('.demo-step');
+    var screens = document.querySelectorAll('.mock-screen');
+    var toasts = document.querySelectorAll('.mock-toast');
+    var scrubFill = document.querySelector('.demo-scrub-fill');
+    var fills = document.querySelectorAll('.modal-input-text');
+    var hiTag = document.querySelector('.modal-tag.selected-anim');
+    var scrollEl = document.querySelector('.scroll-anim');
+    var newCard = document.querySelector('.wf-block.new-item');
+    var modalBtn = document.querySelector('.modal-btn');
+    var idleTimer = null;
+    var autoTimer = null;
+    var typeTimers = [];
+
+    // Store original text content for typewriter
+    var fillTexts = [];
+    fills.forEach(function(f) { fillTexts.push(f.textContent); });
+
+    // Step map: screen, toast, click target, action type
+    var stepMap = [
+      { scr: 0, toast: 0, click: null,          action: 'navigate' },   // 1
+      { scr: 0, toast: 0, click: null,          action: 'snapshot' },   // 2
+      { scr: 0, toast: 1, click: '.wf-btn',      action: 'click' },      // 3
+      { scr: 1, toast: 2, click: '.modal-field:nth-child(2) .modal-input', action: 'type', fillIdx: 0 }, // 4
+      { scr: 1, toast: 2, click: '.modal-field:nth-child(3) .modal-input', action: 'type', fillIdx: 1 }, // 5
+      { scr: 1, toast: 2, click: '.modal-tag.t2',    action: 'click' },  // 6
+      { scr: 1, toast: 2, click: '.modal-btn',      action: 'click' },  // 7
+      { scr: 2, toast: 3, click: null,          action: 'scroll' },     // 8
+      { scr: 2, toast: 3, click: null,          action: 'snapshot' },   // 9
+    ];
+
+    // ── Helpers ──
+
+    function clearTypeTimers() {
+      typeTimers.forEach(clearTimeout);
+      typeTimers = [];
+    }
+
+    // Fire click pulse at center of target element
+    function firePulse(sel) {
+      if (!sel) return;
+      var target = null;
+      screens.forEach(function(s) {
+        if (s.style.opacity === '1' || (!s.style.opacity && getComputedStyle(s).opacity > 0.5)) {
+          var t = s.querySelector(sel);
+          if (t) target = t;
+        }
+      });
+      if (!target) target = mockContent.querySelector(sel);
+      if (!target) return;
+      var rect = target.getBoundingClientRect();
+      var pr = mockContent.getBoundingClientRect();
+      var pulse = document.createElement('div');
+      pulse.className = 'click-pulse';
+      pulse.style.left = (rect.left + rect.width / 2 - pr.left) + 'px';
+      pulse.style.top = (rect.top + rect.height / 2 - pr.top) + 'px';
+      mockContent.appendChild(pulse);
+      setTimeout(function() { pulse.remove(); }, 700);
+    }
+
+    // Typewriter: type text char by char into a fill element
+    function typeText(fillEl, text, delay) {
+      fillEl.style.opacity = '1';
+      fillEl.textContent = '';
+      var cursor = document.createElement('span');
+      cursor.className = 'typing-cursor';
+      fillEl.appendChild(cursor);
+      var charIdx = 0;
+      var speed = 45; // ms per char
+      function typeNext() {
+        if (charIdx < text.length) {
+          fillEl.textContent = text.slice(0, charIdx + 1);
+          fillEl.appendChild(cursor);
+          charIdx++;
+          typeTimers.push(setTimeout(typeNext, speed + Math.random() * 25));
+        } else {
+          // Remove cursor after a beat
+          typeTimers.push(setTimeout(function() {
+            if (cursor.parentNode) cursor.remove();
+          }, 400));
+        }
+      }
+      typeTimers.push(setTimeout(typeNext, delay || 150));
+    }
+
+    // Screenshot flash
+    function flashScreen() {
+      var flash = document.createElement('div');
+      flash.className = 'screenshot-flash';
+      mockContent.appendChild(flash);
+      setTimeout(function() { flash.remove(); }, 500);
+    }
+
+    // ── Auto-play pulses ──
+
+    var autoPulseTimeouts = [];
+    var autoPulseSchedule = [
+      { time: 3040, step: 2 },
+      { time: 5900, step: 3 },
+      { time: 6700, step: 4 },
+      { time: 8000, step: 5 },
+      { time: 9100, step: 6 },
+    ];
+
+    function startAutoPulses() {
+      stopAutoPulses();
+      autoPulseSchedule.forEach(function(entry) {
+        var tid = setTimeout(function() {
+          if (!viewer.classList.contains('demo-paused')) {
+            firePulse(stepMap[entry.step].click);
+          }
+        }, entry.time);
+        autoPulseTimeouts.push(tid);
+      });
+      autoTimer = setTimeout(startAutoPulses, 16000);
+    }
+
+    function stopAutoPulses() {
+      autoPulseTimeouts.forEach(clearTimeout);
+      autoPulseTimeouts = [];
+      if (autoTimer) { clearTimeout(autoTimer); autoTimer = null; }
+    }
+
+    startAutoPulses();
+
+    // ── Interactive mode ──
+
+    function pauseDemo() {
+      viewer.classList.add('demo-paused');
+      stopAutoPulses();
+      clearTypeTimers();
+    }
+
+    function resetFills() {
+      fills.forEach(function(f, i) {
+        f.textContent = fillTexts[i];
+        f.style.opacity = '';
+      });
+    }
+
+    function showStep(idx) {
+      pauseDemo();
+      clearTimeout(idleTimer);
+      var sd = stepMap[idx];
+
+      // Highlight active step
+      demoSteps.forEach(function(s, i) { s.classList.toggle('active', i === idx); });
+
+      // Show correct screen
+      screens.forEach(function(s, i) { s.style.opacity = i === sd.scr ? '1' : '0'; });
+
+      // Show correct toast
+      toasts.forEach(function(t, i) {
+        t.style.opacity = i === sd.toast ? '1' : '0';
+        t.style.transform = i === sd.toast ? 'translateX(-50%) translateY(0)' : '';
+      });
+
+      // Scrub bar progress
+      scrubFill.style.width = ((idx / (demoSteps.length - 1)) * 100) + '%';
+
+      // ── Reset state before applying step-specific effects ──
+
+      // Reset fill text content (stop any in-progress typing)
+      resetFills();
+
+      // Show already-completed fills (steps before this one)
+      fills.forEach(function(f, i) {
+        if (sd.scr === 1 && idx > 3 + i) {
+          f.style.opacity = '1';
+        } else if (sd.scr !== 1 || idx < 3 + i) {
+          f.style.opacity = '';
+        }
+      });
+
+      // Priority tag: show if past step 6
+      if (hiTag) hiTag.style.opacity = idx > 5 ? '1' : (idx < 5 ? '' : '');
+
+      // Scroll: reset first, then animate if needed
+      if (scrollEl) {
+        scrollEl.classList.remove('scroll-smooth');
+        scrollEl.style.transform = '';
+      }
+
+      // New card glow
+      if (newCard) newCard.style.boxShadow = sd.scr === 2 ? '0 0 12px rgba(99,102,241,0.3)' : '';
+
+      // Modal button flash reset
+      if (modalBtn) modalBtn.style.background = '';
+
+      // ── Step-specific animations ──
+
+      if (sd.action === 'type') {
+        // Typewriter: pulse on the input, then type
+        setTimeout(function() { firePulse(sd.click); }, 80);
+        typeText(fills[sd.fillIdx], fillTexts[sd.fillIdx], 300);
+      }
+      else if (sd.action === 'click') {
+        setTimeout(function() { firePulse(sd.click); }, 80);
+        // Step 6 (click High): animate tag selection
+        if (idx === 5 && hiTag) {
+          hiTag.style.transition = 'opacity 0.3s';
+          setTimeout(function() { hiTag.style.opacity = '1'; }, 200);
+          setTimeout(function() { hiTag.style.transition = ''; }, 600);
+        }
+        // Step 7 (click Create): flash the button
+        if (idx === 6 && modalBtn) {
+          setTimeout(function() {
+            modalBtn.style.background = '#818cf8';
+            setTimeout(function() { modalBtn.style.background = ''; }, 200);
+          }, 200);
+        }
+      }
+      else if (sd.action === 'scroll') {
+        // Smooth scroll animation
+        if (scrollEl) {
+          // Start at top, then smoothly scroll down
+          void scrollEl.offsetHeight;
+          scrollEl.classList.add('scroll-smooth');
+          setTimeout(function() {
+            scrollEl.style.transform = 'translateY(-20px)';
+          }, 150);
+        }
+      }
+      else if (sd.action === 'snapshot') {
+        // Camera flash effect
+        setTimeout(flashScreen, 200);
+      }
+
+      // Resume autoplay after 6s idle
+      idleTimer = setTimeout(resumeDemo, 6000);
+    }
+
+    function resumeDemo() {
+      clearTypeTimers();
+
+      // Reset all inline styles
+      screens.forEach(function(s) { s.style.opacity = ''; });
+      toasts.forEach(function(t) { t.style.opacity = ''; t.style.transform = ''; });
+      demoSteps.forEach(function(s) { s.classList.remove('active'); });
+      scrubFill.style.width = '';
+      resetFills();
+      if (hiTag) { hiTag.style.opacity = ''; hiTag.style.transition = ''; }
+      if (scrollEl) { scrollEl.classList.remove('scroll-smooth'); scrollEl.style.transform = ''; }
+      if (newCard) newCard.style.boxShadow = '';
+      if (modalBtn) modalBtn.style.background = '';
+
+      // Restart CSS animations
+      viewer.classList.add('demo-restart');
+      void viewer.offsetHeight;
+      viewer.classList.remove('demo-restart');
+      viewer.classList.remove('demo-paused');
+
+      startAutoPulses();
+    }
+
+    demoSteps.forEach(function(step, i) {
+      step.addEventListener('click', function() { showStep(i); });
+    });
+  })();
+  </script>
+</div>
+
+<!-- ── HOW IT WORKS ── -->
+<section>
+  <div class="section-label">How it works</div>
+  <div class="section-title">Three commands. Full proof.</div>
+  <div class="section-desc">ProofShot wraps your dev server, records everything the agent does, and outputs a proof bundle when it's done.</div>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <h3>Start</h3>
+      <p>Launches your dev server, opens headless Chromium, and starts recording video.</p>
+      <div class="step-code">
+        <span class="cmd">proofshot</span> start <span class="flag">--run</span> <span class="str">"npm run dev"</span>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <h3>Test</h3>
+      <p>Your AI agent navigates, clicks, fills forms, and takes screenshots. Every action is logged.</p>
+      <div class="step-code">
+        <span class="cmd">proofshot</span> exec navigate <span class="str">"http://localhost:3000"</span><br/>
+        <span class="cmd">proofshot</span> exec screenshot <span class="str">"homepage"</span>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <h3>Stop</h3>
+      <p>Collects errors, stops recording, trims dead time, and generates your proof artifacts.</p>
+      <div class="step-code">
+        <span class="cmd">proofshot</span> stop
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FEATURES ── -->
+<section>
+  <div class="section-label">Features</div>
+  <div class="section-title">Everything you need to verify.</div>
+  <div class="section-desc">Capture, detect, review, and share &mdash; all from one CLI.</div>
+
+  <div class="features">
+    <div class="feature">
+      <div class="feature-icon video">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+      </div>
+      <h3>Video Recording</h3>
+      <p>Full browser session recording with automatic dead-time trimming. See exactly what the agent did, not the idle waiting.</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon errors">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </div>
+      <h3>Error Detection</h3>
+      <p>Captures browser console errors and scans server logs with pattern matching for JavaScript, Python, Go, Rust, and more.</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon timeline">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </div>
+      <h3>Interactive Timeline</h3>
+      <p>A standalone HTML viewer with synchronized video, screenshots, and an interactive action timeline with element labels.</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon artifacts">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      </div>
+      <h3>PR-Ready Artifacts</h3>
+      <p>Generates SUMMARY.md and formatted output ready to paste into pull requests. Visual diff comparison against baselines.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── WORKS WITH ── -->
+<section>
+  <div class="section-label">Agent-agnostic</div>
+  <div class="section-title">Works with any AI coding agent.</div>
+  <div class="section-desc">One-time install, then every agent gets visual verification skills automatically.</div>
+
+  <div class="agents-grid">
+    <div class="agent-tag">
+      <svg width="22" height="22" viewBox="0 0 16 16" fill="#D97757"><path d="m3.127 10.604 3.135-1.76.053-.153-.053-.085H6.11l-.525-.032-1.791-.048-1.554-.065-1.505-.08-.38-.081L0 7.832l.036-.234.32-.214.455.04 1.009.069 1.513.105 1.097.064 1.626.17h.259l.036-.105-.089-.065-.068-.064-1.566-1.062-1.695-1.121-.887-.646-.48-.327-.243-.306-.104-.67.435-.48.585.04.15.04.593.456 1.267.981 1.654 1.218.242.202.097-.068.012-.049-.109-.181-.9-1.626-.96-1.655-.428-.686-.113-.411a2 2 0 0 1-.068-.484l.496-.674L4.446 0l.662.089.279.242.411.94.666 1.48 1.033 2.014.302.597.162.553.06.17h.105v-.097l.085-1.134.157-1.392.154-1.792.052-.504.25-.605.497-.327.387.186.319.456-.045.294-.19 1.23-.37 1.93-.243 1.29h.142l.161-.16.654-.868 1.097-1.372.484-.545.565-.601.363-.287h.686l.505.751-.226.775-.707.895-.585.759-.839 1.13-.524.904.048.072.125-.012 1.897-.403 1.024-.186 1.223-.21.553.258.06.263-.218.536-1.307.323-1.533.307-2.284.54-.028.02.032.04 1.029.098.44.024h1.077l2.005.15.525.346.315.424-.053.323-.807.411-3.631-.863-.872-.218h-.12v.073l.726.71 1.331 1.202 1.667 1.55.084.383-.214.302-.226-.032-1.464-1.101-.565-.497-1.28-1.077h-.084v.113l.295.432 1.557 2.34.08.718-.112.234-.404.141-.444-.08-.911-1.28-.94-1.44-.759-1.291-.093.053-.448 4.821-.21.246-.484.186-.403-.307-.214-.496.214-.98.258-1.28.21-1.016.19-1.263.112-.42-.008-.028-.092.012-.953 1.307-1.448 1.957-1.146 1.227-.274.109-.477-.247.045-.44.266-.39 1.586-2.018.956-1.25.617-.723-.004-.105h-.036l-4.212 2.736-.75.096-.324-.302.04-.496.154-.162 1.267-.871z"/></svg>
+      Claude Code
+    </div>
+    <div class="agent-tag">
+      <svg width="22" height="22" viewBox="398 393 170 193" fill="none"><path fill="#fff" d="M563.463 439.971L487.344 396.057C484.899 394.646 481.883 394.646 479.439 396.057L403.323 439.971C401.269 441.156 400 443.349 400 445.723V534.276C400 536.647 401.269 538.843 403.323 540.029L479.443 583.943C481.887 585.353 484.903 585.353 487.347 583.943L563.466 540.029C565.521 538.843 566.79 536.651 566.79 534.276V445.723C566.79 443.352 565.521 441.156 563.466 439.971H563.463ZM558.681 449.273L485.199 576.451C484.703 577.308 483.391 576.958 483.391 575.966V492.691C483.391 491.027 482.501 489.488 481.058 488.652L408.887 447.016C408.03 446.52 408.38 445.209 409.373 445.209H556.337C558.424 445.209 559.728 447.47 558.685 449.276H558.681V449.273Z"/></svg>
+      Cursor
+    </div>
+    <div class="agent-tag">
+      <svg width="22" height="22" viewBox="0 0 16 16" fill="currentColor"><path d="M14.949 6.547a3.94 3.94 0 0 0-.348-3.273 4.11 4.11 0 0 0-4.4-1.934A4.1 4.1 0 0 0 8.423.2 4.15 4.15 0 0 0 6.305.086a4.1 4.1 0 0 0-1.891.948 4.04 4.04 0 0 0-1.158 1.753 4.1 4.1 0 0 0-1.563.679A4 4 0 0 0 .554 4.72a3.99 3.99 0 0 0 .502 4.731 3.94 3.94 0 0 0 .346 3.274 4.11 4.11 0 0 0 4.402 1.933c.382.425.852.764 1.377.995.526.231 1.095.35 1.67.346 1.78.002 3.358-1.132 3.901-2.804a4.1 4.1 0 0 0 1.563-.68 4 4 0 0 0 1.14-1.253 3.99 3.99 0 0 0-.506-4.716m-6.097 8.406a3.05 3.05 0 0 1-1.945-.694l.096-.054 3.23-1.838a.53.53 0 0 0 .265-.455v-4.49l1.366.778q.02.011.025.035v3.722c-.003 1.653-1.361 2.992-3.037 2.996m-6.53-2.75a2.95 2.95 0 0 1-.36-2.01l.095.057L5.29 12.09a.53.53 0 0 0 .527 0l3.949-2.246v1.555a.05.05 0 0 1-.022.041L6.473 13.3c-1.454.826-3.311.335-4.15-1.098m-.85-6.94A3.02 3.02 0 0 1 3.07 3.949v3.785a.51.51 0 0 0 .262.451l3.93 2.237-1.366.779a.05.05 0 0 1-.048 0L2.585 9.342a2.98 2.98 0 0 1-1.113-4.094zm11.216 2.571L8.747 5.576l1.362-.776a.05.05 0 0 1 .048 0l3.265 1.86a3 3 0 0 1 1.173 1.207 2.96 2.96 0 0 1-.27 3.2 3.05 3.05 0 0 1-1.36.997V8.279a.52.52 0 0 0-.276-.445m1.36-2.015-.097-.057-3.226-1.855a.53.53 0 0 0-.53 0L6.249 6.153V4.598a.04.04 0 0 1 .019-.04L9.533 2.7a3.07 3.07 0 0 1 3.257.139c.474.325.843.778 1.066 1.303.223.526.289 1.103.191 1.664zM5.503 8.575 4.139 7.8a.05.05 0 0 1-.026-.037V4.049c0-.57.166-1.127.476-1.607s.752-.864 1.275-1.105a3.08 3.08 0 0 1 3.234.41l-.096.054-3.23 1.838a.53.53 0 0 0-.265.455zm.742-1.577 1.758-1 1.762 1v2l-1.755 1-1.762-1z"/></svg>
+      Codex
+    </div>
+    <div class="agent-tag">
+      <svg width="22" height="22" viewBox="0 0 65 65" fill="none"><path d="M32.447 0c.68 0 1.273.465 1.439 1.125a38.904 38.904 0 001.999 5.905c2.152 5 5.105 9.376 8.854 13.125 3.751 3.75 8.126 6.703 13.125 8.855a38.98 38.98 0 005.906 1.999c.66.166 1.124.758 1.124 1.438 0 .68-.464 1.273-1.125 1.439a38.902 38.902 0 00-5.905 1.999c-5 2.152-9.375 5.105-13.125 8.854-3.749 3.751-6.702 8.126-8.854 13.125a38.973 38.973 0 00-2 5.906 1.485 1.485 0 01-1.438 1.124c-.68 0-1.272-.464-1.438-1.125a38.913 38.913 0 00-2-5.905c-2.151-5-5.103-9.375-8.854-13.125-3.75-3.749-8.125-6.702-13.125-8.854a38.973 38.973 0 00-5.905-2A1.485 1.485 0 010 32.448c0-.68.465-1.272 1.125-1.438a38.903 38.903 0 005.905-2c5-2.151 9.376-5.104 13.125-8.854 3.75-3.749 6.703-8.125 8.855-13.125a38.972 38.972 0 001.999-5.905A1.485 1.485 0 0132.447 0z" fill="url(#gemini-g)"/><defs><linearGradient id="gemini-g" x1="0" y1="0" x2="65" y2="65" gradientUnits="userSpaceOnUse"><stop stop-color="#4285F4"/><stop offset=".5" stop-color="#9B72CB"/><stop offset="1" stop-color="#D96570"/></linearGradient></defs></svg>
+      Gemini CLI
+    </div>
+    <div class="agent-tag">
+      <svg width="22" height="22" viewBox="0 0 1024 1024" fill="none"><path d="M897.246 286.869H889.819C850.735 286.808 819.017 318.46 819.017 357.539V515.589C819.017 547.15 792.93 572.716 761.882 572.716C743.436 572.716 725.02 563.433 714.093 547.85L552.673 317.304C539.28 298.16 517.486 286.747 493.895 286.747C457.094 286.747 423.976 318.034 423.976 356.657V515.619C423.976 547.181 398.103 572.746 366.842 572.746C348.335 572.746 329.949 563.463 319.021 547.881L138.395 289.882C134.316 284.038 125.154 286.93 125.154 294.052V431.892C125.154 438.862 127.285 445.619 131.272 451.34L309.037 705.2C319.539 720.204 335.033 731.344 352.9 735.392C397.616 745.557 438.77 711.135 438.77 667.278V508.406C438.77 476.845 464.339 451.279 495.904 451.279H495.995C515.02 451.279 532.857 460.562 543.785 476.145L705.235 706.661C718.659 725.835 739.327 737.218 763.983 737.218C801.606 737.218 833.841 705.9 833.841 667.308V508.376C833.841 476.815 859.41 451.249 890.975 451.249H897.276C901.233 451.249 904.43 448.053 904.43 444.097V294.021C904.43 290.065 901.233 286.869 897.276 286.869H897.246Z" fill="#00BFA5"/></svg>
+      Windsurf
+    </div>
+    <div class="agent-tag">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4"/><path d="M6.5 4.5l1.5 3.5"/><path d="M17.5 4.5l-1.5 3.5"/><circle cx="12" cy="14" r="6" fill="none"/><path d="M9 13.5l1.5 1.5 3.5-3.5"/></svg>
+      Any MCP-compatible agent
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA ── -->
+<section class="cta-section">
+  <h2>Get started in 30 seconds.</h2>
+  <p>Install the CLI, run the setup, and your AI agent can start recording proof.</p>
+  <div class="cta-install">
+    <div class="install-block">
+      <span class="prompt">$</span>
+      <code>npm install -g <strong>proofshot</strong> && proofshot install</code>
+    </div>
+    <a href="https://github.com/AmElmo/proofshot" class="btn-pill" style="margin-top:.5rem">Read the docs</a>
+  </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <div class="footer-inner">
+    <span>ProofShot &mdash; MIT License</span>
+    <div class="footer-links">
+      <a href="https://github.com/AmElmo/proofshot">GitHub</a>
+      <a href="https://www.npmjs.com/package/proofshot">npm</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  document.getElementById('heroInstall').addEventListener('click', function() {
+    var cmd = 'npm install -g proofshot';
+    var btn = this;
+    navigator.clipboard.writeText(cmd).then(function() {
+      var icon = btn.querySelector('.copy-icon');
+      icon.innerHTML = '<polyline points="20 6 9 17 4 12"/>';
+      btn.title = 'Copied!';
+      setTimeout(function() {
+        icon.innerHTML = '<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>';
+        btn.title = 'Click to copy';
+      }, 2000);
+    });
+  });
+</script>
+
+</body>
+</html>

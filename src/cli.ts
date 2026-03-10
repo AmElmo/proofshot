@@ -34,6 +34,7 @@ export function createCLI(): Command {
     .option('--headed', 'Show browser window for debugging')
     .option('--output <dir>', 'Custom output directory')
     .option('--url <url>', 'Open this URL instead of the root')
+    .option('--force', 'Override a stale session without running stop first')
     .action(async (options) => {
       await startCommand(options);
     });
@@ -63,9 +64,11 @@ export function createCLI(): Command {
 
   program
     .command('pr')
-    .description('Format artifacts as a GitHub PR description snippet')
-    .action(async () => {
-      await prCommand();
+    .description('Upload session artifacts and post a ProofShot comment on a GitHub PR')
+    .argument('[pr-number]', 'PR number (auto-detects from current branch if omitted)')
+    .option('--dry-run', 'Generate the comment markdown without posting')
+    .action(async (prNumber, options) => {
+      await prCommand({ prNumber, ...options });
     });
 
   program

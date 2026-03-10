@@ -1,0 +1,140 @@
+---
+title: "How to verify a feature with ProofShot"
+description: "Run a full verification session: start recording, test in the browser, and collect proof artifacts."
+---
+
+import { Callout, Steps } from 'nextra/components'
+
+# How to verify a feature
+
+Run a complete verification session to record video proof that a feature works, capture screenshots at key moments, and collect any errors from the browser console or dev server.
+
+<Callout type="info">
+**Prerequisites:** ProofShot installed globally, skill installed for your agent (`proofshot install`), and a web project with a dev server.
+</Callout>
+
+<Steps>
+### Start the session
+
+If ProofShot should start and capture your dev server:
+
+```sh
+proofshot start --run "npm run dev" --port 3000 --description "Checkout flow verification"
+```
+
+If your dev server is already running:
+
+```sh
+proofshot start --port 3000 --description "Checkout flow verification"
+```
+
+To open a specific page instead of the root:
+
+```sh
+proofshot start --run "npm run dev" --port 3000 --url http://localhost:3000/checkout
+```
+
+ProofShot opens a headless Chromium browser, starts video recording, and begins capturing server logs.
+
+### Take a snapshot to see the page
+
+```sh
+agent-browser snapshot -i
+```
+
+This returns a list of interactive elements with stable references:
+
+```
+@e1: navigation link "Home"
+@e2: input[type=email] "Email address"
+@e3: input[type=password] "Password"
+@e4: button "Sign in"
+@e5: link "Forgot password?"
+```
+
+Use these `@eN` references to target elements in subsequent commands.
+
+### Interact with the page
+
+Fill forms, click buttons, navigate:
+
+```sh
+agent-browser fill @e2 "buyer@example.com"
+agent-browser fill @e3 "secure-password"
+agent-browser click @e4
+```
+
+Navigate to a different page:
+
+```sh
+agent-browser open http://localhost:3000/dashboard
+```
+
+Scroll, type, or press keys:
+
+```sh
+agent-browser scroll down
+agent-browser press Enter
+agent-browser type "Search query"
+```
+
+### Capture screenshots at key moments
+
+```sh
+agent-browser screenshot step-login.png
+agent-browser screenshot step-dashboard.png
+```
+
+Screenshots are saved in your session's artifact folder automatically. Each one appears in the final report and viewer.
+
+### Stop the session
+
+```sh
+proofshot stop
+```
+
+This:
+1. Collects browser console errors and output
+2. Stops video recording
+3. Trims dead time from the video (requires ffmpeg)
+4. Scans server logs for errors across 10+ languages
+5. Generates `SUMMARY.md` and `viewer.html`
+6. Clears the active session
+
+To keep the browser open after stopping (useful for debugging):
+
+```sh
+proofshot stop --no-close
+```
+
+### Review the results
+
+Open `viewer.html` in a browser to see the interactive proof viewer with:
+- Video playback with a scrub bar
+- Action timeline with timestamps
+- Click ripple overlays and action labels
+- Console and server error badges
+
+Or read `SUMMARY.md` for a text-based report.
+</Steps>
+
+<Callout type="warning">
+Every `proofshot exec` or `agent-browser` command operates on the same browser session started by `proofshot start`. If the session has ended or the browser was closed, commands will fail. Run `proofshot start` again to begin a new session.
+</Callout>
+
+## Troubleshooting
+
+**"No active session" error when running exec commands**
+You need to run `proofshot start` first. The session state is stored in `.session.json` inside the artifacts directory.
+
+**Video has long pauses with no activity**
+Install [ffmpeg](https://ffmpeg.org/) and ProofShot will automatically trim dead time from the video (5s buffer before the first action, 3s buffer after the last).
+
+**No server errors detected but I know there are errors**
+Server error detection only works when ProofShot starts the server itself (`--run`). If your server was already running, ProofShot can't capture its logs.
+
+## What's next?
+
+- [Post proof to a GitHub PR](/docs/guides/post-to-pr) — upload artifacts to your PR
+- [Output artifacts reference](/docs/reference/artifacts) — what each file contains
+- [The interactive viewer](/docs/concepts/interactive-viewer) — how the viewer works

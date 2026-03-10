@@ -2,8 +2,23 @@ import * as net from 'net';
 
 /**
  * Check if a port is currently open (something is listening on it).
+ * Checks both IPv4 and IPv6 to handle servers that listen on either.
  */
-export function isPortOpen(port: number, host = '127.0.0.1'): Promise<boolean> {
+export async function isPortOpen(port: number, host = 'localhost'): Promise<boolean> {
+  // Try the specified host first
+  if (await tryConnect(port, host)) return true;
+  // If host is localhost, also explicitly try both address families
+  if (host === 'localhost') {
+    const results = await Promise.all([
+      tryConnect(port, '127.0.0.1'),
+      tryConnect(port, '::1'),
+    ]);
+    return results.some(Boolean);
+  }
+  return false;
+}
+
+function tryConnect(port: number, host: string): Promise<boolean> {
   return new Promise((resolve) => {
     const socket = new net.Socket();
     socket.setTimeout(1000);

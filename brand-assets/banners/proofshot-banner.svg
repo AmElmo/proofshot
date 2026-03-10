@@ -40,34 +40,34 @@
 
   <!-- Feature bar at bottom — 4 items evenly spaced across 800px pill (x=200..1000), centers at 320, 480, 720, 880 with separators at 400, 600, 800 -->
   <g transform="translate(0, 310)">
-    <rect x="200" y="0" width="800" height="60" rx="30" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+    <rect x="200" y="0" width="800" height="70" rx="35" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
 
     <g font-family="Inter, -apple-system, sans-serif" font-size="14">
       <!-- 4 items evenly spaced: pill is 200–1000, divide into 5 slots of 160px → centers at 360, 520, 680, 840 -->
       <!-- Video Recording -->
-      <text x="360" y="22" text-anchor="middle" fill="#6366F1" font-weight="600" font-size="18">&#x25B6;</text>
-      <text x="360" y="44" text-anchor="middle" fill="#94A3B8">Video Recording</text>
+      <text x="360" y="28" text-anchor="middle" fill="#6366F1" font-weight="600" font-size="18">&#x25B6;</text>
+      <text x="360" y="50" text-anchor="middle" fill="#94A3B8">Video Recording</text>
 
       <!-- Separator at midpoint 440 -->
-      <circle cx="440" cy="30" r="2" fill="#334155"/>
+      <circle cx="440" cy="36" r="2" fill="#334155"/>
 
       <!-- Screenshots -->
-      <text x="520" y="22" text-anchor="middle" fill="#22D3EE" font-weight="600" font-size="18">&#x25A3;</text>
-      <text x="520" y="44" text-anchor="middle" fill="#94A3B8">Screenshots</text>
+      <text x="520" y="28" text-anchor="middle" fill="#22D3EE" font-weight="600" font-size="18">&#x25A3;</text>
+      <text x="520" y="50" text-anchor="middle" fill="#94A3B8">Screenshots</text>
 
       <!-- Separator at midpoint 600 -->
-      <circle cx="600" cy="30" r="2" fill="#334155"/>
+      <circle cx="600" cy="36" r="2" fill="#334155"/>
 
       <!-- Error Reports -->
-      <text x="680" y="22" text-anchor="middle" fill="#F87171" font-weight="600" font-size="18">&#x26A0;</text>
-      <text x="680" y="44" text-anchor="middle" fill="#94A3B8">Error Reports</text>
+      <text x="680" y="28" text-anchor="middle" fill="#F87171" font-weight="600" font-size="18">&#x26A0;</text>
+      <text x="680" y="50" text-anchor="middle" fill="#94A3B8">Error Reports</text>
 
       <!-- Separator at midpoint 760 -->
-      <circle cx="760" cy="30" r="2" fill="#334155"/>
+      <circle cx="760" cy="36" r="2" fill="#334155"/>
 
       <!-- Interactive Viewer -->
-      <text x="840" y="22" text-anchor="middle" fill="#A78BFA" font-weight="600" font-size="18">&#x29C9;</text>
-      <text x="840" y="44" text-anchor="middle" fill="#94A3B8">Interactive Viewer</text>
+      <text x="840" y="28" text-anchor="middle" fill="#A78BFA" font-weight="600" font-size="18">&#x29C9;</text>
+      <text x="840" y="50" text-anchor="middle" fill="#94A3B8">Interactive Viewer</text>
     </g>
   </g>
 </svg>

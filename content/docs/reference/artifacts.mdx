@@ -1,0 +1,83 @@
+---
+title: "Output Artifacts Reference"
+description: "Every file ProofShot generates and what it contains."
+---
+
+# Output Artifacts Reference
+
+Each ProofShot session creates a timestamped folder in your output directory (default: `./proofshot-artifacts/`). Folder naming follows the pattern `YYYY-MM-DD_HH-mm-ss_slug/`.
+
+## Files
+
+| File | Created by | Description |
+|------|------------|-------------|
+| `metadata.json` | `start` | Git branch, commit SHA, timestamp, and session description. Persists after `stop` — used by `proofshot pr` to match sessions to branches. |
+| `session.webm` | `start` / `stop` | Video recording of the entire session (Playwright screencast). Trimmed by `stop` if ffmpeg is available. |
+| `session-log.json` | `exec` | Action timeline. Each entry records the command, relative timestamp, and element data (bounding box, label) for `@eN` targets. Appended with each `exec` call. |
+| `server.log` | `start` | Dev server stdout and stderr. Only created when ProofShot starts the server via `--run`. |
+| `console-output.log` | `stop` | Browser console output collected at stop time. |
+| `step-*.png` | `exec screenshot` | Screenshots captured at key moments. Filenames come from the `exec screenshot` argument. |
+| `SUMMARY.md` | `stop` | Markdown report containing: session date, description, video link, screenshots, console error count and details, server error count and details, environment info. |
+| `viewer.html` | `stop` | Self-contained interactive HTML viewer. No external dependencies — open it in any browser. |
+
+## `metadata.json` format
+
+```json
+{
+  "branch": "feat/login-page",
+  "commitSha": "a1b2c3d",
+  "startedAt": "2025-01-15T10:30:00.000Z",
+  "description": "Login page verification"
+}
+```
+
+This file persists after `stop` (unlike `.session.json` which is cleared). It allows `proofshot pr` to find sessions for the current branch even after the session has ended.
+
+## `session-log.json` format
+
+```json
+[
+  {
+    "timestamp": 0,
+    "command": "open",
+    "args": ["http://localhost:3000/login"],
+    "type": "navigate"
+  },
+  {
+    "timestamp": 3.2,
+    "command": "fill",
+    "args": ["@e2", "user@example.com"],
+    "type": "fill",
+    "element": {
+      "bbox": { "x": 120, "y": 340, "width": 280, "height": 40 },
+      "label": "Email address"
+    }
+  },
+  {
+    "timestamp": 5.1,
+    "command": "screenshot",
+    "args": ["step-login.png"],
+    "type": "screenshot"
+  }
+]
+```
+
+Timestamps are relative to session start (in seconds). After video trimming, timestamps are adjusted by the trim offset to stay in sync with the trimmed video.
+
+Element data (`bbox`, `label`) is captured before execution for `click`, `fill`, and `type` actions targeting `@eN` references. This data powers the viewer's click ripple overlays and action labels.
+
+## `viewer.html`
+
+A standalone HTML file that serves as the primary proof artifact. See [The Interactive Viewer](/docs/concepts/interactive-viewer) for details on its features.
+
+## `SUMMARY.md`
+
+A text-based report for environments where the HTML viewer isn't practical (PR comments, CI logs, code review). Contains:
+
+- Session date and project name
+- Description (if provided)
+- Video recording link
+- Embedded screenshots
+- Console error count and details
+- Server error count and log excerpt
+- Environment info (browser, viewport, duration)

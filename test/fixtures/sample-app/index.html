@@ -66,6 +66,28 @@
     </div>
   </div>
 
+  <script>
+    console.log('[app] Home page loaded');
+    console.log('[app] Rendering feature cards...');
+    document.querySelectorAll('.card').forEach(function(card, i) {
+      console.log('[app] Feature card #' + (i + 1) + ' mounted');
+    });
+    console.log('[app] All components initialized');
+
+    // Simulate an async API call on page load
+    setTimeout(function() {
+      console.log('[api] Fetching deploy stats from /api/stats...');
+      console.log('[api] Response: { deploys: 69420, uptime: "99.99%" }');
+    }, 500);
+
+    // Sign-up button handler
+    document.querySelector('.btn[href="#"]')?.addEventListener('click', function(e) {
+      e.preventDefault();
+      console.log('[app] Sign Up button clicked');
+      console.warn('[app] Auth module not loaded yet — sign-up is a no-op in demo mode');
+    });
+  </script>
+
   <footer>
     <span>&copy; 2026 localhost:cafe &middot; 0 bugs shipped&trade; &middot; Built with &#x2615; and <a href="#">git push --force</a></span>
   </footer>

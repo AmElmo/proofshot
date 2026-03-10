@@ -136,9 +136,16 @@
     <span>&copy; 2026 localhost:cafe &middot; 0 bugs shipped&trade; &middot; Built with &#x2615; and <a href="#">git push --force</a></span>
   </footer>
   <script>
+    console.log('[app] Settings page loaded');
+    console.log('[api] Fetching user profile from /api/profile...');
+    console.log('[api] Response: { name: "Ada Lovelace", email: "ada@localhost", theme: "midnight" }');
+
     function toggleSwitch(el) {
       el.classList.toggle('on');
       el.setAttribute('aria-checked', el.classList.contains('on'));
+      var label = el.getAttribute('aria-label');
+      var state = el.classList.contains('on') ? 'enabled' : 'disabled';
+      console.log('[settings] Toggle "' + label + '" → ' + state);
     }
 
     function selectTheme(el) {
@@ -146,7 +153,30 @@
         opt.classList.remove('active');
       });
       el.classList.add('active');
+      var theme = el.textContent.trim();
+      console.log('[settings] Theme changed to "' + theme + '"');
+      console.log('[api] PATCH /api/profile { theme: "' + theme.toLowerCase() + '" }');
     }
+
+    // Save profile button
+    document.querySelector('.btn')?.addEventListener('click', function() {
+      var name = document.getElementById('name').value;
+      var email = document.getElementById('email').value;
+      console.log('[settings] Save Profile clicked');
+      console.log('[api] PUT /api/profile { name: "' + name + '", email: "' + email + '" }');
+      console.log('[api] Response: 200 OK');
+    });
+
+    // Danger zone buttons
+    document.querySelector('.btn-outline[style]')?.addEventListener('click', function() {
+      console.log('[settings] Export data requested');
+      console.warn('[settings] Export is rate-limited — 1 export per hour');
+    });
+
+    document.querySelector('.btn-danger')?.addEventListener('click', function() {
+      console.log('[settings] Delete account clicked');
+      console.error('[settings] DANGER: Account deletion requested — confirmation required');
+    });
   </script>
 </body>
 </html>

@@ -1,0 +1,80 @@
+---
+title: "Configuration Reference"
+description: "All configuration options for proofshot.config.json."
+---
+
+# Configuration Reference
+
+ProofShot is configured via `proofshot.config.json`. This file is optional — defaults work for most projects.
+
+## Config file location
+
+ProofShot searches for `proofshot.config.json` starting from your current directory and walking up to the filesystem root. This supports monorepo layouts where the config lives at the repo root.
+
+## All options
+
+```json filename="proofshot.config.json"
+{
+  "devServer": {
+    "port": 3000,
+    "startupTimeout": 30000
+  },
+  "output": "./proofshot-artifacts",
+  "defaultPages": ["/"],
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  },
+  "headless": true
+}
+```
+
+### `devServer`
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `port` | `number` | `3000` | Port your dev server listens on. Overridden by `--port` CLI flag. |
+| `startupTimeout` | `number` | `30000` | Maximum time in milliseconds to wait for the dev server to start. ProofShot polls the port every 500ms until it responds or the timeout is reached. |
+
+### `output`
+
+| Type | Default |
+|------|---------|
+| `string` | `"./proofshot-artifacts"` |
+
+Directory where session folders are created. Each session gets a timestamped subfolder: `YYYY-MM-DD_HH-mm-ss_slug/`.
+
+Overridden by `--output` CLI flag.
+
+### `defaultPages`
+
+| Type | Default |
+|------|---------|
+| `string[]` | `["/"]` |
+
+Pages to open when starting a session. Overridden by `--url` CLI flag.
+
+### `viewport`
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `width` | `number` | `1280` | Browser viewport width in pixels. |
+| `height` | `number` | `720` | Browser viewport height in pixels. |
+
+The viewport size affects video recording resolution and screenshot dimensions.
+
+### `headless`
+
+| Type | Default |
+|------|---------|
+| `boolean` | `true` |
+
+When `true`, the browser runs without a visible window. Set to `false` (or use `--headed` CLI flag) to see the browser during testing — useful for debugging.
+
+## CLI flag precedence
+
+Command-line flags override config file values. Config file values override defaults.
+
+```
+CLI flags > proofshot.config.json > built-in defaults
+```

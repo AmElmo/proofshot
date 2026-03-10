@@ -2,6 +2,11 @@ import * as fs from 'fs';
 import * as path from 'path';
 import type { SessionLogEntry } from '../commands/exec.js';
 
+export interface TimestampedLogEntry {
+  text: string;
+  relativeTimeSec: number;
+}
+
 interface ViewerData {
   description: string | null;
   serverCommand: string | null;
@@ -10,6 +15,59 @@ interface ViewerData {
   entries: SessionLogEntry[];
   consoleErrorCount: number;
   serverErrorCount: number;
+  consoleOutput?: string;
+  serverLog?: string;
+  consoleEntries?: TimestampedLogEntry[];
+  serverEntries?: TimestampedLogEntry[];
+}
+
+/** Maximum log size embedded in the viewer HTML (50 KB). */
+const MAX_LOG_BYTES = 50 * 1024;
+
+function truncateLog(log: string, maxBytes: number): { text: string; truncated: boolean } {
+  if (log.length <= maxBytes) return { text: log, truncated: false };
+  const cut = log.slice(0, maxBytes);
+  const lastNl = cut.lastIndexOf('\n');
+  return { text: lastNl > 0 ? cut.slice(0, lastNl) : cut, truncated: true };
+}
+
+/** Simple error-line detector for log highlighting. */
+function isErrorLine(line: string): boolean {
+  const t = line.trim();
+  if (!t) return false;
+  return /\bError:|ERR[_!]|FATAL\b|CRITICAL\b|panic:|Exception:|Traceback/i.test(t);
+}
+
+/** Build line-numbered HTML from raw log text, with error lines highlighted. */
+function buildLogLines(text: string): string {
+  if (!text.trim()) return '';
+  return text
+    .split('\n')
+    .map((line, i) => {
+      const num = i + 1;
+      const cls = isErrorLine(line) ? 'log-line log-line-error' : 'log-line';
+      return `<span class="${cls}"><span class="log-ln">${num}</span>${escapeHtml(line)}</span>`;
+    })
+    .join('\n');
+}
+
+/** Maximum number of log entries embedded in the viewer to avoid DOM bloat. */
+const MAX_LOG_ENTRIES = 2000;
+
+/** Build timestamped log lines with data-time attributes for video sync. */
+function buildTimestampedLogLines(entries: TimestampedLogEntry[]): { html: string; truncated: boolean } {
+  if (entries.length === 0) return { html: '', truncated: false };
+  const truncated = entries.length > MAX_LOG_ENTRIES;
+  const capped = truncated ? entries.slice(0, MAX_LOG_ENTRIES) : entries;
+  const html = capped
+    .map((entry, i) => {
+      const num = i + 1;
+      const cls = isErrorLine(entry.text) ? 'log-line log-line-error' : 'log-line';
+      const time = formatTime(Math.max(0, entry.relativeTimeSec));
+      return `<span class="${cls}" data-time="${entry.relativeTimeSec}" onclick="seekTo(${entry.relativeTimeSec})"><span class="log-time">${time}</span><span class="log-ln">${num}</span>${escapeHtml(entry.text)}</span>`;
+    })
+    .join('\n');
+  return { html, truncated };
 }
 
 /**
@@ -89,7 +147,7 @@ export function generateViewer(data: ViewerData): string {
     .join('\n');
 
   const descriptionHtml = data.description
-    ? `<p class="description">${escapeHtml(data.description)}</p>`
+    ? `<p class="description" id="description"><span class="description-text">${escapeHtml(data.description)}</span><button class="show-more" id="showMoreBtn" style="display:none" onclick="toggleDescription()">Show more</button></p>`
     : '';
 
   const consoleBadgeClass = data.consoleErrorCount === 0 ? 'clean' : 'has-errors';
@@ -145,6 +203,41 @@ export function generateViewer(data: ViewerData): string {
 
   const entriesJson = serializeEntries(data.entries);
 
+  // Prepare log content for embedding — prefer timestamped entries for video sync
+  let consoleLogBodyHtml: string;
+  if (data.consoleEntries && data.consoleEntries.length > 0) {
+    const built = buildTimestampedLogLines(data.consoleEntries);
+    consoleLogBodyHtml = `<pre class="log-pre">${built.html}</pre>${built.truncated ? '<p class="log-truncated">Log truncated at 2000 entries. See console-output.log for full output.</p>' : ''}`;
+  } else {
+    const consoleTrunc = truncateLog(data.consoleOutput ?? '', MAX_LOG_BYTES);
+    const consoleLogLines = buildLogLines(consoleTrunc.text);
+    consoleLogBodyHtml = consoleLogLines
+      ? `<pre class="log-pre">${consoleLogLines}</pre>${consoleTrunc.truncated ? '<p class="log-truncated">Log truncated at 50 KB. See console-output.log for full output.</p>' : ''}`
+      : '<p class="log-empty">No console output captured</p>';
+  }
+
+  let serverLogBodyHtml: string;
+  if (data.serverEntries && data.serverEntries.length > 0) {
+    const built = buildTimestampedLogLines(data.serverEntries);
+    serverLogBodyHtml = `<pre class="log-pre">${built.html}</pre>${built.truncated ? '<p class="log-truncated">Log truncated at 2000 entries. See server.log for full output.</p>' : ''}`;
+  } else {
+    const serverTrunc = truncateLog(data.serverLog ?? '', MAX_LOG_BYTES);
+    const serverLogLines = buildLogLines(serverTrunc.text);
+    serverLogBodyHtml = serverLogLines
+      ? `<pre class="log-pre">${serverLogLines}</pre>${serverTrunc.truncated ? '<p class="log-truncated">Log truncated at 50 KB. See server.log for full output.</p>' : ''}`
+      : '<p class="log-empty">No server log captured</p>';
+  }
+
+  // Compute line counts for tab badges
+  const consoleLineCount =
+    data.consoleEntries && data.consoleEntries.length > 0
+      ? data.consoleEntries.length
+      : (data.consoleOutput ?? '').split('\n').filter((l) => l.trim()).length;
+  const serverLineCount =
+    data.serverEntries && data.serverEntries.length > 0
+      ? data.serverEntries.length
+      : (data.serverLog ?? '').split('\n').filter((l) => l.trim()).length;
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -178,6 +271,28 @@ export function generateViewer(data: ViewerData): string {
       font-size: 14px;
       color: #8b949e;
       margin-bottom: 6px;
+    }
+
+    .header .description.clamped .description-text {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .header .description .show-more {
+      background: none;
+      border: none;
+      color: #58a6ff;
+      font-size: 12px;
+      cursor: pointer;
+      padding: 0;
+      margin-top: 4px;
+      display: block;
+    }
+
+    .header .description .show-more:hover {
+      text-decoration: underline;
     }
 
     .header .meta {
@@ -269,6 +384,15 @@ export function generateViewer(data: ViewerData): string {
       border-radius: 6px;
       font-size: 12px;
       font-weight: 500;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+      font-family: inherit;
+      line-height: inherit;
+    }
+
+    .error-badge:hover {
+      opacity: 0.85;
+      transform: translateY(-1px);
     }
 
     .error-badge.clean {
@@ -477,21 +601,125 @@ export function generateViewer(data: ViewerData): string {
       background: #161b22;
     }
 
-    .timeline-header {
+    /* Tab bar */
+    .panel-tabs {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      padding: 12px 20px;
-      font-size: 13px;
-      font-weight: 600;
-      color: #8b949e;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+      padding: 0 12px;
       border-bottom: 1px solid #21262d;
       position: sticky;
       top: 0;
       background: #161b22;
       z-index: 10;
+      gap: 0;
+    }
+
+    .panel-tab {
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: #8b949e;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 10px 16px;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      transition: color 0.15s, border-color 0.15s;
+      white-space: nowrap;
+      font-family: inherit;
+    }
+
+    .panel-tab:hover { color: #c9d1d9; }
+    .panel-tab.active { color: #f0f6fc; border-bottom-color: #58a6ff; }
+
+    .panel-tab-actions {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+    }
+
+    /* Log tab content */
+    .log-tab-content {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .log-tab-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-bottom: 1px solid #21262d;
+      font-size: 12px;
+    }
+
+    .log-pre {
+      margin: 0;
+      padding: 12px 16px;
+      background: #0d1117;
+      font-family: 'SF Mono', SFMono-Regular, 'Consolas', 'Liberation Mono', Menlo, monospace;
+      font-size: 12px;
+      line-height: 1.6;
+      color: #c9d1d9;
+      overflow-x: auto;
+      white-space: pre;
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .log-pre::-webkit-scrollbar { width: 6px; height: 6px; }
+    .log-pre::-webkit-scrollbar-track { background: transparent; }
+    .log-pre::-webkit-scrollbar-thumb { background: #30363d; border-radius: 3px; }
+    .log-pre::-webkit-scrollbar-thumb:hover { background: #484f58; }
+
+    .log-line { display: block; }
+    .log-line[data-time] { cursor: pointer; transition: background 0.15s; padding: 0 4px; margin: 0 -4px; border-radius: 2px; }
+    .log-line[data-time]:hover { background: rgba(88, 166, 255, 0.08); }
+    .log-line.active { background: #1f2a37; border-left: 3px solid #58a6ff; padding-left: 1px; }
+    .log-line.active .log-time { color: #58a6ff; }
+
+    .log-time {
+      display: inline-block;
+      min-width: 36px;
+      padding-right: 8px;
+      text-align: right;
+      color: #484f58;
+      user-select: none;
+      font-variant-numeric: tabular-nums;
+      font-size: 11px;
+    }
+
+    .log-ln {
+      display: inline-block;
+      min-width: 40px;
+      padding-right: 12px;
+      text-align: right;
+      color: #484f58;
+      user-select: none;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .log-line-error { background: rgba(248, 81, 73, 0.1); color: #f85149; }
+    .log-line-error .log-ln { color: rgba(248, 81, 73, 0.5); }
+    .log-line-error .log-time { color: rgba(248, 81, 73, 0.5); }
+
+    .log-empty {
+      padding: 32px 16px;
+      text-align: center;
+      color: #484f58;
+      font-size: 13px;
+      font-style: italic;
+    }
+
+    .log-truncated {
+      padding: 8px 16px;
+      font-size: 11px;
+      color: #484f58;
+      font-style: italic;
+      border-top: 1px solid #21262d;
+      background: #161b22;
     }
 
     .step {
@@ -646,6 +874,9 @@ export function generateViewer(data: ViewerData): string {
       .error-badges {
         flex-wrap: wrap;
       }
+      .log-pre {
+        max-height: 50vh;
+      }
     }
   </style>
 </head>
@@ -655,8 +886,8 @@ export function generateViewer(data: ViewerData): string {
     ${descriptionHtml}
     <p class="meta">${escapeHtml(date)} &middot; ${data.durationSec}s</p>
     <div class="error-badges">
-      <span class="error-badge ${consoleBadgeClass}"><span class="badge-dot"></span>${consoleBadgeText}</span>
-      <span class="error-badge ${serverBadgeClass}"><span class="badge-dot"></span>${serverBadgeText}</span>
+      <button class="error-badge ${consoleBadgeClass}" onclick="switchTab('console')"><span class="badge-dot"></span>${consoleBadgeText}</button>
+      <button class="error-badge ${serverBadgeClass}" onclick="switchTab('server')"><span class="badge-dot"></span>${serverBadgeText}</button>
     </div>
   </div>
   <div class="viewer">
@@ -664,20 +895,82 @@ export function generateViewer(data: ViewerData): string {
       ${videoPanelHtml}
     </div>
     <div class="timeline-panel">
-      <div class="timeline-header">
-        <span>Timeline &middot; ${data.entries.length} actions</span>
-        <label class="overlay-toggle"><input type="checkbox" id="toggle-overlays" checked><span class="toggle-track"></span> Action overlays<span class="tooltip">Show ripple animations and action labels on the video as each step plays.</span></label>
+      <div class="panel-tabs">
+        <button class="panel-tab active" data-tab="timeline" onclick="switchTab('timeline')">Timeline &middot; ${data.entries.length}</button>
+        <button class="panel-tab" data-tab="console" onclick="switchTab('console')">Console${consoleLineCount > 0 ? ` &middot; ${consoleLineCount}` : ''}</button>
+        <button class="panel-tab" data-tab="server" onclick="switchTab('server')">Server${serverLineCount > 0 ? ` &middot; ${serverLineCount}` : ''}</button>
+        <div class="panel-tab-actions" id="tabActionsTimeline">
+          <label class="overlay-toggle"><input type="checkbox" id="toggle-overlays" checked><span class="toggle-track"></span> Overlays<span class="tooltip">Show ripple animations and action labels on the video as each step plays.</span></label>
+        </div>
       </div>
+      <div id="tabTimeline">
 ${stepsHtml}
+      </div>
+      <div id="tabConsole" style="display:none">
+        <div class="log-tab-content">
+          <div class="log-tab-status">
+            <span class="error-badge ${consoleBadgeClass}" style="cursor:default"><span class="badge-dot"></span>${consoleBadgeText}</span>
+          </div>
+          ${consoleLogBodyHtml}
+        </div>
+      </div>
+      <div id="tabServer" style="display:none">
+        <div class="log-tab-content">
+          <div class="log-tab-status">
+            <span class="error-badge ${serverBadgeClass}" style="cursor:default"><span class="badge-dot"></span>${serverBadgeText}</span>
+          </div>
+          ${serverLogBodyHtml}
+        </div>
+      </div>
     </div>
   </div>
   <script>
+    // --- Description expand/collapse ---
+    function initDescription() {
+      const desc = document.getElementById('description');
+      const btn = document.getElementById('showMoreBtn');
+      if (!desc || !btn) return;
+      const textEl = desc.querySelector('.description-text');
+      // Clamp initially, then check if text overflows
+      desc.classList.add('clamped');
+      requestAnimationFrame(() => {
+        if (textEl.scrollHeight > textEl.clientHeight + 1) {
+          btn.style.display = 'block';
+        }
+      });
+    }
+    function toggleDescription() {
+      const desc = document.getElementById('description');
+      const btn = document.getElementById('showMoreBtn');
+      if (!desc || !btn) return;
+      const isClamped = desc.classList.contains('clamped');
+      desc.classList.toggle('clamped');
+      btn.textContent = isClamped ? 'Show less' : 'Show more';
+    }
+    initDescription();
+
+    // --- Tab switching ---
+    let activeTab = 'timeline';
+
+    function switchTab(tab) {
+      if (tab === activeTab) return;
+      activeTab = tab;
+      document.querySelectorAll('.panel-tab').forEach(function(btn) {
+        btn.classList.toggle('active', btn.dataset.tab === tab);
+      });
+      document.getElementById('tabTimeline').style.display = tab === 'timeline' ? '' : 'none';
+      document.getElementById('tabConsole').style.display = tab === 'console' ? '' : 'none';
+      document.getElementById('tabServer').style.display = tab === 'server' ? '' : 'none';
+      var actions = document.getElementById('tabActionsTimeline');
+      if (actions) actions.style.display = tab === 'timeline' ? '' : 'none';
+    }
+
     const video = document.querySelector('video');
     const steps = document.querySelectorAll('.step');
     const timelinePanel = document.querySelector('.timeline-panel');
     const overlay = document.querySelector('.video-overlay');
     const entries = ${entriesJson};
-    const duration = ${data.durationSec};
+    let duration = ${data.durationSec};
     const markers = ${markersJson};
 
     // Scrub bar elements
@@ -988,6 +1281,36 @@ ${stepsHtml}
       });
     });
 
+    // Log lines with timestamps for video sync
+    const logLines = document.querySelectorAll('.log-line[data-time]');
+
+    // Highlight active log line for a given video time
+    function updateActiveLogLine(t) {
+      logLines.forEach(line => {
+        const lt = parseFloat(line.dataset.time);
+        const nextLine = line.nextElementSibling;
+        const hasNext = nextLine && nextLine.dataset && nextLine.dataset.time !== undefined;
+        const nextTime = hasNext ? parseFloat(nextLine.dataset.time) : Infinity;
+        line.classList.toggle('active', t >= lt && t < nextTime);
+      });
+
+      // Auto-scroll the active log line in the currently visible tab
+      if (activeTab === 'console' || activeTab === 'server') {
+        var tabId = activeTab === 'console' ? 'tabConsole' : 'tabServer';
+        var tabEl = document.getElementById(tabId);
+        if (tabEl) {
+          var activeLine = tabEl.querySelector('.log-line.active');
+          if (activeLine && timelinePanel) {
+            var panelRect = timelinePanel.getBoundingClientRect();
+            var lineRect = activeLine.getBoundingClientRect();
+            if (lineRect.top < panelRect.top || lineRect.bottom > panelRect.bottom) {
+              activeLine.scrollIntoView({ block: 'center', behavior: 'smooth' });
+            }
+          }
+        }
+      }
+    }
+
     // Highlight active step as video plays (only if video exists)
     if (video) {
       video.addEventListener('timeupdate', () => {
@@ -1004,8 +1327,8 @@ ${stepsHtml}
           if (isActive) activeStep = step;
         });
 
-        // Auto-scroll the active step into view
-        if (activeStep) {
+        // Auto-scroll the active step into view (only when timeline tab is active)
+        if (activeStep && activeTab === 'timeline') {
           const panelRect = timelinePanel.getBoundingClientRect();
           const stepRect = activeStep.getBoundingClientRect();
           if (stepRect.top < panelRect.top || stepRect.bottom > panelRect.bottom) {
@@ -1013,9 +1336,24 @@ ${stepsHtml}
           }
         }
 
+        // Sync log lines with video
+        updateActiveLogLine(t);
+
         // Update scrub bar + markers
         updateScrubBar(t);
         updateActiveMarker(t);
+      });
+
+      // Sync scrub bar duration with actual video duration
+      video.addEventListener('loadedmetadata', () => {
+        if (video.duration && isFinite(video.duration)) {
+          duration = video.duration;
+          // Reposition markers to match actual video duration
+          scrubMarkers.forEach(m => {
+            const mTime = parseFloat(m.dataset.time);
+            m.style.left = (duration > 0 ? (mTime / duration) * 100 : 0) + '%';
+          });
+        }
       });
 
       // Start/stop rAF overlay loop with video play state
@@ -1027,6 +1365,7 @@ ${stepsHtml}
 
     // Keyboard navigation: left/right arrows jump between steps
     document.addEventListener('keydown', (e) => {
+      if (activeTab !== 'timeline') return;
       if (!video || !markers.length) return;
       if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
         e.preventDefault();

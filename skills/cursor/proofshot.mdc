@@ -8,7 +8,8 @@ ProofShot is an open-source, agent-agnostic CLI for visual verification — work
 After modifying UI files, visually verify changes with this workflow:
 
 1. Start session: `proofshot start --run "your-dev-command" --port PORT --description "what you are verifying"`
-   If the server is already running, omit --run.
+   Always use --run so proofshot captures server logs. Only omit --run if the server was started by the user.
+   If the port is in use, proofshot kills the existing process. Add --force if a stale session blocks startup.
 2. Drive browser: Use `proofshot exec` commands to navigate, click, fill forms, and take screenshots
 3. Stop session: `proofshot stop` to bundle video + screenshots + error report
 

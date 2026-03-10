@@ -1,0 +1,86 @@
+---
+title: "How ProofShot Works"
+description: "Architecture overview: how ProofShot bridges AI coding agents and browsers."
+---
+
+# How ProofShot Works
+
+ProofShot is a thin orchestration layer between AI coding agents and a real browser. The agent calls ProofShot via shell commands. ProofShot manages sessions, logging, and artifact generation. All browser work is delegated to [agent-browser](https://github.com/vercel-labs/agent-browser).
+
+## Architecture
+
+```
+┌──────────────┐     shell commands     ┌───────────────┐     CLI calls     ┌──────────────────┐
+│  AI Coding   │ ────────────────────►  │   ProofShot   │ ──────────────►  │  agent-browser   │
+│    Agent     │                        │     CLI       │                   │  (Rust + Node)   │
+│              │  proofshot start       │               │  ab open ...     │                  │
+│  Claude Code │  proofshot exec ...    │  session mgmt │  ab click ...    │  Chromium daemon │
+│  Cursor      │  proofshot stop        │  video trim   │  ab screenshot   │  video recording │
+│  Codex       │                        │  error detect │                   │  element refs    │
+│  Gemini CLI  │                        │  artifact gen │                   │                  │
+│  Windsurf    │                        │               │                   │                  │
+└──────────────┘                        └───────────────┘                   └──────────────────┘
+```
+
+## Why agent-browser?
+
+The choice of [agent-browser](https://github.com/vercel-labs/agent-browser) as the browser automation layer is the most important design decision in ProofShot.
+
+**Agent-agnostic by design.** agent-browser exposes a CLI interface. Any AI agent that can run shell commands can drive it. This is what makes ProofShot work with every major coding agent without custom integrations.
+
+**Persistent daemon.** agent-browser runs a Node.js daemon that maintains browser state across CLI calls. Sequential `proofshot exec` commands operate on the same browser tab and page state.
+
+**Stable element references.** The `@eN` ref system provides stable handles to interactive elements. An agent takes a snapshot, sees `@e3: Submit button`, and can target it reliably — far more robust than CSS selectors for AI-driven interaction.
+
+**Lightweight context.** Snapshot output is significantly smaller than alternatives, leaving more room in the agent's context window for reasoning.
+
+**Built-in recording.** Playwright's screencast API is exposed directly, so video recording works without ffmpeg during capture.
+
+## Session lifecycle
+
+ProofShot uses a three-phase model.
+
+### Phase 1: Start
+
+`proofshot start` initializes the session:
+
+1. Check if the port is available (fail fast on conflicts)
+2. Spawn the dev server if `--run` is provided, pipe output to `server.log`
+3. Wait for the port to respond (polls every 500ms, 30s timeout)
+4. Open headless Chromium
+5. Start video recording
+6. Write `.session.json` (active session state) and `metadata.json` (git branch/commit, persists after stop)
+
+Recording is mandatory. If it fails after 3 retries, the session aborts.
+
+### Phase 2: Exec (repeated)
+
+Each `proofshot exec` call:
+
+1. Loads `.session.json` and validates the session is active
+2. For `click`/`fill`/`type` targeting `@eN` refs: captures the element's bounding box and label *before* execution
+3. Appends an entry to `session-log.json` with a relative timestamp
+4. Forwards the command to agent-browser
+5. Returns the output
+
+### Phase 3: Stop
+
+`proofshot stop` collects and bundles everything:
+
+1. Collects browser console errors and output (point-in-time snapshot)
+2. Stops video recording
+3. Closes the browser
+4. Trims video dead time using ffmpeg (5s buffer before first action, 3s after last). Adjusts all `session-log.json` timestamps by the trim offset.
+5. Scans `server.log` with multi-language regex patterns for errors
+6. Generates `SUMMARY.md` and `viewer.html`
+7. Clears `.session.json`
+
+## Design principles
+
+**Graceful degradation.** Missing ffmpeg? Video trimming is skipped. Element data capture fails? Overlays are skipped. Browser already closed? Silent catch. Non-critical failures never abort a session.
+
+**Minimal dependencies.** Three production dependencies: `commander`, `chalk`, `detect-port`. agent-browser is an optional peer dependency. Small install, small supply chain.
+
+**Session isolation.** `.session.json` lives in the output directory, not globally. This supports parallel sessions in different projects.
+
+**ESM-only.** All imports use explicit `.js` extensions for correct resolution after TypeScript compilation.
