@@ -2,6 +2,11 @@ import * as fs from 'fs';
 import * as path from 'path';
 import type { SessionLogEntry } from '../commands/exec.js';
 
+export interface TimestampedLogEntry {
+  text: string;
+  relativeTimeSec: number;
+}
+
 interface ViewerData {
   description: string | null;
   serverCommand: string | null;
@@ -12,6 +17,8 @@ interface ViewerData {
   serverErrorCount: number;
   consoleOutput?: string;
   serverLog?: string;
+  consoleEntries?: TimestampedLogEntry[];
+  serverEntries?: TimestampedLogEntry[];
 }
 
 /** Maximum log size embedded in the viewer HTML (50 KB). */
@@ -42,6 +49,25 @@ function buildLogLines(text: string): string {
       return `<span class="${cls}"><span class="log-ln">${num}</span>${escapeHtml(line)}</span>`;
     })
     .join('\n');
+}
+
+/** Maximum number of log entries embedded in the viewer to avoid DOM bloat. */
+const MAX_LOG_ENTRIES = 2000;
+
+/** Build timestamped log lines with data-time attributes for video sync. */
+function buildTimestampedLogLines(entries: TimestampedLogEntry[]): { html: string; truncated: boolean } {
+  if (entries.length === 0) return { html: '', truncated: false };
+  const truncated = entries.length > MAX_LOG_ENTRIES;
+  const capped = truncated ? entries.slice(0, MAX_LOG_ENTRIES) : entries;
+  const html = capped
+    .map((entry, i) => {
+      const num = i + 1;
+      const cls = isErrorLine(entry.text) ? 'log-line log-line-error' : 'log-line';
+      const time = formatTime(Math.max(0, entry.relativeTimeSec));
+      return `<span class="${cls}" data-time="${entry.relativeTimeSec}" onclick="seekTo(${entry.relativeTimeSec})"><span class="log-time">${time}</span><span class="log-ln">${num}</span>${escapeHtml(entry.text)}</span>`;
+    })
+    .join('\n');
+  return { html, truncated };
 }
 
 /**
@@ -177,19 +203,30 @@ export function generateViewer(data: ViewerData): string {
 
   const entriesJson = serializeEntries(data.entries);
 
-  // Prepare log content for embedding
-  const consoleTrunc = truncateLog(data.consoleOutput ?? '', MAX_LOG_BYTES);
-  const serverTrunc = truncateLog(data.serverLog ?? '', MAX_LOG_BYTES);
-  const consoleLogLines = buildLogLines(consoleTrunc.text);
-  const serverLogLines = buildLogLines(serverTrunc.text);
+  // Prepare log content for embedding — prefer timestamped entries for video sync
+  let consoleLogBodyHtml: string;
+  if (data.consoleEntries && data.consoleEntries.length > 0) {
+    const built = buildTimestampedLogLines(data.consoleEntries);
+    consoleLogBodyHtml = `<pre class="log-pre">${built.html}</pre>${built.truncated ? '<p class="log-truncated">Log truncated at 2000 entries. See console-output.log for full output.</p>' : ''}`;
+  } else {
+    const consoleTrunc = truncateLog(data.consoleOutput ?? '', MAX_LOG_BYTES);
+    const consoleLogLines = buildLogLines(consoleTrunc.text);
+    consoleLogBodyHtml = consoleLogLines
+      ? `<pre class="log-pre">${consoleLogLines}</pre>${consoleTrunc.truncated ? '<p class="log-truncated">Log truncated at 50 KB. See console-output.log for full output.</p>' : ''}`
+      : '<p class="log-empty">No console output captured</p>';
+  }
 
-  const consoleLogBodyHtml = consoleLogLines
-    ? `<pre class="log-pre">${consoleLogLines}</pre>${consoleTrunc.truncated ? '<p class="log-truncated">Log truncated at 50 KB. See console-output.log for full output.</p>' : ''}`
-    : '<p class="log-empty">No console output captured</p>';
-
-  const serverLogBodyHtml = serverLogLines
-    ? `<pre class="log-pre">${serverLogLines}</pre>${serverTrunc.truncated ? '<p class="log-truncated">Log truncated at 50 KB. See server.log for full output.</p>' : ''}`
-    : '<p class="log-empty">No server log captured</p>';
+  let serverLogBodyHtml: string;
+  if (data.serverEntries && data.serverEntries.length > 0) {
+    const built = buildTimestampedLogLines(data.serverEntries);
+    serverLogBodyHtml = `<pre class="log-pre">${built.html}</pre>${built.truncated ? '<p class="log-truncated">Log truncated at 2000 entries. See server.log for full output.</p>' : ''}`;
+  } else {
+    const serverTrunc = truncateLog(data.serverLog ?? '', MAX_LOG_BYTES);
+    const serverLogLines = buildLogLines(serverTrunc.text);
+    serverLogBodyHtml = serverLogLines
+      ? `<pre class="log-pre">${serverLogLines}</pre>${serverTrunc.truncated ? '<p class="log-truncated">Log truncated at 50 KB. See server.log for full output.</p>' : ''}`
+      : '<p class="log-empty">No server log captured</p>';
+  }
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -642,6 +679,21 @@ export function generateViewer(data: ViewerData): string {
     .log-pre::-webkit-scrollbar-thumb:hover { background: #484f58; }
 
     .log-line { display: block; }
+    .log-line[data-time] { cursor: pointer; transition: background 0.15s; padding: 0 4px; margin: 0 -4px; border-radius: 2px; }
+    .log-line[data-time]:hover { background: rgba(88, 166, 255, 0.08); }
+    .log-line.active { background: #1f2a37; border-left: 3px solid #58a6ff; padding-left: 1px; }
+    .log-line.active .log-time { color: #58a6ff; }
+
+    .log-time {
+      display: inline-block;
+      min-width: 36px;
+      padding-right: 8px;
+      text-align: right;
+      color: #484f58;
+      user-select: none;
+      font-variant-numeric: tabular-nums;
+      font-size: 11px;
+    }
 
     .log-ln {
       display: inline-block;
@@ -655,6 +707,7 @@ export function generateViewer(data: ViewerData): string {
 
     .log-line-error { background: rgba(248, 81, 73, 0.1); color: #f85149; }
     .log-line-error .log-ln { color: rgba(248, 81, 73, 0.5); }
+    .log-line-error .log-time { color: rgba(248, 81, 73, 0.5); }
 
     .log-empty {
       padding: 32px 16px;
@@ -1246,6 +1299,35 @@ ${stepsHtml}
       });
     });
 
+    // Log lines with timestamps for video sync
+    const logLines = document.querySelectorAll('.log-line[data-time]');
+
+    // Highlight active log line for a given video time
+    function updateActiveLogLine(t) {
+      let activeLog = null;
+      logLines.forEach(line => {
+        const lt = parseFloat(line.dataset.time);
+        const nextLine = line.nextElementSibling;
+        const hasNext = nextLine && nextLine.dataset && nextLine.dataset.time !== undefined;
+        const nextTime = hasNext ? parseFloat(nextLine.dataset.time) : Infinity;
+        const isActive = t >= lt && t < nextTime;
+        line.classList.toggle('active', isActive);
+        if (isActive) activeLog = line;
+      });
+
+      // Auto-scroll active log line when on Logs tab
+      if (activeLog && activeTab === 'logs') {
+        const pre = activeLog.closest('.log-pre');
+        if (pre) {
+          const preRect = pre.getBoundingClientRect();
+          const lineRect = activeLog.getBoundingClientRect();
+          if (lineRect.top < preRect.top || lineRect.bottom > preRect.bottom) {
+            activeLog.scrollIntoView({ block: 'center', behavior: 'smooth' });
+          }
+        }
+      }
+    }
+
     // Highlight active step as video plays (only if video exists)
     if (video) {
       video.addEventListener('timeupdate', () => {
@@ -1270,6 +1352,9 @@ ${stepsHtml}
             activeStep.scrollIntoView({ block: 'center', behavior: 'smooth' });
           }
         }
+
+        // Sync log lines with video
+        updateActiveLogLine(t);
 
         // Update scrub bar + markers
         updateScrubBar(t);

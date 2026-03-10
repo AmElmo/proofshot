@@ -60,6 +60,24 @@ export function getConsoleOutput(): string {
   }
 }
 
+export interface ConsoleMessage {
+  text: string;
+  timestamp: number; // epoch ms
+  type: string; // log, warn, error, etc.
+}
+
+/**
+ * Get console output as structured JSON with per-message timestamps.
+ */
+export function getConsoleOutputJson(): ConsoleMessage[] {
+  try {
+    const raw = ab('console --json');
+    return JSON.parse(raw);
+  } catch {
+    return [];
+  }
+}
+
 /**
  * Get the current page title.
  */

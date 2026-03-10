@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import { execSync, spawn, type ChildProcess } from 'child_process';
+import { Transform } from 'stream';
 import { isPortOpen, waitForPort } from '../utils/port.js';
 
 export interface ServerStartResult {
@@ -32,6 +33,29 @@ async function killPort(port: number): Promise<boolean> {
     if (!(await isPortOpen(port))) return killed;
   }
   return killed;
+}
+
+/**
+ * Create a Transform stream that prepends an epoch-ms timestamp to each line.
+ * Format: "1720612345678\toriginal line\n"
+ */
+function createTimestampTransform(): Transform {
+  let buffer = '';
+  return new Transform({
+    transform(chunk, _encoding, callback) {
+      buffer += chunk.toString();
+      const lines = buffer.split('\n');
+      buffer = lines.pop()!;
+      for (const line of lines) {
+        this.push(`${Date.now()}\t${line}\n`);
+      }
+      callback();
+    },
+    flush(callback) {
+      if (buffer) this.push(`${Date.now()}\t${buffer}\n`);
+      callback();
+    },
+  });
 }
 
 /**
@@ -68,8 +92,10 @@ export async function ensureDevServer(
   });
 
   const logStream = fs.createWriteStream(logPath, { flags: 'a' });
-  proc.stdout?.pipe(logStream);
-  proc.stderr?.pipe(logStream);
+  const tsOut = createTimestampTransform();
+  const tsErr = createTimestampTransform();
+  proc.stdout?.pipe(tsOut).pipe(logStream, { end: false });
+  proc.stderr?.pipe(tsErr).pipe(logStream, { end: false });
 
   proc.unref();
 
