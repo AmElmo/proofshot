@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://www.npmjs.com/package/proofshot"><img src="https://img.shields.io/npm/v/proofshot?color=0ea5e9" alt="npm version"></a>
-  <a href="https://github.com/proofshot/proofshot/blob/main/LICENSE"><img src="https://img.shields.io/github/license/proofshot/proofshot" alt="license"></a>
+  <a href="https://github.com/AmElmo/proofshot/blob/main/LICENSE"><img src="https://img.shields.io/github/license/AmElmo/proofshot" alt="license"></a>
   <a href="https://www.npmjs.com/package/proofshot"><img src="https://img.shields.io/npm/dm/proofshot?color=6366f1" alt="downloads"></a>
 </p>
 
