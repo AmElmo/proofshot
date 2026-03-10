@@ -1,3 +1,9 @@
+## [1.3.0](https://github.com/AmElmo/proofshot/compare/v1.2.0...v1.3.0) (2026-03-10)
+
+### Features
+
+* viewer logs tabs, session improvements, and docs ([#16](https://github.com/AmElmo/proofshot/issues/16)) ([609f0ea](https://github.com/AmElmo/proofshot/commit/609f0ea63edc026928451d18ce4187bf9ad3414d))
+
 ## [1.2.0](https://github.com/AmElmo/proofshot/compare/v1.1.0...v1.2.0) (2026-03-04)
 
 ### Features
