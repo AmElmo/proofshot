@@ -27,6 +27,12 @@ ProofShot closes the loop: an open-source CLI that plugs into *any* AI coding ag
 
 The human gets a video recording, screenshots of key moments, and a report of any console or server errors found. View artifacts locally, or run `proofshot pr` to upload everything to the GitHub PR as an inline comment. No vendor lock-in. No cloud dependency.
 
+<p align="center">
+  <img src="brand-assets/screenshots/viewer-timeline.png" alt="ProofShot Viewer — video playback with interactive timeline" width="100%" />
+  <br>
+  <em>The interactive viewer: video recording with scrub bar, action markers, and step-by-step timeline</em>
+</p>
+
 ## Install
 
 ```bash
@@ -70,6 +76,20 @@ Each session produces a timestamped folder in `./proofshot-artifacts/`:
 | `session-log.json` | Action timeline with timestamps and element data |
 | `server.log` | Dev server stdout/stderr (when using `--run`) |
 | `console-output.log` | Browser console output |
+
+<p align="center">
+  <img src="brand-assets/screenshots/artifacts-folder.png" alt="ProofShot artifacts folder" width="480" />
+  <br>
+  <em>Generated artifacts for a single verification session</em>
+</p>
+
+The viewer also includes tabs for browsing console and server logs, with error highlighting and timestamps synced to the video:
+
+<p align="center">
+  <img src="brand-assets/screenshots/viewer-console.png" alt="ProofShot Viewer — console logs tab" width="100%" />
+  <br>
+  <em>Console logs tab with error highlighting and video-synced timestamps</em>
+</p>
 
 ## Commands
 
