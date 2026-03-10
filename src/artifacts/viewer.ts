@@ -89,7 +89,7 @@ export function generateViewer(data: ViewerData): string {
     .join('\n');
 
   const descriptionHtml = data.description
-    ? `<p class="description">${escapeHtml(data.description)}</p>`
+    ? `<p class="description" id="description"><span class="description-text">${escapeHtml(data.description)}</span><button class="show-more" id="showMoreBtn" style="display:none" onclick="toggleDescription()">Show more</button></p>`
     : '';
 
   const consoleBadgeClass = data.consoleErrorCount === 0 ? 'clean' : 'has-errors';
@@ -178,6 +178,28 @@ export function generateViewer(data: ViewerData): string {
       font-size: 14px;
       color: #8b949e;
       margin-bottom: 6px;
+    }
+
+    .header .description.clamped .description-text {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .header .description .show-more {
+      background: none;
+      border: none;
+      color: #58a6ff;
+      font-size: 12px;
+      cursor: pointer;
+      padding: 0;
+      margin-top: 4px;
+      display: block;
+    }
+
+    .header .description .show-more:hover {
+      text-decoration: underline;
     }
 
     .header .meta {
@@ -672,12 +694,36 @@ ${stepsHtml}
     </div>
   </div>
   <script>
+    // --- Description expand/collapse ---
+    function initDescription() {
+      const desc = document.getElementById('description');
+      const btn = document.getElementById('showMoreBtn');
+      if (!desc || !btn) return;
+      const textEl = desc.querySelector('.description-text');
+      // Clamp initially, then check if text overflows
+      desc.classList.add('clamped');
+      requestAnimationFrame(() => {
+        if (textEl.scrollHeight > textEl.clientHeight + 1) {
+          btn.style.display = 'block';
+        }
+      });
+    }
+    function toggleDescription() {
+      const desc = document.getElementById('description');
+      const btn = document.getElementById('showMoreBtn');
+      if (!desc || !btn) return;
+      const isClamped = desc.classList.contains('clamped');
+      desc.classList.toggle('clamped');
+      btn.textContent = isClamped ? 'Show less' : 'Show more';
+    }
+    initDescription();
+
     const video = document.querySelector('video');
     const steps = document.querySelectorAll('.step');
     const timelinePanel = document.querySelector('.timeline-panel');
     const overlay = document.querySelector('.video-overlay');
     const entries = ${entriesJson};
-    const duration = ${data.durationSec};
+    let duration = ${data.durationSec};
     const markers = ${markersJson};
 
     // Scrub bar elements
@@ -1016,6 +1062,18 @@ ${stepsHtml}
         // Update scrub bar + markers
         updateScrubBar(t);
         updateActiveMarker(t);
+      });
+
+      // Sync scrub bar duration with actual video duration
+      video.addEventListener('loadedmetadata', () => {
+        if (video.duration && isFinite(video.duration)) {
+          duration = video.duration;
+          // Reposition markers to match actual video duration
+          scrubMarkers.forEach(m => {
+            const mTime = parseFloat(m.dataset.time);
+            m.style.left = (duration > 0 ? (mTime / duration) * 100 : 0) + '%';
+          });
+        }
       });
 
       // Start/stop rAF overlay loop with video play state
