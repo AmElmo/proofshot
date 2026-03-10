@@ -74,6 +74,7 @@ proofshot start --run "npm run dev" --port 3000 --description "what"     # With 
 proofshot start --url http://localhost:3000/login                        # Open specific URL
 proofshot start --port 3001                                              # Custom port
 proofshot start --headed                                                 # Show browser window
+proofshot start --force                                                  # Override a stale session from a previous crash
 ```
 
 ### `proofshot stop`
@@ -129,7 +130,7 @@ The repo includes a sample Vite app (`test/fixtures/sample-app/`) so you can see
 ### 1. Clone and build
 
 ```bash
-git clone https://github.com/proofshot/proofshot.git
+git clone https://github.com/AmElmo/proofshot.git
 cd proofshot
 npm install
 npm run build
@@ -158,7 +159,7 @@ After the agent finishes, open `proofshot-artifacts/` to find:
 - `session.webm` — video recording of the entire session
 - `step-*.png` — screenshots at key moments
 - `SUMMARY.md` — markdown report with errors and screenshots
-- `viewer.html` — standalone HTML viewer (open in your browser)
+- `viewer.html` — standalone HTML viewer with scrub bar, timeline, and Console/Server log tabs
 
 ### Alternative: run the automated test script
 
