@@ -717,6 +717,54 @@
       flex-shrink: 0;
     }
 
+    /* ── SHOWCASE SCREENSHOT ── */
+    .showcase {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 0 var(--h-pad) var(--v-pad);
+      text-align: center;
+    }
+    .showcase-label {
+      font-size: .82rem; font-weight: 600;
+      color: var(--cyan); text-transform: uppercase;
+      letter-spacing: .1em; margin-bottom: .75rem;
+    }
+    .showcase-title {
+      font-size: clamp(1.4rem, 3vw, 1.8rem);
+      font-weight: 700; letter-spacing: -0.02em;
+      margin-bottom: .5rem;
+    }
+    .showcase-desc {
+      color: var(--text-secondary); font-size: .95rem;
+      max-width: 540px; margin: 0 auto 2rem;
+    }
+    .showcase img {
+      width: 100%;
+      max-width: 960px;
+      border-radius: 12px;
+      border: 1px solid var(--card-border);
+      box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+    }
+
+    /* ── FEATURE SCREENSHOT ── */
+    .feature-screenshot {
+      margin-top: 2rem;
+    }
+    .feature-screenshot img {
+      width: 100%;
+      border-radius: 10px;
+      border: 1px solid var(--card-border);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    }
+    .feature-wide {
+      grid-column: 1 / -1;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+    .feature-wide .feature-screenshot img {
+      max-width: 100%;
+    }
+
     /* ── CTA ── */
     .cta-section {
       text-align: center;
@@ -1292,6 +1340,14 @@
   </div>
 </section>
 
+<!-- ── SHOWCASE ── -->
+<div class="showcase">
+  <div class="showcase-label">The viewer</div>
+  <div class="showcase-title">Every session, fully reviewable.</div>
+  <p class="showcase-desc">Video playback synced with an action timeline, screenshots, and element labels — all in a single standalone HTML file.</p>
+  <img src="https://raw.githubusercontent.com/AmElmo/proofshot/main/brand-assets/screenshots/viewer-timeline.png" alt="ProofShot interactive viewer showing video playback with action timeline" loading="lazy" />
+</div>
+
 <!-- ── FEATURES ── -->
 <section>
   <div class="section-label">Features</div>
@@ -1326,6 +1382,11 @@
       </div>
       <h3>PR-Ready Artifacts</h3>
       <p>Generates SUMMARY.md and formatted output ready to paste into pull requests. Visual diff comparison against baselines.</p>
+    </div>
+    <div class="feature feature-wide">
+      <div class="feature-screenshot">
+        <img src="https://raw.githubusercontent.com/AmElmo/proofshot/main/brand-assets/screenshots/viewer-console.png" alt="ProofShot console logs tab with error highlighting and video-synced timestamps" loading="lazy" />
+      </div>
     </div>
   </div>
 </section>
