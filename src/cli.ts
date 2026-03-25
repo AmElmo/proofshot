@@ -13,7 +13,7 @@ export function createCLI(): Command {
   program
     .name('proofshot')
     .description('Visual verification for AI coding agents')
-    .version('0.1.0');
+    .version('1.3.1');
 
   program
     .command('install')
