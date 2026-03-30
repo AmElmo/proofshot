@@ -33,6 +33,32 @@ The human gets a video recording, screenshots of key moments, and a report of an
   <em>The interactive viewer: video recording with scrub bar, action markers, and step-by-step timeline</em>
 </p>
 
+## How Is This Different?
+
+The #1 question: "Why not just use Playwright MCP / Chrome DevTools MCP / agent-browser directly?"
+
+**Short answer:** those tools control a browser. ProofShot is a verification workflow that bundles proof artifacts for human review.
+
+| | Playwright MCP | DevTools MCP | agent-browser | ProofShot |
+|---|---|---|---|---|
+| Browser control | ✅ | ✅ | ✅ | ✅ (via agent-browser) |
+| Video recording | ✅ | ❌ | ✅ | ✅ |
+| Screenshot capture | ✅ | ✅ | ✅ | ✅ |
+| Console error collection | ❌ | ✅ | ✅ | ✅ |
+| Dev server log capture | ❌ | ❌ | ❌ | ✅ |
+| Error detection (10+ languages) | ❌ | ❌ | ❌ | ✅ |
+| Action timeline with timestamps | ❌ | ❌ | ❌ | ✅ |
+| Interactive HTML viewer | ❌ | ❌ | ❌ | ✅ |
+| Video-synced log playback | ❌ | ❌ | ❌ | ✅ |
+| PR comment upload (`proofshot pr`) | ❌ | ❌ | ❌ | ✅ |
+| Visual diff (`proofshot diff`) | ❌ | ❌ | ❌ | ✅ |
+| Agent-agnostic skill install | ❌ | ❌ | ❌ | ✅ |
+| Compact element refs (vs full a11y tree) | ❌ | N/A | ✅ | ✅ |
+
+ProofShot sits **on top of** agent-browser. It adds session management, server log capture, error detection, video trimming, timestamp synchronization, the interactive viewer, and the PR upload workflow. The browser primitives come from agent-browser — ProofShot is the verification layer.
+
+**Use Playwright MCP or DevTools MCP** if you want live debugging or DOM inspection during development. **Use ProofShot** if you want bundled proof artifacts you can review in seconds or attach to a PR.
+
 ## Install
 
 ```bash
