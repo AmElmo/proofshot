@@ -1,4 +1,5 @@
-import { execSync, spawn, type ChildProcess } from 'child_process';
+import { execSync, type ChildProcess } from 'child_process';
+import { spawnShellCommand } from './process.js';
 
 export class ProofShotError extends Error {
   constructor(
@@ -56,7 +57,7 @@ export function spawnBackground(
   command: string,
   cwd?: string,
 ): ChildProcess {
-  const proc = spawn('sh', ['-c', command], {
+  const proc = spawnShellCommand(command, {
     cwd: cwd || process.cwd(),
     stdio: ['ignore', 'pipe', 'pipe'],
     detached: true,

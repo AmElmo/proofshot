@@ -1,7 +1,12 @@
 import * as fs from 'fs';
-import { execSync, spawn, type ChildProcess } from 'child_process';
 import { Transform } from 'stream';
 import { isPortOpen, waitForPort } from '../utils/port.js';
+import {
+  findPidsListeningOnPort,
+  killPids,
+  spawnShellCommand,
+  terminateProcessTree,
+} from '../utils/process.js';
 
 export interface ServerStartResult {
   alreadyRunning: boolean;
@@ -16,18 +21,11 @@ export interface ServerStartResult {
 async function killPort(port: number): Promise<boolean> {
   let killed = false;
   for (let attempt = 0; attempt < 3; attempt++) {
-    try {
-      const pids = execSync(`lsof -ti:${port}`, {
-        encoding: 'utf-8',
-        stdio: ['pipe', 'pipe', 'pipe'],
-      }).trim();
-      if (pids) {
-        execSync(`kill -9 ${pids.split('\n').join(' ')}`, { stdio: 'pipe' });
-        killed = true;
-      }
-    } catch {
-      // No process found or kill failed
+    const pids = findPidsListeningOnPort(port);
+    if (pids.length > 0) {
+      killed = killPids(pids) || killed;
     }
+
     // Wait for the OS to release the port
     await new Promise((r) => setTimeout(r, 1000));
     if (!(await isPortOpen(port))) return killed;
@@ -85,7 +83,7 @@ export async function ensureDevServer(
     }
   }
 
-  const proc = spawn('sh', ['-c', command], {
+  const proc = spawnShellCommand(command, {
     cwd: process.cwd(),
     stdio: ['ignore', 'pipe', 'pipe'],
     detached: true,
@@ -104,7 +102,7 @@ export async function ensureDevServer(
   } catch (error) {
     // Clean up the spawned process if it failed to start on the expected port
     try {
-      if (proc.pid) process.kill(-proc.pid, 'SIGKILL');
+      if (proc.pid) terminateProcessTree(proc.pid);
     } catch {
       // Already exited
     }
