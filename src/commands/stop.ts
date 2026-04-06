@@ -9,6 +9,7 @@ import { loadSession, clearSession } from '../session/state.js';
 import { writeViewer, type TimestampedLogEntry } from '../artifacts/viewer.js';
 import { extractServerErrors } from '../utils/error-patterns.js';
 import { loadSessionLog } from './exec.js';
+import { estimateTokenUsage, formatTokenUsage, type TokenUsage } from '../utils/token-usage.js';
 
 /**
  * Parse server.log lines with "epochMs\ttext" format.
@@ -144,6 +145,9 @@ export async function stopCommand(options: StopOptions): Promise<void> {
   const serverErrorLines = extractServerErrors(serverLog);
   const serverErrorCount = serverErrorLines.length;
 
+  // Step 6.5: Estimate token usage
+  const tokenUsage = estimateTokenUsage(session.sessionDir, startTime, Date.now());
+
   // Step 7: Generate SUMMARY.md
   const summaryPath = path.join(sessionDir, 'SUMMARY.md');
   const summary = generateProofSummary({
@@ -156,6 +160,7 @@ export async function stopCommand(options: StopOptions): Promise<void> {
     consoleErrorCount,
     serverLog,
     serverErrorCount,
+    tokenUsage,
     durationSec,
     outputDir: sessionDir,
   });
@@ -198,6 +203,7 @@ export async function stopCommand(options: StopOptions): Promise<void> {
     consoleEntries: viewerConsoleEntries.length > 0 ? viewerConsoleEntries : undefined,
     serverEntries: viewerServerEntries.length > 0 ? viewerServerEntries : undefined,
     entries: viewerEntries.length > 0 ? viewerEntries : undefined,
+    tokenUsage,
   });
 
   // Step 8: Clear session state
@@ -263,6 +269,7 @@ interface SummaryData {
   consoleErrorCount: number;
   serverLog: string;
   serverErrorCount: number;
+  tokenUsage?: TokenUsage | null;
   durationSec: number;
   outputDir: string;
 }
@@ -326,6 +333,12 @@ Full session recording: [${relativeVideo}](./${relativeVideo}) (${data.durationS
     if (data.serverLog.length > 5000) {
       md += `_(truncated — see server.log for full output)_\n\n`;
     }
+  }
+
+  if (data.tokenUsage) {
+    md += `## Token Usage (Estimated)\n\n`;
+    md += formatTokenUsage(data.tokenUsage);
+    md += '\n';
   }
 
   // Environment
