@@ -36,11 +36,13 @@ function tryClaudeCodeLogs(startTimeMs: number, endTimeMs: number): TokenUsage |
       const data = JSON.parse(fs.readFileSync(path.join(claudeDir, file), 'utf-8'));
       const sessionStart = new Date(data.startedAt).getTime();
       if (sessionStart >= startTimeMs - 60000 && sessionStart <= endTimeMs + 60000) {
-        if (data.totalInputTokens || data.usage) {
+        if (data.totalInputTokens != null || data.totalOutputTokens != null || data.usage) {
+          const inputTokens = data.totalInputTokens ?? data.usage?.inputTokens ?? 0;
+          const outputTokens = data.totalOutputTokens ?? data.usage?.outputTokens ?? 0;
           return {
-            inputTokens: data.totalInputTokens || data.usage?.inputTokens || 0,
-            outputTokens: data.totalOutputTokens || data.usage?.outputTokens || 0,
-            totalTokens: (data.totalInputTokens || 0) + (data.totalOutputTokens || 0),
+            inputTokens,
+            outputTokens,
+            totalTokens: inputTokens + outputTokens,
             estimatedCost: 0,
             model: data.model || 'claude',
             source: 'claude-logs',
