@@ -19,6 +19,13 @@ interface ViewerData {
   serverLog?: string;
   consoleEntries?: TimestampedLogEntry[];
   serverEntries?: TimestampedLogEntry[];
+  tokenUsage?: {
+    inputTokens: number;
+    outputTokens: number;
+    totalTokens: number;
+    estimatedCost: number;
+    source: string;
+  } | null;
 }
 
 /** Maximum log size embedded in the viewer HTML (50 KB). */
@@ -161,6 +168,19 @@ export function generateViewer(data: ViewerData): string {
     data.serverErrorCount === 0
       ? 'Server: clean'
       : `Server: ${data.serverErrorCount} error(s)`;
+
+  const tokenUsageHtml = data.tokenUsage
+    ? `<div class="token-usage">
+      <div class="token-usage-title">Token Usage (Estimated)</div>
+      <div class="token-usage-values">
+        <span>In: ~${data.tokenUsage.inputTokens.toLocaleString()}</span>
+        <span>Out: ~${data.tokenUsage.outputTokens.toLocaleString()}</span>
+        <span>Total: ~${data.tokenUsage.totalTokens.toLocaleString()}</span>
+        ${data.tokenUsage.estimatedCost > 0 ? `<span>Cost: ~$${data.tokenUsage.estimatedCost.toFixed(4)}</span>` : ''}
+      </div>
+      ${data.tokenUsage.source === 'estimated' ? '<div class="token-usage-note">Estimated from session activity</div>' : ''}
+    </div>`
+    : '';
 
   const hasVideo = !!data.videoFilename;
 
@@ -374,6 +394,37 @@ export function generateViewer(data: ViewerData): string {
       display: flex;
       gap: 12px;
       margin-top: 10px;
+    }
+
+    .token-usage {
+      margin-top: 12px;
+      padding: 10px 12px;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      background: #0d1117;
+      max-width: fit-content;
+    }
+
+    .token-usage-title {
+      font-size: 12px;
+      color: #f0f6fc;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .token-usage-values {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      font-size: 12px;
+      color: #8b949e;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .token-usage-note {
+      margin-top: 6px;
+      font-size: 11px;
+      color: #6e7681;
     }
 
     .error-badge {
@@ -889,6 +940,7 @@ export function generateViewer(data: ViewerData): string {
       <button class="error-badge ${consoleBadgeClass}" onclick="switchTab('console')"><span class="badge-dot"></span>${consoleBadgeText}</button>
       <button class="error-badge ${serverBadgeClass}" onclick="switchTab('server')"><span class="badge-dot"></span>${serverBadgeText}</button>
     </div>
+    ${tokenUsageHtml}
   </div>
   <div class="viewer">
     <div class="video-panel">
