@@ -40,4 +40,26 @@ describe('loadConfig', () => {
       ignoreHttpsErrors: false,
     });
   });
+
+  it('merges nested timeout config with defaults', () => {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'proofshot-timeout-config-'));
+    fs.writeFileSync(
+      path.join(tempDir, 'proofshot.config.json'),
+      JSON.stringify({
+        timeouts: {
+          browserOpenMs: 120000,
+          execPassthroughMs: 90000,
+        },
+      }),
+    );
+
+    expect(loadConfig(tempDir).timeouts).toEqual({
+      browserOpenMs: 120000,
+      recordingStartMs: 10000,
+      recordingStopMs: 15000,
+      screenshotMs: 15000,
+      execPassthroughMs: 90000,
+      videoTrimMs: 60000,
+    });
+  });
 });
