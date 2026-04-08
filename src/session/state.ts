@@ -8,6 +8,7 @@ export interface SessionState {
   description: string | null;
   outputDir: string;
   sessionDir: string;
+  sessionName: string;
   videoPath: string;
   serverErrorLog: string;
   port: number;
@@ -54,4 +55,17 @@ export function clearSession(outputDir: string): void {
   if (fs.existsSync(sessionPath)) {
     fs.unlinkSync(sessionPath);
   }
+}
+
+/**
+ * Generate a deterministic agent-browser session name for a ProofShot run.
+ */
+export function generateAgentBrowserSessionName(seed: string): string {
+  const normalized = seed
+    .toLowerCase()
+    .replace(/[^a-z0-9-_]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 48);
+
+  return normalized ? `proofshot-${normalized}` : 'proofshot';
 }

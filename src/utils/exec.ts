@@ -11,16 +11,42 @@ export class ProofShotError extends Error {
   }
 }
 
+export interface AgentBrowserCommandOptions {
+  session?: string;
+  timeoutMs?: number;
+}
+
+function shellQuote(value: string): string {
+  const escaped = value.replace(/'/g, "'\\''");
+  return `'${escaped}'`;
+}
+
+export function buildAgentBrowserCommand(
+  command: string,
+  options: Pick<AgentBrowserCommandOptions, 'session'> = {},
+): string {
+  const sessionFlag = options.session ? ` --session ${shellQuote(options.session)}` : '';
+  return `agent-browser${sessionFlag} ${command}`;
+}
+
 /**
  * Execute an agent-browser command via CLI.
  * agent-browser uses a Rust CLI + persistent Node.js daemon architecture,
  * so calling it via CLI is the intended usage pattern.
  */
-export function ab(command: string, timeoutMs = 30000): string {
+export function ab(
+  command: string,
+  timeoutOrOptions: number | AgentBrowserCommandOptions = 30000,
+): string {
+  const options =
+    typeof timeoutOrOptions === 'number'
+      ? { timeoutMs: timeoutOrOptions }
+      : timeoutOrOptions;
+
   try {
-    return execSync(`agent-browser ${command}`, {
+    return execSync(buildAgentBrowserCommand(command, options), {
       encoding: 'utf-8',
-      timeout: timeoutMs,
+      timeout: options.timeoutMs ?? 30000,
       stdio: ['pipe', 'pipe', 'pipe'],
     }).trim();
   } catch (error: any) {

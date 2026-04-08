@@ -157,6 +157,8 @@ proofshot stop --no-close   # Stop but keep browser open
 
 Pass-through to agent-browser with automatic session logging. Captures timestamps, element data, and resolves screenshot paths.
 
+When a ProofShot session is active, `proofshot exec` reuses the same isolated `agent-browser` session that `proofshot start` created for that run. This keeps screenshots, console logs, video recording, and browser actions pointed at the same browser session.
+
 ```bash
 proofshot exec click @e3
 proofshot exec screenshot step-checkout.png
