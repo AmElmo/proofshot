@@ -12,8 +12,17 @@ export class ProofShotError extends Error {
 }
 
 export interface AgentBrowserCommandOptions {
+  configPath?: string;
   session?: string;
   timeoutMs?: number;
+}
+
+let defaultAgentBrowserOptions: Pick<AgentBrowserCommandOptions, 'configPath'> = {};
+
+export function setAgentBrowserDefaults(
+  options: Pick<AgentBrowserCommandOptions, 'configPath'>,
+): void {
+  defaultAgentBrowserOptions = { ...options };
 }
 
 function shellQuote(value: string): string {
@@ -23,10 +32,15 @@ function shellQuote(value: string): string {
 
 export function buildAgentBrowserCommand(
   command: string,
-  options: Pick<AgentBrowserCommandOptions, 'session'> = {},
+  options: Pick<AgentBrowserCommandOptions, 'configPath' | 'session'> = {},
 ): string {
-  const sessionFlag = options.session ? ` --session ${shellQuote(options.session)}` : '';
-  return `agent-browser${sessionFlag} ${command}`;
+  const mergedOptions = {
+    ...defaultAgentBrowserOptions,
+    ...options,
+  };
+  const configFlag = mergedOptions.configPath ? ` --config ${shellQuote(mergedOptions.configPath)}` : '';
+  const sessionFlag = mergedOptions.session ? ` --session ${shellQuote(mergedOptions.session)}` : '';
+  return `agent-browser${configFlag}${sessionFlag} ${command}`;
 }
 
 /**
@@ -42,9 +56,9 @@ export function ab(
     typeof timeoutOrOptions === 'number'
       ? { timeoutMs: timeoutOrOptions }
       : timeoutOrOptions;
-
+  const fullCommand = buildAgentBrowserCommand(command, options);
   try {
-    return execSync(buildAgentBrowserCommand(command, options), {
+    return execSync(fullCommand, {
       encoding: 'utf-8',
       timeout: options.timeoutMs ?? 30000,
       stdio: ['pipe', 'pipe', 'pipe'],
@@ -53,15 +67,12 @@ export function ab(
     const stderr = error?.stderr?.toString?.() || '';
     const message = stderr || error?.message || 'Unknown error';
     throw new ProofShotError(
-      `Browser command failed: agent-browser ${command}\n${message}`,
+      `Browser command failed: ${fullCommand}\n${message}`,
       error,
     );
   }
 }
 
-/**
- * Execute a shell command and return stdout.
- */
 export function exec(command: string, timeoutMs = 30000): string {
   try {
     return execSync(command, {
@@ -75,10 +86,6 @@ export function exec(command: string, timeoutMs = 30000): string {
   }
 }
 
-/**
- * Spawn a background process (detached, unreffed).
- * Used for starting dev servers that should outlive proofshot.
- */
 export function spawnBackground(
   command: string,
   cwd?: string,

@@ -17,7 +17,26 @@ describe('loadConfig', () => {
     );
 
     expect(loadConfig(tempDir).browser).toEqual({
+      configPath: undefined,
       executablePath: '/tmp/chrome',
+      ignoreHttpsErrors: false,
+    });
+  });
+
+  it('resolves browser config paths relative to proofshot.config.json', () => {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'proofshot-browser-config-path-'));
+    fs.writeFileSync(
+      path.join(tempDir, 'proofshot.config.json'),
+      JSON.stringify({
+        browser: {
+          configPath: './agent-browser.local.json',
+        },
+      }),
+    );
+
+    expect(loadConfig(tempDir).browser).toEqual({
+      configPath: path.join(tempDir, 'agent-browser.local.json'),
+      executablePath: undefined,
       ignoreHttpsErrors: false,
     });
   });

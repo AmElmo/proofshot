@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { execSync } from 'child_process';
 import { loadConfig } from '../utils/config.js';
-import { ab, buildAgentBrowserCommand } from '../utils/exec.js';
+import { ab, buildAgentBrowserCommand, setAgentBrowserDefaults } from '../utils/exec.js';
 import { loadSession, saveSession, type SessionState } from '../session/state.js';
 
 const SESSION_LOG_FILENAME = 'session-log.json';
@@ -56,14 +56,11 @@ function resolveScreenshotPath(args: string[], sessionDir: string): string[] {
  */
 export function buildShellCommand(args: string[], sessionName?: string): string {
   if (args[0] === 'eval' && args.length > 1) {
-    // Join everything after 'eval' as the JS code, wrap in single quotes
     const jsCode = args.slice(1).join(' ');
-    // Escape any single quotes in the JS code for shell safety
     const escaped = jsCode.replace(/'/g, "'\\''");
     return buildAgentBrowserCommand(`eval '${escaped}'`, { session: sessionName });
   }
 
-  // For all other commands, quote each arg that contains shell-special chars
   const quotedArgs = args.map((arg) => {
     if (/[(){}[\]$`!#&|;<>*? "'\\]/.test(arg)) {
       const escaped = arg.replace(/'/g, "'\\''");
@@ -183,6 +180,7 @@ export async function execCommand(args: string[]): Promise<void> {
 
   // Load session state
   const config = loadConfig();
+  setAgentBrowserDefaults({ configPath: config.browser.configPath });
   const outputDir = path.resolve(config.output);
   const session = loadSession(outputDir);
 

@@ -3,6 +3,7 @@ import * as path from 'path';
 import { execSync } from 'child_process';
 import chalk from 'chalk';
 import { loadConfig } from '../utils/config.js';
+import { setAgentBrowserDefaults } from '../utils/exec.js';
 import { closeBrowser, getConsoleErrors, getConsoleOutput, getConsoleOutputJson } from '../browser/session.js';
 import { stopRecording } from '../browser/capture.js';
 import { loadSession, clearSession } from '../session/state.js';
@@ -54,6 +55,7 @@ interface StopOptions {
 
 export async function stopCommand(options: StopOptions): Promise<void> {
   const config = loadConfig();
+  setAgentBrowserDefaults({ configPath: config.browser.configPath });
   const outputDir = path.resolve(config.output);
 
   // Load session state

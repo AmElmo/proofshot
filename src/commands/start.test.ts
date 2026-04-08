@@ -69,6 +69,7 @@ describe('startCommand', () => {
       output: './proofshot-artifacts',
       headless: true,
       viewport: { width: 1280, height: 720 },
+      browser: {},
       devServer: {
         port: 3000,
         startupTimeout: 1000,
