@@ -15,7 +15,7 @@
 </p>
 
 <p align="center">
-  Works with Claude Code &middot; Cursor &middot; Codex &middot; Gemini CLI &middot; Windsurf &middot; GitHub Copilot &middot; any agent that runs shell commands
+  Works with Claude Code &middot; Cursor &middot; Codex &middot; OpenCode &middot; Gemini CLI &middot; Windsurf &middot; GitHub Copilot &middot; any agent that runs shell commands
 </p>
 
 ---
@@ -204,6 +204,7 @@ proofshot clean
 | **Claude Code** | `~/.claude/skills/proofshot/SKILL.md` |
 | **Cursor** | `~/.cursor/rules/proofshot.mdc` |
 | **Codex (OpenAI)** | `~/.codex/skills/proofshot/SKILL.md` |
+| **OpenCode** | `~/.config/opencode/skills/proofshot/SKILL.md` |
 | **Gemini CLI** | Appends to `~/.gemini/GEMINI.md` |
 | **Windsurf** | Appends to `~/.codeium/windsurf/memories/global_rules.md` |
 

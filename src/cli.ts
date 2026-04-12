@@ -19,7 +19,7 @@ export function createCLI(): Command {
   program
     .command('install')
     .description('Install ProofShot skills at user level for all detected AI coding tools')
-    .option('--only <tools>', 'Only install for these tools (comma-separated: claude,codex,cursor,gemini,windsurf)')
+    .option('--only <tools>', 'Only install for these tools (comma-separated: claude,codex,cursor,gemini,windsurf,opencode)')
     .option('--skip <tools>', 'Skip these tools (comma-separated)')
     .option('--force', 'Overwrite existing skill files even if unchanged')
     .action(async (options) => {

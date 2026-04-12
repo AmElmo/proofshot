@@ -12,6 +12,7 @@ How ProofShot works under the hood, and why it's built the way it is.
 │  Claude Code │  "proofshot exec ..."   │  session mgmt │  "ab click ..."  │  Chromium daemon │
 │  Cursor      │  "proofshot stop"       │  video trim   │  "ab screenshot" │  video recording │
 │  Codex       │                         │  error detect  │                  │  element refs    │
+│  OpenCode    │                         │  artifact gen  │                  │                  │
 │  Gemini CLI  │                         │  artifact gen  │                  │                  │
 │  Windsurf    │                         │               │                   │                  │
 └──────────────┘                         └───────────────┘                   └──────────────────┘
@@ -23,7 +24,7 @@ ProofShot is a thin orchestration layer between AI coding agents and a browser. 
 
 The choice of agent-browser as the browser automation layer is the most important architectural decision in ProofShot.
 
-**Agent-agnostic by design.** agent-browser exposes a CLI interface (`agent-browser open`, `agent-browser click @e3`). Any AI agent that can run shell commands can drive it. This is what makes ProofShot work with Claude Code, Cursor, Codex, Gemini CLI, and Windsurf without custom integrations for each.
+**Agent-agnostic by design.** agent-browser exposes a CLI interface (`agent-browser open`, `agent-browser click @e3`). Any AI agent that can run shell commands can drive it. This is what makes ProofShot work with Claude Code, Cursor, Codex, OpenCode, Gemini CLI, and Windsurf without custom integrations for each.
 
 **Persistent daemon.** agent-browser runs a Node.js daemon that maintains browser state across CLI calls. This means `proofshot exec click @e3` and the next `proofshot exec screenshot step.png` operate on the same browser tab and page state. Without this, each command would need to reconnect to the browser.
 
@@ -137,7 +138,7 @@ Two installation strategies:
 
 | Strategy | Used by | How it works |
 |----------|---------|-------------|
-| **File** | Claude Code, Cursor, Codex | Writes a standalone skill file to the tool's config directory |
+| **File** | Claude Code, Cursor, Codex, OpenCode | Writes a standalone skill file to the tool's config directory |
 | **Append** | Gemini CLI, Windsurf | Appends to an existing config file using `<!-- proofshot:start -->` / `<!-- proofshot:end -->` markers for clean updates |
 
 All installations are at **user level** (home directory), not per-project. This means one `proofshot install` works across every project on the machine.

@@ -10,7 +10,13 @@ import { readBundledSkill, getInlineSkillContent } from '../utils/skills.js';
 // Types
 // ---------------------------------------------------------------------------
 
-type ToolName = 'claude' | 'cursor' | 'codex' | 'gemini' | 'windsurf';
+type ToolName =
+  | 'claude'
+  | 'cursor'
+  | 'codex'
+  | 'gemini'
+  | 'windsurf'
+  | 'opencode';
 
 type SkillTarget =
   | { strategy: 'file'; relativePath: string }
@@ -100,6 +106,15 @@ function getToolDefinitions(): ToolDefinition[] {
       skillTarget: { strategy: 'append', relativePath: 'memories/global_rules.md' },
       bundledSkill: 'generic/PROOFSHOT.md',
       inlineAgent: 'generic',
+    },
+    {
+      name: 'opencode',
+      displayName: 'OpenCode',
+      binaryName: 'opencode',
+      configDir: path.join(home, '.config', 'opencode'),
+      skillTarget: { strategy: 'file', relativePath: 'skills/proofshot/SKILL.md' },
+      bundledSkill: 'opencode/SKILL.md',
+      inlineAgent: 'codex',
     },
   ];
 }
@@ -384,7 +399,7 @@ export async function installCommand(options: InstallOptions): Promise<void> {
       );
     } else {
       console.log(chalk.yellow('No AI coding tools detected on this machine.'));
-      console.log(chalk.dim('Looked for: claude, cursor, codex, gemini, windsurf'));
+      console.log(chalk.dim('Looked for: claude, cursor, codex, gemini, windsurf, opencode'));
     }
     return;
   }
