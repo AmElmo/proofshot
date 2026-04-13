@@ -9,18 +9,19 @@ export function openBrowser(
   url: string,
   viewport: ViewportConfig,
   headless = true,
+  sessionName?: string,
 ): void {
   const headlessFlag = headless ? '' : ' --headed';
-  ab(`open ${url}${headlessFlag}`, 60000);
-  ab(`set viewport ${viewport.width} ${viewport.height}`);
+  ab(`open ${url}${headlessFlag}`, { timeoutMs: 60000, session: sessionName });
+  ab(`set viewport ${viewport.width} ${viewport.height}`, { session: sessionName });
 }
 
 /**
  * Close the browser session.
  */
-export function closeBrowser(): void {
+export function closeBrowser(sessionName?: string): void {
   try {
-    ab('close');
+    ab('close', { session: sessionName });
   } catch {
     // Browser may already be closed — that's fine
   }
@@ -41,9 +42,9 @@ export function checkAgentBrowser(): boolean {
 /**
  * Get any console errors from the current page.
  */
-export function getConsoleErrors(): string {
+export function getConsoleErrors(sessionName?: string): string {
   try {
-    return ab('errors');
+    return ab('errors', { session: sessionName });
   } catch {
     return '';
   }
@@ -52,9 +53,9 @@ export function getConsoleErrors(): string {
 /**
  * Get console output from the current page.
  */
-export function getConsoleOutput(): string {
+export function getConsoleOutput(sessionName?: string): string {
   try {
-    return ab('console');
+    return ab('console', { session: sessionName });
   } catch {
     return '';
   }
@@ -69,9 +70,9 @@ export interface ConsoleMessage {
 /**
  * Get console output as structured JSON with per-message timestamps.
  */
-export function getConsoleOutputJson(): ConsoleMessage[] {
+export function getConsoleOutputJson(sessionName?: string): ConsoleMessage[] {
   try {
-    const raw = ab('console --json');
+    const raw = ab('console --json', { session: sessionName });
     const parsed = JSON.parse(raw);
     // agent-browser wraps JSON output: {success, data: {messages: [...]}, error}
     const messages = parsed?.data?.messages ?? parsed;
@@ -84,9 +85,9 @@ export function getConsoleOutputJson(): ConsoleMessage[] {
 /**
  * Get the current page title.
  */
-export function getPageTitle(): string {
+export function getPageTitle(sessionName?: string): string {
   try {
-    return ab('get title');
+    return ab('get title', { session: sessionName });
   } catch {
     return '';
   }
@@ -95,9 +96,9 @@ export function getPageTitle(): string {
 /**
  * Get the current page URL.
  */
-export function getPageUrl(): string {
+export function getPageUrl(sessionName?: string): string {
   try {
-    return ab('get url');
+    return ab('get url', { session: sessionName });
   } catch {
     return '';
   }

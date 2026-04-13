@@ -9,6 +9,8 @@ After building or modifying UI features, verify with this workflow:
 2. Test: Use `proofshot exec` to navigate, click, fill forms, take screenshots
 3. Stop: `proofshot stop` — bundles video, screenshots, and error report
 
+ProofShot keeps all `proofshot exec` commands inside the same isolated `agent-browser` session that was created by `proofshot start`, so recording, screenshots, and browser actions stay aligned.
+
 Key proofshot exec commands:
 - `proofshot exec snapshot -i` — see interactive elements
 - `proofshot exec click @e3` — click an element

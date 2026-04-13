@@ -77,10 +77,10 @@ export async function stopCommand(options: StopOptions): Promise<void> {
   let consoleOutput = '';
   let consoleEntries: TimestampedLogEntry[] = [];
   try {
-    consoleErrors = getConsoleErrors();
-    consoleOutput = getConsoleOutput();
+    consoleErrors = getConsoleErrors(session.sessionName);
+    consoleOutput = getConsoleOutput(session.sessionName);
     // Get timestamped console messages for viewer sync
-    const consoleMessages = getConsoleOutputJson();
+    const consoleMessages = getConsoleOutputJson(session.sessionName);
     consoleEntries = consoleMessages.map((msg) => ({
       text: `[${msg.type}] ${msg.text}`,
       relativeTimeSec: Math.max(0, parseFloat(((msg.timestamp - startTime) / 1000).toFixed(1))),
@@ -96,12 +96,12 @@ export async function stopCommand(options: StopOptions): Promise<void> {
 
   // Step 2: Stop recording
   console.log(chalk.dim('Stopping recording...'));
-  stopRecording();
+  stopRecording(session.sessionName);
 
   // Step 3: Close browser (unless --no-close)
   if (!options.noClose) {
     console.log(chalk.dim('Closing browser...'));
-    closeBrowser();
+    closeBrowser(session.sessionName);
   }
 
   // Step 4: Read server log (with timestamp parsing)

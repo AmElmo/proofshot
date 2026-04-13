@@ -6,7 +6,12 @@ import { ensureDevServer } from '../server/start.js';
 import { openBrowser } from '../browser/session.js';
 import { startRecording } from '../browser/capture.js';
 import { ensureOutputDir, generateTimestamp, generateSessionDirName } from '../artifacts/bundle.js';
-import { saveSession, hasActiveSession, clearSession } from '../session/state.js';
+import {
+  saveSession,
+  hasActiveSession,
+  clearSession,
+  generateAgentBrowserSessionName,
+} from '../session/state.js';
 import { writeMetadata } from '../session/metadata.js';
 
 interface StartOptions {
@@ -44,6 +49,7 @@ export async function startCommand(options: StartOptions): Promise<void> {
 
   const sessionDirName = generateSessionDirName(timestamp, options.description || null);
   const sessionDir = path.join(outputDir, sessionDirName);
+  const sessionName = generateAgentBrowserSessionName(timestamp);
   ensureOutputDir(sessionDir);
 
   const videoPath = path.join(sessionDir, `session.webm`);
@@ -104,7 +110,7 @@ export async function startCommand(options: StartOptions): Promise<void> {
 
   console.log(chalk.dim('Opening browser...'));
   try {
-    openBrowser(openUrl, config.viewport, config.headless);
+    openBrowser(openUrl, config.viewport, config.headless, sessionName);
     console.log(chalk.green('✓') + ' Browser ready');
   } catch (error: any) {
     console.error(
@@ -123,7 +129,7 @@ export async function startCommand(options: StartOptions): Promise<void> {
 
   for (let attempt = 1; attempt <= RECORDING_RETRIES; attempt++) {
     try {
-      startRecording(videoPath);
+      startRecording(videoPath, sessionName);
       recordingStarted = true;
       console.log(chalk.green('✓') + ' Recording started');
       break;
@@ -157,6 +163,7 @@ export async function startCommand(options: StartOptions): Promise<void> {
     description: options.description || null,
     outputDir,
     sessionDir,
+    sessionName,
     videoPath,
     serverErrorLog,
     port: config.devServer.port,
@@ -171,6 +178,7 @@ export async function startCommand(options: StartOptions): Promise<void> {
   console.log('');
   console.log(`Server:     ${options.run ? chalk.cyan(options.run) : chalk.dim('external')} on :${config.devServer.port}`);
   console.log(`Browser:    Chromium (${config.headless ? 'headless' : 'headed'})`);
+  console.log(`Session:    ${chalk.dim(sessionName)}`);
   console.log(`Recording:  ${chalk.dim(videoPath)}`);
   console.log(`Errors log: ${chalk.dim(serverErrorLog)}`);
 
