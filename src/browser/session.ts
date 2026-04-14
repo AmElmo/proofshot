@@ -16,10 +16,11 @@ export function buildOpenBrowserCommand(
   return `open ${url}${suffix}`;
 }
 
-/**
- * Initialize a browser session.
- * Opens the browser and sets viewport dimensions.
- */
+export interface BrowserState {
+  url: string;
+  viewport: ViewportConfig | null;
+}
+
 export function openBrowser(
   url: string,
   viewport: ViewportConfig,
@@ -28,12 +29,15 @@ export function openBrowser(
   browserConfig?: BrowserConfig,
 ): void {
   ab(buildOpenBrowserCommand(url, headless, browserConfig), { timeoutMs: 60000, session: sessionName });
-  ab(`set viewport ${viewport.width} ${viewport.height}`, { session: sessionName });
+  applyViewport(viewport, sessionName);
 }
 
-/**
- * Close the browser session.
- */
+export function applyViewport(viewport: ViewportConfig, sessionName?: string): void {
+  const scale = viewport.deviceScaleFactor;
+  const suffix = typeof scale === 'number' && Number.isFinite(scale) ? ` ${scale}` : '';
+  ab(`set viewport ${viewport.width} ${viewport.height}${suffix}`, { session: sessionName });
+}
+
 export function closeBrowser(sessionName?: string): void {
   try {
     ab('close', { session: sessionName });
@@ -42,9 +46,6 @@ export function closeBrowser(sessionName?: string): void {
   }
 }
 
-/**
- * Check if agent-browser is installed and accessible.
- */
 export function checkAgentBrowser(): boolean {
   try {
     ab('--version', 5000);
@@ -54,9 +55,6 @@ export function checkAgentBrowser(): boolean {
   }
 }
 
-/**
- * Get any console errors from the current page.
- */
 export function getConsoleErrors(sessionName?: string): string {
   try {
     return ab('errors', { session: sessionName });
@@ -65,9 +63,6 @@ export function getConsoleErrors(sessionName?: string): string {
   }
 }
 
-/**
- * Get console output from the current page.
- */
 export function getConsoleOutput(sessionName?: string): string {
   try {
     return ab('console', { session: sessionName });
@@ -78,18 +73,14 @@ export function getConsoleOutput(sessionName?: string): string {
 
 export interface ConsoleMessage {
   text: string;
-  timestamp: number; // epoch ms
-  type: string; // log, warn, error, etc.
+  timestamp: number;
+  type: string;
 }
 
-/**
- * Get console output as structured JSON with per-message timestamps.
- */
 export function getConsoleOutputJson(sessionName?: string): ConsoleMessage[] {
   try {
     const raw = ab('console --json', { session: sessionName });
     const parsed = JSON.parse(raw);
-    // agent-browser wraps JSON output: {success, data: {messages: [...]}, error}
     const messages = parsed?.data?.messages ?? parsed;
     return Array.isArray(messages) ? messages : [];
   } catch {
@@ -97,9 +88,6 @@ export function getConsoleOutputJson(sessionName?: string): ConsoleMessage[] {
   }
 }
 
-/**
- * Get the current page title.
- */
 export function getPageTitle(sessionName?: string): string {
   try {
     return ab('get title', { session: sessionName });
@@ -108,13 +96,87 @@ export function getPageTitle(sessionName?: string): string {
   }
 }
 
-/**
- * Get the current page URL.
- */
 export function getPageUrl(sessionName?: string): string {
   try {
     return ab('get url', { session: sessionName });
   } catch {
     return '';
   }
+}
+
+export function getViewport(sessionName?: string): ViewportConfig | null {
+  try {
+    const raw = ab("eval 'JSON.stringify({width: window.innerWidth, height: window.innerHeight})'", {
+      session: sessionName,
+    });
+    const parsed = parseViewportPayload(raw);
+    if (
+      typeof parsed?.width === 'number' &&
+      Number.isFinite(parsed.width) &&
+      typeof parsed?.height === 'number' &&
+      Number.isFinite(parsed.height)
+    ) {
+      return { width: parsed.width, height: parsed.height };
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+function parseViewportPayload(raw: string): unknown {
+  const parsed = JSON.parse(raw);
+  if (typeof parsed === 'string') {
+    return JSON.parse(parsed);
+  }
+  return parsed;
+}
+
+function normalizeUrlForComparison(value: string): string {
+  try {
+    const url = new URL(value);
+    const pathname = url.pathname !== '/' ? url.pathname.replace(/\/+$/, '') : '/';
+    return `${url.origin}${pathname}${url.search}`;
+  } catch {
+    return value.trim();
+  }
+}
+
+export function urlsMatch(expectedUrl: string, actualUrl: string): boolean {
+  return normalizeUrlForComparison(expectedUrl) === normalizeUrlForComparison(actualUrl);
+}
+
+export function verifyBrowserState(
+  expectedUrl: string,
+  expectedViewport: ViewportConfig,
+  sessionName?: string,
+): BrowserState {
+  const url = getPageUrl(sessionName);
+  const viewport = getViewport(sessionName);
+
+  if (!url) {
+    throw new ProofShotError(
+      'Could not read the current browser URL after recording started. The browser session may not be attached correctly.',
+    );
+  }
+
+  if (!urlsMatch(expectedUrl, url)) {
+    throw new ProofShotError(
+      `Browser navigated to ${url}, expected ${expectedUrl}. Recording may be attached to the wrong page or session.`,
+    );
+  }
+
+  if (!viewport) {
+    throw new ProofShotError(
+      'Could not read the current viewport after recording started. The browser session may not be attached correctly.',
+    );
+  }
+
+  if (viewport.width !== expectedViewport.width || viewport.height !== expectedViewport.height) {
+    throw new ProofShotError(
+      `Browser viewport is ${viewport.width}x${viewport.height}, expected ${expectedViewport.width}x${expectedViewport.height}. Recording may be attached to the wrong page or session.`,
+    );
+  }
+
+  return { url, viewport };
 }

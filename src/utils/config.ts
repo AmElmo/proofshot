@@ -9,6 +9,7 @@ export interface DevServerConfig {
 export interface ViewportConfig {
   width: number;
   height: number;
+  deviceScaleFactor?: number;
 }
 
 export interface BrowserConfig {
