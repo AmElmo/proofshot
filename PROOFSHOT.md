@@ -18,3 +18,5 @@ Key proofshot exec commands:
 - `proofshot exec screenshot step.png` — capture a moment
 
 Artifacts saved to ./proofshot-artifacts/ including video, screenshots, errors, and summary.
+
+Use `proofshot doctor` when the local setup looks wrong. It prints the current config path, browser mode, viewport, installed binaries, and any active ProofShot session.

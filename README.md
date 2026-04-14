@@ -197,6 +197,14 @@ Remove the `./proofshot-artifacts/` directory.
 proofshot clean
 ```
 
+### `proofshot doctor`
+
+Print the current ProofShot environment, including config path, browser mode, viewport, installed binaries, and any active session.
+
+```bash
+proofshot doctor
+```
+
 ## Supported Agents
 
 `proofshot install` detects and configures skills for:

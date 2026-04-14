@@ -6,6 +6,7 @@ import { diffCommand } from './commands/diff.js';
 import { cleanCommand } from './commands/clean.js';
 import { prCommand } from './commands/pr.js';
 import { execCommand } from './commands/exec.js';
+import { doctorCommand } from './commands/doctor.js';
 import { PROOFSHOT_VERSION } from './version.js';
 
 export function createCLI(): Command {
@@ -61,6 +62,13 @@ export function createCLI(): Command {
     .description('Remove artifact files')
     .action(async () => {
       await cleanCommand();
+    });
+
+  program
+    .command('doctor')
+    .description('Inspect the local ProofShot environment and active session state')
+    .action(async () => {
+      await doctorCommand();
     });
 
   program
