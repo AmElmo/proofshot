@@ -1,5 +1,7 @@
 import { execSync, spawn, type ChildProcess, type SpawnOptions } from 'child_process';
 
+type ExecSyncLike = typeof execSync;
+
 export function getShellExecutable(
   platform = process.platform,
   env: NodeJS.ProcessEnv = process.env,
@@ -93,4 +95,37 @@ export function terminateProcessTree(pid: number): void {
   }
 
   process.kill(-pid, 'SIGKILL');
+}
+
+export function findExecutablePath(
+  command: string,
+  platform = process.platform,
+  execFn: ExecSyncLike = execSync,
+): string | null {
+  try {
+    const lookupCommand = platform === 'win32' ? `where ${command}` : `command -v ${command}`;
+    const output = execFn(lookupCommand, {
+      encoding: 'utf-8',
+      stdio: ['pipe', 'pipe', 'pipe'],
+    }).trim();
+    return output.split(/\r?\n/)[0] || null;
+  } catch {
+    return null;
+  }
+}
+
+export function readCommandVersion(
+  command: string,
+  args: string[] = ['--version'],
+  execFn: ExecSyncLike = execSync,
+): string | null {
+  try {
+    const output = execFn([command, ...args].join(' '), {
+      encoding: 'utf-8',
+      stdio: ['pipe', 'pipe', 'pipe'],
+    }).trim();
+    return output.split(/\r?\n/)[0] || null;
+  } catch {
+    return null;
+  }
 }

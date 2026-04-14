@@ -1,3 +1,9 @@
+## [1.5.0](https://github.com/AmElmo/proofshot/compare/v1.4.1...v1.5.0) (2026-04-14)
+
+### Features
+
+* add a doctor command for local diagnostics ([#41](https://github.com/AmElmo/proofshot/issues/41)) ([e5a902d](https://github.com/AmElmo/proofshot/commit/e5a902d1704a68fd0cac669ae79c74494a866c3a))
+
 ## [1.4.1](https://github.com/AmElmo/proofshot/compare/v1.4.0...v1.4.1) (2026-04-13)
 
 ### Bug Fixes

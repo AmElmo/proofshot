@@ -1,5 +1,10 @@
-import { describe, expect, it } from 'vitest';
-import { getShellExecutable, parseWindowsNetstatOutput } from './process.js';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import {
+  findExecutablePath,
+  getShellExecutable,
+  parseWindowsNetstatOutput,
+  readCommandVersion,
+} from './process.js';
 
 describe('getShellExecutable', () => {
   it('uses cmd.exe on Windows when ComSpec is missing', () => {
@@ -29,5 +34,31 @@ TCP    [::]:3000              [::]:0                 LISTENING       5678
 `;
 
     expect(parseWindowsNetstatOutput(output, 3000)).toEqual([1234, 5678]);
+  });
+});
+
+describe('findExecutablePath', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('uses command -v on Unix-like platforms', () => {
+    const execSpy = vi.fn().mockReturnValue('/usr/local/bin/ffmpeg\n');
+
+    expect(findExecutablePath('ffmpeg', 'darwin', execSpy as never)).toBe('/usr/local/bin/ffmpeg');
+    expect(execSpy).toHaveBeenCalledWith('command -v ffmpeg', expect.any(Object));
+  });
+});
+
+describe('readCommandVersion', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('returns the first output line from the version command', () => {
+    const execSpy = vi.fn().mockReturnValue('ffmpeg version 7.0\nbuilt with clang\n');
+
+    expect(readCommandVersion('ffmpeg', ['--version'], execSpy as never)).toBe('ffmpeg version 7.0');
+    expect(execSpy).toHaveBeenCalledWith('ffmpeg --version', expect.any(Object));
   });
 });

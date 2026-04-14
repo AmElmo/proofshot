@@ -19,3 +19,5 @@ Key proofshot exec commands:
 
 Artifacts saved to ./proofshot-artifacts/ including video, screenshots, errors, and summary.
 You can customize browser launch behavior in `proofshot.config.json`, including HTTPS error ignoring, a custom browser executable path, and a project-specific `agent-browser` config path.
+
+Use `proofshot doctor` when the local setup looks wrong. It prints the current config path, browser mode, viewport, installed binaries, and any active ProofShot session.
