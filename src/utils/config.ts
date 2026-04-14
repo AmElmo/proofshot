@@ -16,7 +16,23 @@ export interface BrowserConfig {
   executablePath?: string;
   ignoreHttpsErrors: boolean;
 }
+export interface TimeoutConfig {
+  browserOpenMs: number;
+  recordingStartMs: number;
+  recordingStopMs: number;
+  screenshotMs: number;
+  execPassthroughMs: number;
+  videoTrimMs: number;
+}
 
+// Keep timeout defaults named and centralized so operational tuning does not
+// rely on unexplained literals spread across the command flow.
+export const DEFAULT_BROWSER_OPEN_TIMEOUT_MS = 60_000;
+export const DEFAULT_RECORDING_START_TIMEOUT_MS = 10_000;
+export const DEFAULT_RECORDING_STOP_TIMEOUT_MS = 15_000;
+export const DEFAULT_SCREENSHOT_TIMEOUT_MS = 15_000;
+export const DEFAULT_EXEC_PASSTHROUGH_TIMEOUT_MS = 60_000;
+export const DEFAULT_VIDEO_TRIM_TIMEOUT_MS = 60_000;
 export interface ProofShotConfig {
   devServer: DevServerConfig;
   output: string;
@@ -24,6 +40,7 @@ export interface ProofShotConfig {
   viewport: ViewportConfig;
   headless: boolean;
   browser: BrowserConfig;
+  timeouts: TimeoutConfig;
 }
 
 const CONFIG_FILENAME = 'proofshot.config.json';
@@ -40,11 +57,16 @@ const DEFAULT_CONFIG: ProofShotConfig = {
   browser: {
     ignoreHttpsErrors: false,
   },
+  timeouts: {
+    browserOpenMs: DEFAULT_BROWSER_OPEN_TIMEOUT_MS,
+    recordingStartMs: DEFAULT_RECORDING_START_TIMEOUT_MS,
+    recordingStopMs: DEFAULT_RECORDING_STOP_TIMEOUT_MS,
+    screenshotMs: DEFAULT_SCREENSHOT_TIMEOUT_MS,
+    execPassthroughMs: DEFAULT_EXEC_PASSTHROUGH_TIMEOUT_MS,
+    videoTrimMs: DEFAULT_VIDEO_TRIM_TIMEOUT_MS,
+  },
 };
 
-/**
- * Find the config file by walking up from cwd.
- */
 export function findConfigPath(startDir?: string): string | null {
   let dir = startDir || process.cwd();
   while (true) {
@@ -56,9 +78,6 @@ export function findConfigPath(startDir?: string): string | null {
   }
 }
 
-/**
- * Load config from disk, merging with defaults.
- */
 export function loadConfig(startDir?: string): ProofShotConfig {
   const configPath = findConfigPath(startDir);
   if (!configPath) return { ...DEFAULT_CONFIG };
@@ -80,15 +99,13 @@ export function loadConfig(startDir?: string): ProofShotConfig {
       devServer: { ...DEFAULT_CONFIG.devServer, ...parsed.devServer },
       viewport: { ...DEFAULT_CONFIG.viewport, ...parsed.viewport },
       browser: resolvedBrowser,
+      timeouts: { ...DEFAULT_CONFIG.timeouts, ...parsed.timeouts },
     };
   } catch {
     return { ...DEFAULT_CONFIG };
   }
 }
 
-/**
- * Write config to disk.
- */
 export function writeConfig(
   config: ProofShotConfig,
   dir?: string,
@@ -98,9 +115,6 @@ export function writeConfig(
   return configPath;
 }
 
-/**
- * Check if a config file exists in the current project.
- */
 export function configExists(dir?: string): boolean {
   return findConfigPath(dir) !== null;
 }
